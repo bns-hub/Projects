@@ -1,6 +1,6 @@
 # RE1999 Team Builder — Standing Operating Rules  
   
-**Doc version: v0.2** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
+**Doc version: v0.3** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
 the HTML tool file's version number. This pair of docs (`STANDING_RULES.md` + `RUN_LOG.md`) revises on  
 its own schedule rather than being re-versioned alongside the tool file. Bump the version (v0.1 → v0.2  
 → ...) any run that makes a REAL rule change here — a new/removed constraint, a corrected methodology, a  
@@ -8,8 +8,8 @@ changed source-of-truth priority. Do NOT bump it for a run that only reads this 
 without editing it. Record what changed and why in `RUN_LOG.md` under a "Doc vX.Y" heading each time it  
 bumps, same append-only pattern as everything else there.  
   
-**HTML tool version: v0.2 as of 2026-08-24** — the delivered file is now named  
-`<date>_v0.2_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
+**HTML tool version: v0.3 as of 2026-08-24** — the delivered file is now named  
+`<date>_v0.3_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
 through 2026-08-20 (that counter is retired, not renumbered — every historical "v58"/"v72"/"v79"/"v80"  
 mention elsewhere in this file and in `RUN_LOG.md` stays exactly as originally written; don't rewrite  
 history to match the new scheme). The 2026-08-20 file's actual content is unchanged by this reset — only  
@@ -598,3 +598,84 @@ Characters producing **zero** stat effects fell **40 → 32**; effect instances 
 (caster `dmgDealt`, enemy `dmgTaken`). The proof this is display-only: the **`applied` count is
 identical before and after at 423**. Any future vocabulary widening should be checked the same way
 — if `applied` moves, the change was not display-only and needs re-justifying against §17.2.
+
+---
+
+## §19 The three long-standing blockers, unblocked (v0.3, 2026-08-24)
+
+Benson: *"unblock them / ok fix it all"*. All three items that had been carried forward unchanged
+since v75-v78 are now closed or materially advanced, plus the §10 Role gap.
+
+### §19.0 Network reality in this environment — §16 is now WRONG in one specific way
+§16 records "WebSearch is blocked." **That is no longer true.** Corrected standing:
+
+- **WebSearch WORKS.** It is the only channel that reaches the network.
+- **WebFetch does NOT** reach any game-data host. `prydwen.gg`, `blog.prydwen.gg`,
+  `reverse1999.fandom.com` and `reverse1999-gnomon.pages.dev` all return
+  `EGRESS_BLOCKED` from the egress proxy. Direct `curl` gets `403` on CONNECT.
+
+**Consequence for §3's source hierarchy:** verbatim page transcription is currently IMPOSSIBLE.
+A WebSearch result is a model-written summary of pages, not the page text §3 and §12 require.
+So anything sourced this way is **one confidence notch below** kit text Benson pastes directly, and
+must be labeled as such in the `source`/`note` field — never silently mixed in beside a verbatim
+figure. **Two independent searches returning the same number** is the minimum bar used here. Retry
+WebFetch on those hosts each run; the moment one is reachable, re-verify every number tagged this
+way in §19.2.
+
+### §19.1 The one thing genuinely still open, and why
+**Conduit per-card math tested against a real match** cannot be closed by research at all — it needs
+Benson to play rounds and compare. What v0.3 does instead is remove every *other* reason the numbers
+could be wrong: the missing Harmonization values, the missing Energy cost, and the structural bug
+below. The `⚠ Untested` disclaimer **stays**, and now names exactly which figures to doubt first.
+
+### §19.2 What was actually missing (all sourced, all labeled)
+- **The Twins' per-card Harmonization** — Atomic Fusion **+20**, Polymeric Ray **+10**, Extreme
+  Overclocking **+20**, Balancé Across the Stars **+6**. Corroborated across two independent
+  searches. **Caveat recorded in code:** the phrasing found was "*now* grant", and in the same
+  source family "now deals" marked a **Portray 2** value — so these may be P2 figures, not the P0
+  base. Applied flat at every Portray level because no per-level split was sourced.
+  This also settles a mislabel: **Balancé Across the Stars is not a no-op card.** Its *Energy* delta
+  is a confirmed real 0, but it grants Harmonization.
+- **Polymeric Ray costs 3 Mineral Energy** (corroborated twice). Net **-3 +2 = -1** Energy. Before
+  this, *no card in the entire Conduit catalog spent Energy except Coppélia's Finger Training.*
+- **`[Interval Step]` and `[Instrument Tuning I]` are now real numeric state** — the third blocker.
+  Interval Step: +1 per Energy an allied Conduit consumes, cap **30** at P0, each stack +1% Ultimate
+  Might. The **stack count is real; the Ultimate Might is not simulated** (no Conduit damage model)
+  — the same `applied` honesty split as §17.2. Instrument Tuning I: Coppélia's Ultimate grants **3**
+  stacks, each cutting a later Instrument's Energy cost by **1**, **persisting across rounds**.
+  This one **feeds the Energy math** — the first Conduit mechanic that changes a number rather than
+  narrating one. Stacks are consumed only up to the actual bill, never burned on a larger discount.
+  Her kit also gives the ally behind her 3 stacks; that ally is a standard character with no Energy
+  pool here, so it is stated in the round note rather than tracked.
+
+### §19.3 The real bug this uncovered — Conduit multi-cast
+`simulateConduitPlan` read `overrideArr.find(...)`: **only the FIRST pick each round.** But
+`renderConduitRounds`/`renderStateBlockPlan` have rendered a **"+ action"** button for Conduit
+characters since v69, and `manualPlayOverride[key]` is an ARRAY for them exactly as for standard
+characters — so every 2nd and later pick was accepted by the UI and **silently discarded**.
+
+One cast per round is also wrong on the mechanics: **Conduit casts are AP-FREE**, so nothing rations
+them the way the shared AP pool rations a standard character. And it is precisely what kept the
+Energy economy inert — Energy **resets every round**, so a card with an Energy cost can only ever be
+paid from Energy gained in that **same** round, which one-cast-per-round makes impossible.
+
+Fixed: every pick is cast in array order. "Atomic Fusion (+5) then Polymeric Ray (-3)" now works as
+the kit intends, and `[Interval Step]` accrues because Energy is finally being consumed. **Any future
+Conduit work should check this pairing** — a per-round resource reset plus a one-action-per-round
+loop silently disables every cost in the catalog.
+
+### §19.4 Role taxonomy — §10 is now actually satisfied
+**16 LIVE characters had no `ROLE_OVERRIDE` entry at all**, quietly violating §10's "every character
+keeps at least 1 real Role tag" for an unknown number of runs. Invisible from the card UI because
+`CHAR_DB.role` is free text and always non-empty — exactly the failure mode §5.5 warns about.
+
+All 16 are now tagged, **derived not invented**: each maps that character's own already-sourced
+`CHAR_DB.role` label, archetype tags and `SKILL_KIT` skill types onto the fixed 5-value list. Where
+the source label used a non-taxonomy word the mapping is stated rather than silently forced —
+`Tank → Shielder` (all four cases also carry the Shield archetype), `Debuffer`/`Buffer`/`Disruptor
+→ Support`. No character was given `DPS` on a guess; only The Twins, whose own label already reads
+"DPS (Conduit)". Current state: **130 `ROLE_OVERRIDE` entries, 0 live characters missing a Role,
+0 out-of-taxonomy values.**
+
+Note while there: **Cornerstone is `upcoming:false` in `CHAR_DB` but RUN_LOG records Benson
+confirming she is not live yet.** Not changed unilaterally — flagged for him to settle.

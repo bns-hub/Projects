@@ -1908,3 +1908,104 @@ team; Tuning card interaction unmodeled; Matilda / Lady by the Lake rarity; The 
 An-an Lee's portrait; Everecho has no `PORTRAY_DB` data; fuller real-time round tracker.
 
 → Delivered as `2026-08-24_v0.2_RE1999TeamBuilder.html`
+
+## Session 23 (v0.3) — 2026-08-24 — the three carried-forward blockers, unblocked
+
+**Trigger.** Benson, on the v0.2 summary's "two things needing you": *"unblock them"*, *"ok fix it all"*.
+
+**The unlock was environmental.** §16 recorded "WebSearch is blocked", which is why items 2 and 3 had
+been carried forward untouched since v75. **WebSearch works in this environment.** WebFetch does not
+reach any game-data host — `prydwen.gg`, `blog.prydwen.gg`, `reverse1999.fandom.com` and
+`reverse1999-gnomon.pages.dev` all return `EGRESS_BLOCKED`, and direct `curl` gets 403 on CONNECT.
+So verbatim transcription is still impossible and everything sourced this way is held **one
+confidence notch below** Benson-pasted kit text and labeled as such in code (§19.0).
+
+### Item 2 — The Twins' card gaps: CLOSED, and the gap was not the one we thought
+The open item asked for missing **Energy** numbers. Searching turned up something better: the cards'
+**Harmonization** gains, which were missing entirely (`CONDUIT_CARD_EFFECTS` had no
+`harmonizationGain` on any Twins card).
+- Atomic Fusion **+20**, Polymeric Ray **+10**, Extreme Overclocking **+20**, Balancé **+6** —
+  corroborated across two independent searches.
+- **Polymeric Ray consumes 3 Mineral Energy** (corroborated twice) — net -3 +2 = **-1**.
+- Settles a mislabel: **Balancé Across the Stars is not a no-op.** Its Energy delta is a confirmed
+  real 0, but it grants Harmonization +6.
+- Honest caveat carried in code: the phrasing was "*now* grant", and in the same source family
+  "now deals" marked a **Portray 2** value, so these may be P2 rather than P0 base.
+
+### Item 3 — Interval Step / Instrument Tuning I: CLOSED, now real numeric state
+- **`[Interval Step]`** — +1 per Energy an allied Conduit consumes, cap **30** at P0, each stack
+  +1% Ultimate Might. Stack count is **real state**; the Ultimate Might is **not simulated** (no
+  Conduit damage model) — same `applied` honesty split as §17.2. Consumed wholly by her Ultimate.
+- **`[Instrument Tuning I]`** — Ultimate grants **3** stacks, each cutting a later Instrument's
+  Energy cost by **1**, **persisting across rounds**. **This one changes real numbers** — the first
+  Conduit mechanic that feeds the Energy math instead of narrating it. Stacks are consumed only up
+  to the actual bill, never burned on a larger discount. Independently corroborated by this
+  project's own prior research already in STANDING_RULES §8.
+
+### The real bug both of those uncovered — Conduit multi-cast (§19.3)
+`simulateConduitPlan` read `overrideArr.find(...)` — **only the FIRST pick per round** — while the
+UI has rendered a **"+ action"** button for Conduit characters since v69 and `manualPlayOverride`
+is an ARRAY for them. Every 2nd and later pick was accepted and **silently discarded**.
+
+One cast per round is also wrong mechanically (Conduit casts are **AP-free**, so nothing rations
+them), and it is exactly what kept the Energy economy inert: Energy **resets every round**, so an
+Energy cost can only be paid from Energy gained in the **same** round. Verified before the fix:
+Polymeric Ray's new cost of 3 was being applied against an Energy pool of 0 every single round, so
+Interval Step never accrued once in a 5-round run.
+Fixed — all picks cast in order. Verified after: "Atomic Fusion (+5) then Polymeric Ray (-3)" runs
+correctly and Interval Step accrues 3 → 6 → 8.
+
+### Item 1 — Conduit math tested against a real match: STILL OPEN, and cannot be closed here
+This one needs Benson to play rounds and compare; no amount of research substitutes. What v0.3 does
+is remove every *other* reason the numbers could be wrong. The **`⚠ Untested` disclaimer stays**, and
+now names exactly which figures to doubt first (the search-sourced Harmonization and the 3-Energy
+cost) and why.
+
+### Role taxonomy — §10 now actually satisfied (§19.4)
+**16 live characters had no `ROLE_OVERRIDE` entry**, quietly violating §10 for an unknown number of
+runs and invisible from the card UI because `CHAR_DB.role` is free text and always non-empty. All 16
+tagged, **derived not invented** from their own sourced role label + archetype + skill types, with
+non-taxonomy words mapped explicitly (`Tank → Shielder`, `Debuffer`/`Buffer`/`Disruptor → Support`).
+No `DPS` given on a guess. Now: **130 entries, 0 live characters missing a Role, 0 out-of-taxonomy
+values.**
+
+Flagged, not changed: **Cornerstone is `upcoming:false` in `CHAR_DB`** but RUN_LOG records Benson
+confirming she is not live yet. His call, not mine to flip.
+
+### Verification
+- **`node --check`: PASS.**
+- **Declaration-name diff v0.2 → v0.3: 180 → 180, REMOVED = 0.** Also re-diffed against **v0.1**:
+  REMOVED = 0 there too, so nothing has been lost across either step of this session's work.
+- **Playwright load: zero non-network console/`pageerror` errors.**
+- **All 130 live characters simulated solo: 0 errors.** Standard-character math untouched by the
+  Conduit work — `applied` still **423**, effect instances still 1,408, exactly as v0.2.
+- **Role audit: `rolesMissing: []`, `badRoleValues: []`.**
+- **Screenshot check performed** on a populated Conduit round card: both casts render per character
+  ("cast 1 of 2" / "cast 2 of 2"), Harmonization and the -1 Energy net read correctly, Interval Step
+  shows `3/30` with its honest not-simulated note, and both characters show two dropdowns plus
+  "+ action". Tooltips 265 spans / 0 missing attributes; Conduit `⚠ Untested` disclaimer intact.
+
+### Open items
+1. **Conduit math still untested against a real match** — needs Benson's match data. Only item from
+   his original three still open, and not closable by research.
+2. **Search-sourced numbers pending verbatim re-verification** — The Twins' Harmonization
+   (+20/10/20/6) and Polymeric Ray's 3-Energy cost. Re-check the moment a kit host is reachable;
+   the possible P0-vs-P2 ambiguity on the Harmonization figures is the specific thing to resolve.
+3. **Balancé Across the Stars may also have a Star Energy cost** — Polymeric Ray is the Mineral
+   attacking incantation and costs 3; Balancé is the Star equivalent, but no cost figure was
+   sourced, so none was entered (§12: a vague number is not real content).
+4. **Cornerstone's `upcoming` flag** — see above.
+5. `PORTRAY_SIMULATED` still covers 6 levels across 5 characters — the readout makes the other ~649
+   visible *as* unmodeled, which was the v0.2 point, but wiring more remains the real work.
+
+Unchanged from v0.2: 32 characters produce no stat effects; 51 effect instances dropped as
+target-unresolvable; effect layer is a bulk pass (20 hand-read of 131); Portray backlog spot-checking
+(16 of 126); `BUFF_STACK_MODE` unverified; damage model untested against a real match; 6 characters
+with untagged conditional entering-battle Moxie grants; `ULT_HOLD_OVERRIDE` (47/130) populated but
+unwired; `AP_SURPLUS_OVERRIDE` unused; Corvus monotonic counter; Ezio Synchronization underestimate;
+Kassandra card-injection thresholds; Cheng Heguang's ≥10 `[Feathered Blades]`; Beryl's Emanation
+crystal; slot-bar layout never stress-tested against an Anjo Nala Bind team; Tuning card interaction
+unmodeled; Matilda / Lady by the Lake rarity; The Twins' dual element; An-an Lee's portrait; Everecho
+has no `PORTRAY_DB` data; fuller real-time round tracker.
+
+→ Delivered as `2026-08-24_v0.3_RE1999TeamBuilder.html`

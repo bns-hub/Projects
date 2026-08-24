@@ -484,6 +484,34 @@ const PRIORITY_LABEL = {1:"Opener (buff/shield/debuff)",2:"Engine (builds team r
    same as any other "not yet reviewed against source" gap in this tool. */
 const ROLE_LIST = ["DPS","Sub-DPS","Support","Healer","Shielder"];
 const ROLE_OVERRIDE = {
+  /* v0.3 — the 16 LIVE characters that had NO fixed-taxonomy Role entry at all, closing a
+     STANDING_RULES 10 requirement ("every character keeps at least 1 real Role tag") that had been
+     silently unmet. This gap was invisible from the card UI because CHAR_DB.role is free text and
+     always non-empty, which is exactly the failure mode 5.5 warns about.
+     These are DERIVED, not invented: each maps that character's own already-sourced CHAR_DB.role
+     label, archetype tags and SKILL_KIT skill types onto the fixed 5-value list. Where the source
+     label used a word outside the taxonomy, the mapping is stated rather than silently forced:
+       "Tank"     -> Shielder  (all four cases also carry the Shield archetype)
+       "Debuffer" / "Buffer" / "Disruptor" -> Support  (none is a taxonomy value; Support is the
+                                                        role such a kit actually fills)
+     No character was given DPS on a guess — only The Twins, whose own role label already reads
+     "DPS (Conduit)". */
+  "Lorentz Butterfly": ["Support","Sub-DPS"],
+  "The Twins": ["DPS"],
+  "6": ["Support"],
+  "aliEn T": ["Support","Shielder"],
+  "Baby Blue": ["Support"],
+  "Bkornblume": ["Sub-DPS","Support"],
+  "Cornerstone": ["Shielder","Sub-DPS"],
+  "John Titor": ["Support","Healer"],
+  "Ms. Radio": ["Support"],
+  "NORA": ["Support"],
+  "Poltergeist": ["Shielder","Support"],
+  "Sputnik": ["Support"],
+  "The Fool": ["Shielder"],
+  "TTT": ["Support"],
+  "Twins Sleep": ["Sub-DPS","Support"],
+  "Winter": ["Support"],
   // Prydwen Specialties tabs: DPS / Support / Follow-up Attack — Follow-up Attack is an
   // archetype trait (already covered by her Eureka/Impromptu arch tag), not a Role.
   "37": ["DPS","Support"],
@@ -12047,6 +12075,24 @@ function simulateStateBlockPlan(teamArr, totalRounds, totalTeamSize){
 // Benson: "let's pretend that coppelia and twins 'cast incantations' you must allow me to manually
 // select these skills + ult" / "remove [the ASSUMED cap display]" / "allow them to be selected still
 // but put a disclaimer that we have not tested this function yet."
+/* HARMONIZATION SOURCING (v0.3, 2026-08-24) — read before trusting or changing these numbers.
+   The Twins' four per-card Harmonization gains (Atomic Fusion +20 / Polymeric Ray +10 / Extreme
+   Overclocking +20 / Balance Across the Stars +6) close a gap that stood open from v75 through
+   v0.2 ("The Twins' Polymeric Ray / Extreme Overclocking / Balance Across the Stars still have
+   gaps"). They are SOURCED, not invented — corroborated across two independent WebSearch passes
+   returning the same "+20/10/20/6" grouping.
+   BUT their confidence is deliberately one notch BELOW the Energy numbers beside them, for two
+   honest reasons, and this is why the note is here rather than buried:
+     1. Prydwen and the fandom wiki are BOTH egress-blocked in this environment (only WebSearch
+        reaches the network), so this is a search-result aggregate, NOT the verbatim page text
+        that STANDING_RULES 3 and 12 require. The Energy numbers next to them are stronger: they
+        came from kit text Benson pasted directly (v76).
+     2. The phrasing found was "... NOW grant Harmonization +20/10/20/6". In the same source family
+        "now deals" marked a PORTRAY 2 value, so these may be a Portray-modified figure rather than
+        the P0 base. They are applied flat at every Portray level here because no per-level split
+        was sourced.
+   If a verbatim kit source ever becomes reachable, RE-CHECK these four numbers first. Do not
+   silently promote them to the same confidence as the Energy figures. */
 const CONDUIT_CARD_EFFECTS = {
   'Coppélia': {
     'Finger Training': { energyCost:2, harmonizationGain:10,
@@ -12057,14 +12103,19 @@ const CONDUIT_CARD_EFFECTS = {
       note:'"The Solfège Carved On The Body" — its attached Energy Card ("Interval Skip") grants +2 Mineral Energy and 10 stacks of [Interval Step] just before the cast consumes all [Interval Step] (converted into +4 [Instrument Energy Consumption] levels) and grants 3 stacks of [Instrument Tuning I]. Interval Step/Instrument Tuning/damage math are informational-only; this sim resets Harmonization and Energy to 0 on cast.' }
   },
   'The Twins': {
-    'Set A: Atomic Fusion': { energyGain:5,
-      note:'Self buff Mineral Energy +4, plus its attached Energy Card ("Mineral Energy I") grants +1 more — +5 total.' },
-    'Set A: Polymeric Ray': { energyGain:2,
-      note:'No cost of its own; its attached Energy Card ("Mineral Energy II") grants +2 Mineral Energy. Its damage bonus (scales off Mineral Energy consumed by allied Conduit characters this round) stays informational-only.' },
-    'Set B: Extreme Overclocking': { energyGain:1,
-      note:'Self buff (Crit Rate +20%/Crit DMG +40% for 1 round); its attached Energy Card ("Star Energy I") grants +1 Star Energy.' },
-    'Set B: Balancé Across the Stars': {
-      note:'No Energy Card attached and no Energy cost stated — its damage bonus scales off this Conduit\'s own attack count this round, not Energy, so left at 0.' },
+    'Set A: Atomic Fusion': { energyGain:5, harmonizationGain:20,
+      note:'Self buff Mineral Energy +4, plus its attached Energy Card ("Mineral Energy I") grants +1 more — +5 total. Harmonization +20 (see HARMONIZATION SOURCING note above).' },
+    /* energyCost:3 added v0.3. Sourced via WebSearch and corroborated across two passes ("consumes
+       3 Mineral Energy" / "costs at least 3 Mineral Energy"), same one-notch-lower confidence as the
+       Harmonization figures above. This is what finally makes [Interval Step] accrue: it is the only
+       card in this catalog besides Coppelia's Finger Training that SPENDS Energy, and Interval Step
+       is gained per Energy consumed. Net effect of this card is -3 +2 = -1 Energy. */
+    'Set A: Polymeric Ray': { energyCost:3, energyGain:2, harmonizationGain:10,
+      note:'Consumes 3 Mineral Energy; its attached Energy Card ("Mineral Energy II") grants +2 back, so the net is -1 Energy. Harmonization +10 (see HARMONIZATION SOURCING note above). Its damage bonus (scales off Mineral Energy consumed by allied Conduit characters this round) stays informational-only — this sim computes no Conduit damage.' },
+    'Set B: Extreme Overclocking': { energyGain:1, harmonizationGain:20,
+      note:'Self buff (Crit Rate +20%/Crit DMG +40% for 1 round); its attached Energy Card ("Star Energy I") grants +1 Star Energy. Harmonization +20 (see HARMONIZATION SOURCING note above). The crit buff itself is not simulated — this sim models no crit roll.' },
+    'Set B: Balancé Across the Stars': { harmonizationGain:6,
+      note:'No Energy Card attached and no Energy cost stated — its Energy delta is a confirmed real 0, not a gap. It is NOT a no-op card, though: Harmonization +6 (see HARMONIZATION SOURCING note above). Its damage bonus scales off this Conduit\'s own attack count this round, not Energy, and stays informational-only.' },
     'ULTIMATE': { resetOnCast:true,
       note:'"Technological Breakthrough" consumes ALL Mineral+Star Energy for its damage tiers (6+/9+/12+ Energy bonuses) — informational-only damage math; this sim resets Energy to 0 on cast. Its two attached Energy Cards ("Efficient Conversion" +1 Mineral Energy/Conduit Might if Polymeric Ray also cast this round, "Pulse Amplification" +1 Star Energy/Conduit Might if Balancé Across the Stars also cast) wash out under the reset and stay informational-only in this flat single-Energy-counter model. No separate Harmonization cast-gate is kit-confirmed for her Ultimate, only a bonus Penetration Rate stat at 100 Harmonization + 9 Energy — see CONDUIT_ULT_GATE.' }
   }
@@ -12085,7 +12136,29 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
   if(!conduitArr || !conduitArr.length) return [];
   const apPool = sharedApPool != null ? sharedApPool : conduitApContribution(conduitArr);
   const harmonization = {}, energy = {};
-  conduitArr.forEach(c => { harmonization[c.name] = 0; energy[c.name] = 0; });
+  /* v0.3 — [Interval Step] and [Instrument Tuning I] are now REAL NUMERIC STATE, closing the last
+     of the three items Benson listed ("Interval Step (Coppelia) and Instrument Tuning I aren't
+     tracked as numeric state anywhere, only mentioned in text"). Sourced via WebSearch (Prydwen
+     and the fandom wiki are both egress-blocked here), and independently corroborated by this
+     project's OWN prior research already recorded in STANDING_RULES 8, which describes the same
+     Ultimate-granted, multi-round-persisting energy-reduction stack.
+       - [Interval Step]: Coppelia gains 1 per Energy consumed by allied Conduits in a round. Each
+         stack is +1% Ultimate Might, capped at 30 stacks at P0. Ultimate Might is NOT consumed by
+         any math in this tool (there is no Conduit damage model at all), so the STACK COUNT is
+         real state while its EFFECT stays informational — the same honesty split as 17.2's
+         `applied` contract. Her Ultimate consumes the whole pool.
+       - [Instrument Tuning I]: her Ultimate grants 3 stacks; each stack reduces an Instrument's
+         Energy cost by 1 when consumed, and they PERSIST ACROSS ROUNDS rather than expiring with
+         the round (STANDING_RULES 8 calls this out explicitly — do not fold them into the
+         per-round Energy reset). This one DOES change real numbers: it is the first Conduit
+         mechanic that feeds the Energy math rather than being informational.
+     Kit text sources the "ally directly behind her also gets 3 stacks" half too; that ally is a
+     STANDARD character who has no Energy pool in this model, so only Coppelia's own stacks are
+     tracked. Stated in the round note rather than silently dropped. */
+  const intervalStep = {}, instrumentTuning = {};
+  const INTERVAL_STEP_CAP_P0 = 30;
+  conduitArr.forEach(c => { harmonization[c.name] = 0; energy[c.name] = 0;
+    intervalStep[c.name] = 0; instrumentTuning[c.name] = 0; });
   // One-time entering-battle grants (kit-confirmed, real numbers).
   if(conduitArr.some(c => c.name === 'The Twins')) harmonization['The Twins'] += 70; // Insight III
   if(conduitArr.some(c => c.name === 'Coppélia')) harmonization['Coppélia'] += 30; // Insight III
@@ -12111,24 +12184,75 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
       // Fusion, matching this sim's pre-v75 behavior) rather than doing nothing.
       const overrideArr = manualPlayOverride[mpOverrideKey(name, r)] || [];
       const skippedThisRound = overrideArr.includes('SKIP');
-      const explicitPick = overrideArr.find(v => v && v !== 'SKIP');
-      const defaultCard = name === 'The Twins' ? 'Set A: Atomic Fusion' : 'Vowel Basics';
-      const cardKey = explicitPick || defaultCard;
       const catalog = CONDUIT_CARD_EFFECTS[name] || {};
+      /* v0.3 — REAL BUG FIX: cast EVERY pick this round, not just the first.
+         renderConduitRounds/renderStateBlockPlan have rendered a "+ action" button for Conduit
+         characters since v69, and manualPlayOverride[key] is an ARRAY for them exactly as it is for
+         standard characters — but this loop read `overrideArr.find(...)`, so the 2nd and later picks
+         were accepted by the UI and then SILENTLY DISCARDED. One card per character per round is
+         also wrong on the mechanics: Conduit casts are AP-FREE (STANDING_RULES 4/8), so nothing
+         rations them the way the shared AP pool rations a standard character's casts.
+         This is what kept the Energy economy inert. Energy RESETS every round (confirmed rule), so
+         a card with an Energy cost could only ever be paid from Energy gained in that SAME round —
+         which a one-cast-per-round model makes impossible. With the full array cast in order,
+         "Atomic Fusion (+5) then Polymeric Ray (-3)" works as the kit intends, and [Interval Step]
+         finally accrues because Energy is actually being consumed. */
+      const explicitPicks = overrideArr.filter(v => v && v !== 'SKIP');
+      const defaultCard = name === 'The Twins' ? 'Set A: Atomic Fusion' : 'Vowel Basics';
+      // No pick at all still falls back to the single labeled ASSUMED default, as before.
+      const cardKeys = explicitPicks.length ? explicitPicks : [defaultCard];
       if(skippedThisRound){
         roundActions.push({ name, note:'Skipped this round (manual pick) — no Incantation cast, no Energy/Harmonization change' });
-      } else {
+      } else cardKeys.forEach((cardKey, castIdx) => {
         const effect = catalog[cardKey] || {};
-        if(effect.energyCost) energy[name] = Math.max(0, energy[name] - effect.energyCost);
+        const extra = [];   // v0.3: real Interval Step / Instrument Tuning bookkeeping, reported per round
+        let spentThisCast = 0;
+        if(effect.energyCost){
+          /* [Instrument Tuning I] pays first: each stack takes 1 off this Instrument's Energy cost.
+             Only as many stacks as the cost can absorb are consumed — stacks are never burned on a
+             discount larger than the bill, which would silently destroy state. */
+          let cost = effect.energyCost;
+          const used = Math.min(instrumentTuning[name] || 0, cost);
+          if(used > 0){
+            instrumentTuning[name] -= used;
+            cost -= used;
+            extra.push(`[Instrument Tuning I] consumed ${used} stack${used===1?'':'s'} to cut this Instrument's Energy cost from ${effect.energyCost} to ${cost} (${instrumentTuning[name]} stack${instrumentTuning[name]===1?'':'s'} left, they persist across rounds)`);
+          }
+          spentThisCast = Math.min(cost, energy[name]);
+          energy[name] = Math.max(0, energy[name] - cost);
+        }
         if(effect.energyGain) energy[name] += effect.energyGain;
         if(effect.harmonizationGain) harmonization[name] += effect.harmonizationGain;
         const isUlt = cardKey === 'ULTIMATE';
-        const label = explicitPick ? cardKey : `${cardKey} (ASSUMED default — no pick made this round)`;
+        const label = explicitPicks.length ? `${cardKey}${cardKeys.length>1?` (cast ${castIdx+1} of ${cardKeys.length} this round)`:''}` : `${cardKey} (ASSUMED default — no pick made this round)`;
         roundActions.push({ name, note:`${isUlt ? 'Ultimate cast' : 'Incantation cast'}: ${escapeAttr(label)} — ${effect.note || 'no Energy/Harmonization effect stated in the sourced kit text.'}` });
+        // [Interval Step]: +1 per Energy actually consumed by an allied Conduit this round. Coppelia
+        // is the only holder in the current roster, so the gain is credited to her whoever spent it.
+        if(spentThisCast > 0 && conduitArr.some(x => x.name === 'Coppélia')){
+          const before = intervalStep['Coppélia'];
+          intervalStep['Coppélia'] = Math.min(INTERVAL_STEP_CAP_P0, before + spentThisCast);
+          const got = intervalStep['Coppélia'] - before;
+          if(got > 0) extra.push(`[Interval Step] +${got} for Coppélia (1 per Energy consumed) — now ${intervalStep['Coppélia']}/${INTERVAL_STEP_CAP_P0}, worth +${intervalStep['Coppélia']}% Ultimate Might (stack count is real; Ultimate Might itself is not simulated — no Conduit damage model)`);
+          else extra.push(`[Interval Step] already at its ${INTERVAL_STEP_CAP_P0}-stack P0 cap for Coppélia — no further gain`);
+        }
+        if(isUlt && name === 'Coppélia'){
+          if(intervalStep[name] > 0){
+            extra.push(`Ultimate consumes all ${intervalStep[name]} [Interval Step] (converted into [Instrument Energy Consumption] levels — damage-side, not simulated)`);
+            intervalStep[name] = 0;
+          }
+          instrumentTuning[name] += 3;
+          extra.push(`Ultimate grants 3 stacks of [Instrument Tuning I] — now ${instrumentTuning[name]}, each cutting a later Instrument's Energy cost by 1. The matching 3 stacks her kit also gives the ally directly behind her are NOT tracked: that ally is a standard character with no Energy pool in this model.`);
+        }
+        extra.forEach(note => roundActions.push({ name, note }));
+        // Energy/Harmonization reset LAST, so the lines above report what the cast actually did
+        // before the reset wipes it. [Instrument Tuning I] deliberately survives this: it persists
+        // across rounds (STANDING_RULES 8), unlike Energy.
         if(effect.resetOnCast){ harmonization[name] = 0; energy[name] = 0; }
-      }
+      });
     });
-    rounds.push({ round:r, apPool, harmonization: Object.assign({}, harmonization), energy: Object.assign({}, energy), actions: roundActions });
+    rounds.push({ round:r, apPool, harmonization: Object.assign({}, harmonization), energy: Object.assign({}, energy),
+      intervalStep: Object.assign({}, intervalStep), instrumentTuning: Object.assign({}, instrumentTuning),
+      actions: roundActions });
   }
   return rounds;
 }
@@ -12213,7 +12337,8 @@ function renderConduitPanel(conduitArr){
       ${gate ? linkTerms(gate.note) : 'No verified Ultimate Energy/Harmonization threshold on record for this character yet — not simulated rather than guessed at.'}</div>`;
   }).join('');
   return `<div class="sb-round"><div class="rt">Conduit resource loop (${conduitArr.map(c=>c.name).join(', ')})</div>
-    <div class="sb-action" style="opacity:.85"><b>⚠ Untested:</b> the per-card Energy/Harmonization math below (CONDUIT_CARD_EFFECTS) was just rewritten from a single flat default into real per-card numbers pulled from each character's own kit text. It hasn't been run against an actual match yet to sanity-check the numbers end to end — treat the round-by-round output as a first pass, not a verified simulation.</div>
+    <div class="sb-action" style="opacity:.85"><b>⚠ Untested:</b> the per-card Energy/Harmonization math below (CONDUIT_CARD_EFFECTS) uses real per-card numbers, not a flat default — but it still hasn't been run against an actual match. Treat the round-by-round output as a sourced first pass, not a verified simulation. Two things to know about where the numbers come from: the Energy figures came from kit text pasted directly and are the stronger half; The Twins' per-card <b>Harmonization</b> (+20/10/20/6) and Polymeric Ray's <b>3 Energy cost</b> were sourced from web search because the kit sites are unreachable from here, so they sit one notch lower in confidence — and the Harmonization figures may be a Portray-2 value rather than the P0 base. If your match numbers disagree, those are the ones to doubt first.</div>
+    <div class="sb-action" style="opacity:.85"><b>Now tracked as real numbers:</b> <b>[Interval Step]</b> (+1 per Energy an allied Conduit consumes, capped at 30 at P0; each stack is +1% Ultimate Might — the stack count is real, the Ultimate Might is not simulated because this tool models no Conduit damage) and <b>[Instrument Tuning I]</b> (3 stacks from Coppélia's Ultimate, each cutting a later Instrument's Energy cost by 1, persisting across rounds). Both used to be prose-only.</div>
     <div class="sb-actions">${rows}</div></div>`;
 }
 // TUNING (调校) — added 2026-08-17, Benson-supplied CN kit text, retranslated to English by Benson
