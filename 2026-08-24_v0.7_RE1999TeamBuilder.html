@@ -7912,6 +7912,14 @@ Object.values(INSIGHT_KIT).forEach(kit => kit.tiers.forEach(t => {
 // Skill names win on collision (added to SKILL_LOOKUP first, above). Expand this list whenever
 // a new archetype/mechanic shows up in a patch — see the weekly archetype-audit step.
 const TERM_GLOSSARY = {
+  /* [Interval] — definition given verbatim by Benson (2026-08-24), the strongest source available.
+     It is a REAL, MODELLED restriction, not flavour: sbConduitPlan caps an interval-tagged Arcane
+     Skill at one cast per round (§24.1). Confirmed to sit on exactly three skills so far —
+     Coppélia's Clarity in Clefs, and The Twins' Set A Arcane Skill I (Atomic Fusion) and Set B
+     Arcane Skill I (Extreme Overclocking). If a future Conduit unit carries the tag, set
+     `interval:true` on that skill in CONDUIT_KIT as well as relying on this tooltip — the glossary
+     entry explains it to the user, the flag is what actually enforces it. */
+  "Interval": "After a Conduit casts this incantation, it cannot cast this incantation again this round. Currently on Coppélia's Clarity in Clefs and The Twins' Atomic Fusion (Set A) and Extreme Overclocking (Set B) — all three are the 0-cost Arcane Skill I of their set, and this is what stops a free skill firing unboundedly. Modelled: the simulator caps these at one cast per round.",
   "Dynamo": "Charon/Ulrich/Enigma funnel a resource (Dynamo) into a shared team meter that levels up and auto-unlocks buffs; Brume/Lucy/Melania spend it on big hits.",
   "Poison": "Stack Poison on enemies, converting into Genesis damage-over-time. Apply it, stop it decaying, then detonate for a burst instead of a slow trickle.",
   "Eureka": "Spending a resource called Eureka triggers free bonus 'Impromptu Incantation' attacks that don't cost a turn. Some units spend it, some generate it.",
@@ -8722,32 +8730,56 @@ function mpOverrideKey(name, round){ return name + '|' + round; }
      - the ENERGY CARDS are the actual plays: cast from hand, repeatable, each costing AP, and they
        are what determines whether (and how many times) the chosen Incantation fires.
    So the UI now shows one Incantation selector plus as many Energy-card rows as you want, instead
-   of one undifferentiated list of "actions". Kind comes from CONDUIT_CARD_EFFECTS, the same table
+   of one undifferentiated list of "actions". Both lists come from CONDUIT_KIT, the same table
    the simulation reads, so the picker and the math can't disagree about what a card is. */
-function sbConduitCardKind(charName, cardName){
-  const eff = (CONDUIT_CARD_EFFECTS[charName] || {})[cardName];
-  return eff ? eff.kind : null;
+/* v0.7 — pickers rebuilt on CONDUIT_KIT. Two controls, matching the two real decisions:
+     - the SKILL SET (Benson: "these 2 sets are what I should see being selected"), chosen per
+       round; both of its Arcane Skills then fire as Energy allows;
+     - the ENERGY CARDS played from the Energy deck, repeatable, each costing AP.
+   Neither list comes from SKILL_KIT any more: SKILL_KIT holds the character's skills, but the
+   Energy deck is a separate set of cards that was never in it, and the set grouping isn't there
+   either. CONDUIT_KIT is the single source for both, and the simulation reads the same table, so
+   picker and math cannot disagree. */
+// The Energy deck for this character AT THIS PORTRAY LEVEL — Portray can rewrite card values
+// (Coppélia, CONDUIT_PORTRAY_DECK). Returns a fresh object; never mutate CONDUIT_KIT itself.
+function sbConduitEnergyDeck(name, portrayLevel){
+  const base = (CONDUIT_KIT[name] || {}).energyDeck || {};
+  const deck = {};
+  Object.keys(base).forEach(k => { deck[k] = Object.assign({}, base[k]); });
+  const mods = CONDUIT_PORTRAY_DECK[name];
+  if(!mods) return deck;
+  for(let lv = 1; lv <= (portrayLevel || 0); lv++){
+    const m = mods[lv];
+    if(!m) continue;
+    Object.keys(m).forEach(card => {
+      if(card === 'note' || !deck[card]) return;
+      Object.assign(deck[card], m[card], { portrayFrom: lv });
+    });
+  }
+  return deck;
+}
+function sbConduitIntervalStepCap(portrayLevel){
+  return INTERVAL_STEP_CAP_BY_PORTRAY[portrayLevel || 0] || 30;
 }
 function sbGetConduitEnergyOptions(c){
   const opts = [{ value:'', label:'— no Energy card —' }];
-  sbExtractDeckCards(c).forEach(card => {
-    if(sbConduitCardKind(c.name, card.name) !== 'energy') return;
-    const eff = CONDUIT_CARD_EFFECTS[c.name][card.name];
-    const cost = eff.apCost != null ? eff.apCost : CONDUIT_ENERGY_AP_DEFAULT;
-    opts.push({ value: card.name, label: `${card.name} (${cost} AP → +${eff.energy} ${eff.energyType})` });
+  const deck = sbConduitEnergyDeck(c.name, teamPortray[c.name] || 0);
+  Object.keys(deck).forEach(k => {
+    const d = deck[k];
+    const ap = d.apCost != null ? d.apCost : CONDUIT_ENERGY_AP_DEFAULT;
+    opts.push({ value:k, label:`${k} (${ap} AP → +${d.energy} ${d.energyType}${d.portrayFrom ? `, P${d.portrayFrom}` : ''})` });
   });
   return opts;
 }
-function sbGetConduitIncantationOptions(c){
-  const opts = [{ value:'', label:'Auto (default Incantation)' }, { value:'SKIP', label:'Cast nothing this round' }];
-  sbExtractDeckCards(c).forEach(card => {
-    if(sbConduitCardKind(c.name, card.name) !== 'incantation') return;
-    const eff = CONDUIT_CARD_EFFECTS[c.name][card.name];
-    const costLabel = eff.cost == null ? 'cost not sourced' : `${eff.cost} ${eff.energyType} Energy each trigger`;
-    opts.push({ value: card.name, label: `${card.name} (${costLabel})` });
+function sbGetConduitSetOptions(c){
+  const opts = [{ value:'', label:'Auto (default Skill Set)' }, { value:'SKIP', label:'Cast nothing this round' }];
+  const sets = (CONDUIT_KIT[c.name] || {}).sets || {};
+  Object.keys(sets).forEach(k => {
+    const costs = sets[k].skills.map(sk => sk.cost == null ? '?' : sk.cost).join(' + ');
+    opts.push({ value:k, label:`${k} — ${sets[k].skills.length} skills, ${costs} ${sets[k].energyType} Energy` });
   });
-  const ultObj = sbFindUltimate(c);
-  if(ultObj) opts.push({ value:'ULTIMATE', label:`Ultimate: ${ultObj.name}` });
+  const ult = (CONDUIT_KIT[c.name] || {}).ultimate;
+  if(ult) opts.push({ value:'ULTIMATE', label:`Ultimate: ${ult.name}` });
   return opts;
 }
 function sbGetPlayOptions(c){
@@ -12130,88 +12162,111 @@ function simulateStateBlockPlan(teamArr, totalRounds, totalTeamSize, reservedApB
 // grants, Coppélia's flat +15/round), Energy accumulation from the one assumed generator cast/round,
 // and an Ultimate auto-cast at the ASSUMED 100-Harmonization cap (consuming all Energy/Harmonization,
 // same "cast on cooldown" convention as the main sim).
-// CONDUIT_CARD_EFFECTS — real per-card Energy/Harmonization deltas, sourced directly from each
-// character's own kit text (Prydwen paste, Benson, 2026-08-18). A cost is subtracted from Energy
-// (floored at 0 — this sim doesn't block a pick for insufficient Energy, just shows the real result);
-// a gain is added. Cards with no stated Energy/Harmonization number in the sourced kit text get no
-// entry for that field rather than a fabricated one — see each card's own `note`.
-// UNTESTED as of v75 — this is a same-session rewrite from "always apply one flat default regardless
-// of pick" to "apply the real numbers for whichever card was actually picked," replacing the old
-// ASSUMED-Harmonization-cap auto-Ultimate-trigger with a fully manual pick (including Ultimate itself).
-// Benson: "let's pretend that coppelia and twins 'cast incantations' you must allow me to manually
-// select these skills + ult" / "remove [the ASSUMED cap display]" / "allow them to be selected still
-// but put a disclaimer that we have not tested this function yet."
-/* HARMONIZATION SOURCING (v0.3, 2026-08-24) — read before trusting or changing these numbers.
-   The Twins' four per-card Harmonization gains (Atomic Fusion +20 / Polymeric Ray +10 / Extreme
-   Overclocking +20 / Balance Across the Stars +6) close a gap that stood open from v75 through
-   v0.2 ("The Twins' Polymeric Ray / Extreme Overclocking / Balance Across the Stars still have
-   gaps"). They are SOURCED, not invented — corroborated across two independent WebSearch passes
-   returning the same "+20/10/20/6" grouping.
-   BUT their confidence is deliberately one notch BELOW the Energy numbers beside them, for two
-   honest reasons, and this is why the note is here rather than buried:
-     1. Prydwen and the fandom wiki are BOTH egress-blocked in this environment (only WebSearch
-        reaches the network), so this is a search-result aggregate, NOT the verbatim page text
-        that STANDING_RULES 3 and 12 require. The Energy numbers next to them are stronger: they
-        came from kit text Benson pasted directly (v76).
-     2. The phrasing found was "... NOW grant Harmonization +20/10/20/6". In the same source family
-        "now deals" marked a PORTRAY 2 value, so these may be a Portray-modified figure rather than
-        the P0 base. They are applied flat at every Portray level here because no per-level split
-        was sourced.
-   If a verbatim kit source ever becomes reachable, RE-CHECK these four numbers first. Do not
-   silently promote them to the same confidence as the Energy figures. */
-/* CONDUIT ENERGY-CARD AP COST (v0.6) — resolves a real contradiction that had stood in
-   STANDING_RULES since v73, and answers Benson's "is the AP cost separated intentional?" with: no,
-   it was a bug. The two halves of the rules doc disagreed:
-     §8  (Benson's own 2026-08-17 correction): Conduit characters "draw from the same shared pool at
-         the same 1 AP/card cost as everyone else."
-     §4/v73 primer + resource model: "both the Energy-card play AND the skill/Ultimate it triggers
-         are AP-free."
-   v0.5's code implemented the second, so the entire Conduit side of a team consumed NO AP — free
-   actions all round, while standard teammates fought over the pool.
-   The sourced turn structure reconciles them, and both statements turn out to be half right:
-     - ENERGY CARDS are cast from your hand like any other card, so they cost AP. Source: "Energy
-       cards CAN have no AP cost" — i.e. 0-AP is a per-card EXCEPTION, not the rule.
-     - The INCANTATIONS and the Ultimate they trigger are genuinely AP-FREE: they are fired by the
-       Conduit off gathered Energy, not cast from hand. That is what "AP-free" was pointing at.
-   So AP is charged on the Energy card only. CONDUIT_ENERGY_AP_DEFAULT is the game-wide default for
-   casting a card from hand (1), NOT a per-card verified number — set `apCost:0` on a specific card
-   once a real 0-AP one is confirmed, the same override pattern as ULTIMATE_AP_OVERRIDE and
-   PRECAST_CARD's `versatile:true`.
-   This also supplies the constraint the sim was missing: v0.5 let you play unlimited Energy cards a
-   round because nothing rationed them. AP is what rations them. */
+/* ===== CONDUIT_KIT (v0.7) — replaces CONDUIT_CARD_EFFECTS =====
+
+   Rebuilt from kit text Benson pasted directly, which outranks every web source used up to v0.6
+   (§3: his pasted kit text is the strongest source available; Prydwen/fandom stay egress-blocked).
+   The rename is INTENTIONAL, not a silent deletion — the old table's shape could not express what
+   the real kit does, so keeping the name would have been misleading.
+
+   WHAT v0.5/v0.6 GOT WRONG, and it is the same class of error as §21's:
+   the old table listed "Set A: Atomic Fusion" as an ENERGY CARD and "Set A: Polymeric Ray" as an
+   INCANTATION. Both are wrong. They are **Arcane Skill I and Arcane Skill II of the same Skill
+   Set** — two incantations that belong together. The real Energy cards are a SEPARATE DECK
+   (Mineral Energy I/II, Efficient Conversion, ...) that never appeared in this tool at all.
+
+   THE REAL STRUCTURE (Benson, verbatim shape):
+     - A Conduit character has an ENERGY DECK of cards you play from hand. Each produces Energy of
+       one Afflatus. These cost AP (§22.0).
+     - The Twins have TWO SWAPPABLE SKILL SETS. **The SET is the thing you select**, not an
+       individual incantation — "these 2 sets are what I should see being selected". Each set holds
+       Arcane Skill I and Arcane Skill II.
+     - "By selecting the sets, once I have the energy, it will cast the incantations" — BOTH skills
+       in the chosen set fire, each when its own Energy cost is met, cheapest first.
+     - Coppélia has ONE set, and her ENERGY DECK is what her Portray levels rewrite (see
+       CONDUIT_PORTRAY_DECK below).
+
+   [Interval] marks a skill that can only fire once per round. Now tracked (it is on every Arcane
+   Skill I), because with a real Energy deck an untracked [Interval] would let a 0-cost skill fire
+   every time the set is played. */
+/* AP cost of playing an Energy card (§22.0). The game-wide default for casting a card from hand,
+   NOT a per-card verified number — set `apCost:0` on a specific deck card once a real 0-AP one is
+   confirmed, same override pattern as ULTIMATE_AP_OVERRIDE. */
 const CONDUIT_ENERGY_AP_DEFAULT = 1;
-const CONDUIT_CARD_EFFECTS = {
-  /* Coppelia. Sourced two-phase description, near-verbatim: "instead of drawing Incantation Spells
-     on the spelldock... Coppelia will instead generate special Instrument Energy cards on the spell
-     dock. Upon using these energy cards, Coppelia will gain Energy for herself. After Incantation
-     Skills have been picked and used, Coppelia will automatically use her Incantation Skills based
-     on the amount of Energy she has gained during the turn." */
-  'Coppélia': {
-    'Vowel Basics': { kind:'energy', energyType:'Mineral', energy:2, harmonization:0,
-      note:'ENERGY CARD — played from hand to feed the Conduit: its attached Energy Card ("Mineral II") produces +2 Mineral Energy. Its separate "+15% Harmonization" is a percentage with no stated base, so it is left out of the number rather than guessed. [Exhaust] (can\'t replay this Instrument this round) is not tracked.' },
-    'Finger Training': { kind:'incantation', energyType:'Mineral', cost:2, harmonization:10,
-      note:'INCANTATION — consumes 2 Mineral Energy per trigger and grants +10 Harmonization to the caster. Its damage (+120% per level of [Instrument Energy Consumption]) is informational-only; this sim computes no Conduit damage.' },
-    'ULTIMATE': { kind:'ultimate', energyType:'Mineral', energy:2, resetOnCast:true,
-      note:'"The Solfège Carved On The Body" — its attached Energy Card ("Interval Skip") produces +2 Mineral Energy and 10 stacks of [Interval Step] just before the cast consumes all [Interval Step] (converted into +4 [Instrument Energy Consumption] levels) and grants 3 stacks of [Instrument Tuning I]. Harmonization and Energy reset to 0 on cast.' }
-  },
-  /* The Twins — two swappable sets, and the Energy/Incantation split is explicit in the source:
-     "Set A is the Mineral set, where Atomic Fusion grants a big +4 Mineral Energy, which is
-     important as the attacking Incantation of this set costs at least 3 Mineral Energy."
-     Note this matches SKILL_KIT's own types: the "Basic Attack" entries are the Energy cards, the
-     "Skill" entries are the Incantations. */
+const CONDUIT_KIT = {
   'The Twins': {
-    'Set A: Atomic Fusion': { kind:'energy', energyType:'Mineral', energy:5, harmonization:20,
-      note:'ENERGY CARD (Set A / Mineral) — self buff Mineral Energy +4, plus its attached Energy Card ("Mineral Energy I") +1, so +5 Mineral Energy produced. Harmonization +20 (see HARMONIZATION SOURCING note above).' },
-    'Set A: Polymeric Ray': { kind:'incantation', energyType:'Mineral', cost:3, harmonization:10,
-      note:'INCANTATION (Set A / Mineral) — consumes 3 Mineral Energy per trigger; its attached Energy Card ("Mineral Energy II") returns +2. Harmonization +10 (see HARMONIZATION SOURCING note above). Its damage scales with Mineral Energy consumed this round — informational-only, no Conduit damage math here.' },
-    'Set B: Extreme Overclocking': { kind:'energy', energyType:'Star', energy:1, harmonization:20,
-      note:'ENERGY CARD (Set B / Star) — its attached Energy Card ("Star Energy I") produces +1 Star Energy; the card itself is a self buff (Crit Rate +20%/Crit DMG +40% for 1 round, not simulated — no crit roll). Harmonization +20 (see HARMONIZATION SOURCING note above). Its [Interval] once-per-round restriction is not tracked.' },
-    'Set B: Balancé Across the Stars': { kind:'incantation', energyType:'Star', cost:null, harmonization:6,
-      note:'INCANTATION (Set B / Star) — Harmonization +6 (see HARMONIZATION SOURCING note above), so this is NOT a no-op card. Its Star Energy COST IS NOT SOURCED and is therefore not simulated: the only figures found are "a low-cost Mass Attack" and "stack up to at least 4 Star Energy to max out these benefits", which is a scaling recommendation, not a cost. Per §12 a vague number is not real content, so its triggers are left uncomputed rather than guessed — Polymeric Ray\'s 3 is NOT transferable here. It does multi-trigger in the real game ("increases in damage every time it is used this turn").' },
-    'ULTIMATE': { kind:'ultimate', energyType:'Mineral', resetOnCast:true,
-      note:'"Technological Breakthrough" consumes ALL banked Energy for its damage tiers (6+/9+/12+) — informational-only; Energy and Harmonization reset to 0 on cast. Its two attached Energy Cards ("Efficient Conversion", "Pulse Amplification") wash out under that reset. No Harmonization cast-gate number is sourced — see CONDUIT_ULT_GATE.' }
+    energyDeck: {
+      'Mineral Energy I':  { energyType:'Mineral', energy:1, note:'Energy card — Mineral Energy +1.' },
+      'Mineral Energy II': { energyType:'Mineral', energy:2, note:'Energy card — Mineral Energy +2.' },
+      'Efficient Conversion (Mineral)': { energyType:'Mineral', energy:1,
+        note:'Energy card — Mineral Energy +1. Also grants Conduit Might +30% (unstackable) when casting [Polymeric Ray] this round — Conduit Might is not simulated (no Conduit damage model), so only the Energy is applied.' },
+      'Star Energy I':  { energyType:'Star', energy:1, note:'Energy card — Star Energy +1.' },
+      'Star Energy II': { energyType:'Star', energy:2, note:'Energy card — Star Energy +2.' },
+      'Efficient Conversion (Star)': { energyType:'Star', energy:1,
+        note:'Energy card — Star Energy +1. Also grants Conduit Might +30% (unstackable) when casting [Balancé Across the Stars] this round — Conduit Might is not simulated, so only the Energy is applied.' }
+    },
+    sets: {
+      'Skill Set A (Mineral)': { energyType:'Mineral', skills:[
+        { name:'Arcane Skill I: Atomic Fusion', cost:0, interval:true, harmonization:20,
+          note:'Self buff, [Interval] so once per round. Gains Mineral Energy and Harmonization. Costs 0 Mineral Energy.' },
+        { name:'Arcane Skill II: Polymeric Ray', cost:3, harmonization:10,
+          note:'Mass attack, 3 Mineral Energy per cast. Counts only as a Mineral Afflatus attack. Its bonus damage scales with Mineral Energy consumed by all allied Conduits this round — informational-only, this sim computes no Conduit damage.' }
+      ]},
+      'Skill Set B (Star)': { energyType:'Star', skills:[
+        { name:'Arcane Skill I: Extreme Overclocking', cost:0, interval:true, harmonization:20,
+          note:'Self buff, [Interval] so once per round. Gains Critical Rate, Critical DMG and Harmonization. Costs 0 Star Energy. The crit buff is not simulated — no crit roll here.' },
+        { name:'Arcane Skill II: Balancé Across the Stars', cost:1, harmonization:6,
+          note:'Mass attack, 1 Star Energy per cast. Counts only as a Star Afflatus attack. Its bonus damage scales with this Conduit\'s attack count this round — informational-only.' }
+      ]}
+    },
+    ultimate: { name:'Technological Breakthrough', resetOnCast:true,
+      note:'Consumes ALL banked Energy for its damage tiers (6+/9+/12+) — informational-only; Energy and Harmonization reset to 0 on cast. No Harmonization cast-gate number is sourced (see CONDUIT_ULT_GATE).' }
+  },
+  'Coppélia': {
+    energyDeck: {
+      'Mineral Energy I':  { energyType:'Mineral', energy:1, note:'Energy card — Mineral Energy +1.' },
+      'Mineral Energy II': { energyType:'Mineral', energy:2, note:'Energy card — Mineral Energy +2.' },
+      'Skip Motion': { energyType:'Mineral', energy:2, intervalStep:10,
+        note:'Energy card — Mineral Energy +2, and grants 10 stacks of [Chromatic Progression] (this tool\'s [Interval Step]) to Coppélia.' }
+    },
+    sets: {
+      'Instrument (Mineral)': { energyType:'Mineral', skills:[
+        { name:'Clarity in Clefs', cost:null, interval:true, harmonization:0,
+          note:'Arcane Skill, [Interval] so once per round. Mass buff: grants [Symphonic Unity] to all allies for 3 rounds. Its Energy cost is NOT stated in the sourced kit text, so its firing is reported but not gated on a guessed number.' },
+        { name:'Tuning Technique', cost:null, harmonization:10,
+          note:'Arcane Skill. 1-target attack, 480% Reality DMG, +120% per level of [Energy Accumulation] up to 20 levels — damage informational-only. Its Energy cost is NOT stated in the sourced kit text, so its firing is reported but not gated on a guessed number.' }
+      ]}
+    },
+    ultimate: { name:'The Solfège Carved On The Body', resetOnCast:true, energy:2, energyType:'Mineral',
+      note:'Its attached Energy Card ("Interval Skip") produces +2 Mineral Energy and 10 stacks of [Interval Step] just before the cast consumes all [Interval Step] (converted into [Instrument Energy Consumption] levels) and grants 3 stacks of [Instrument Tuning I]. Harmonization and Energy reset to 0 on cast.' }
   }
 };
+/* Terminology note — the same things carry two English names across sources, and BOTH appear in
+   this file's own data. They are aliases, NOT separate mechanics; do not "fix" one into the other
+   or add a second entry for it:
+     Tuning Technique            ≡ Finger Training   (1-target Arcane Skill scaling on Energy levels)
+     Clarity in Clefs            ≡ Vowel Basics      ([Interval] mass buff)
+     Skip Motion                 ≡ Interval Skip     (energy card, Mineral +2 + 10 stacks)
+     Chromatic Progression       ≡ Interval Step     (the stack itself)
+     Instrument Energy Consumption ≡ Energy Accumulation (the level counter)
+   SKILL_KIT["Coppélia"] uses the right-hand names; Benson's kit paste uses the left-hand ones. */
+
+/* CONDUIT_PORTRAY_DECK — Portray levels that REWRITE the Energy deck. Benson: "at higher portray
+   levels, she CHANGES the energy cards read her portray to find out."
+   This is a genuinely different kind of Portray effect from anything in PORTRAY_MECHANIC: it does
+   not add a buff, it edits the deck's card values. Read straight from PORTRAY_DB["Coppélia"] text,
+   which states each change explicitly. Applied cumulatively for every level ≤ the selected one. */
+const CONDUIT_PORTRAY_DECK = {
+  'Coppélia': {
+    1: { 'Mineral Energy I': { energy:2, copies:1 },
+         note:'P1: 1 [Mineral I] in the Energy Deck produces Mineral Energy +2 instead of +1.' },
+    2: { 'Mineral Energy I': { energy:2, copies:2 },
+         note:'P2: a SECOND [Mineral I] in the Energy Deck also produces +2.' },
+    5: { 'Mineral Energy II': { energy:3, copies:1 }, 'Skip Motion': { energy:3, intervalStep:20 },
+         note:'P5: 1 [Mineral II] produces Mineral Energy +3; [Skip Motion]/[Interval Skip] produces +3 and grants 20 stacks of [Interval Step]; max [Interval Step] rises to 50.' }
+  }
+};
+const INTERVAL_STEP_CAP_BY_PORTRAY = { 0:30, 1:30, 2:30, 3:30, 4:30, 5:50 };
 // Conduit characters DO draw from the shared team AP pool — they're just AP-FREE to cast (their own
 // Energy-card casts don't spend it; see the Conduit ARCH_INFO primer: "arranging/casting these
 // doesn't spend AP"). What they contribute is a HEADCOUNT slot like anyone else, PLUS The Twins'
@@ -12280,7 +12335,7 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
         harmonization[name] += 15;
         roundActions.push({ name, note:'Start of round: Harmonization +15 (Insight I)' });
       }
-      // Real per-card selection (v75 rewrite — see CONDUIT_CARD_EFFECTS above, UNTESTED). Reuses the
+      // Real per-card selection (see CONDUIT_KIT above, still UNTESTED against a match). Reuses the
       /* v0.5 — TWO-PHASE ROUND, replacing the v0.3/v0.4 "each pick is a cast that both gains and
          spends Energy" model. Benson: "u play energy cards that uses energy... then the 'skills'
          will be used depending on the type and amount of energy fed."
@@ -12306,117 +12361,116 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
          resolve against whatever was gathered. */
       const overrideArr = manualPlayOverride[mpOverrideKey(name, r)] || [];
       const skippedThisRound = overrideArr.includes('SKIP');
-      const catalog = CONDUIT_CARD_EFFECTS[name] || {};
-      /* v0.6 — the two choices are now read from two places, matching how they're picked:
-         Energy cards come from manualPlayOverride (the repeatable "+ Energy card" rows), and the
-         single Incantation comes from conduitIncantationPick. Only Energy cards fall back to a
-         labeled ASSUMED default, since doing nothing at all would leave the Conduit unfed. */
-      const energyPicks = overrideArr.filter(v => v && v !== 'SKIP' && sbConduitCardKind(name, v) === 'energy');
-      const defaultEnergy = name === 'The Twins' ? ['Set A: Atomic Fusion'] : ['Vowel Basics'];
+      /* v0.7 — two picks, matching the two real decisions: Energy cards (repeatable, AP-costing,
+         from manualPlayOverride) and the SKILL SET (one per round, from conduitIncantationPick,
+         which now holds a set name rather than a single incantation). */
+      const portrayLv = teamPortray[name] || 0;
+      const deck = sbConduitEnergyDeck(name, portrayLv);
+      const kit = CONDUIT_KIT[name] || {};
+      const energyPicks = overrideArr.filter(v => v && v !== 'SKIP' && deck[v]);
+      const defaultEnergy = name === 'The Twins' ? ['Mineral Energy II'] : ['Mineral Energy II'];
       const usedDefaultEnergy = energyPicks.length === 0;
       const energyKeys = usedDefaultEnergy ? defaultEnergy : energyPicks;
       const assumedLabel = usedDefaultEnergy ? ' (ASSUMED default — no Energy card picked this round)' : '';
-      const incPick = conduitIncantationPick[mpOverrideKey(name, r)] || '';
-      const defaultInc = name === 'The Twins' ? 'Set A: Polymeric Ray' : 'Finger Training';
-      const incKey = incPick === 'SKIP' ? null : (incPick || defaultInc);
-      const incAssumed = (!incPick && incKey) ? ' (ASSUMED default — no Incantation chosen this round)' : '';
-      const cardKeys = energyKeys.concat(incKey ? [incKey] : []);
-      if(skippedThisRound){
-        roundActions.push({ name, note:'Skipped this round (manual pick) — no Energy cards played, no Incantation triggered, no Energy/Harmonization change' });
+      const setPick = conduitIncantationPick[mpOverrideKey(name, r)] || '';
+      const setNames = Object.keys(kit.sets || {});
+      const setKey = setPick === 'SKIP' ? null : (setPick && kit.sets[setPick] ? setPick : setNames[0]);
+      const setAssumed = (!setPick && setKey) ? ' (ASSUMED default — no Skill Set chosen this round)' : '';
+      if(skippedThisRound || setPick === 'SKIP'){
+        roundActions.push({ name, note:'Cast nothing this round (manual pick) — no Energy cards played, no Skill Set cast.' });
       } else {
-        const pool = energy[name];   // { Mineral: n, Star: n } — typed, see energy[] init above
-        /* ---- PHASE 1: play the Energy cards, feeding the Conduit ----
-           These COST AP (see CONDUIT_ENERGY_AP_DEFAULT) and draw on the same shared team pool as
-           every standard teammate, so they are capped by what is actually left. A card that cannot
-           be paid for says so rather than being played for free — that free-for-all is exactly what
-           v0.5 did wrong. */
-        cardKeys.filter(k => (catalog[k] || {}).kind === 'energy').forEach(cardKey => {
-          const eff = catalog[cardKey];
-          const cost = eff.apCost != null ? eff.apCost : CONDUIT_ENERGY_AP_DEFAULT;
+        const pool = energy[name];
+        /* ---- PHASE 1: play Energy cards from the Energy deck ----
+           These COST AP and draw on the same shared team pool as every standard teammate (§22.0),
+           so they are capped by what is actually left. */
+        energyKeys.forEach(cardKey => {
+          const d = deck[cardKey];
+          if(!d) return;
+          const cost = d.apCost != null ? d.apCost : CONDUIT_ENERGY_AP_DEFAULT;
           if(cost > apLeft){
-            roundActions.push({ name, note:`Energy card NOT played: ${escapeAttr(cardKey)}${assumedLabel} — it costs ${cost} AP and only ${apLeft} AP is left in the shared team pool this round. Conduit Energy cards are cast from hand like any other card, so they compete for AP with your standard teammates; the Incantation they trigger is what's free.` });
+            roundActions.push({ name, note:`Energy card NOT played: ${escapeAttr(cardKey)}${assumedLabel} — it costs ${cost} AP and only ${apLeft} AP is left in the shared team pool. Energy cards are cast from hand like any other card, so they compete for AP with your standard teammates; the Arcane Skills they feed are what's free.` });
             return;
           }
-          apLeft -= cost;
-          apUsedByConduit += cost;
-          pool[eff.energyType] = (pool[eff.energyType] || 0) + eff.energy;
-          if(eff.harmonization) harmonization[name] += eff.harmonization;
-          roundActions.push({ name, note:`Energy card played (${cost} AP): ${escapeAttr(cardKey)}${assumedLabel} — ${eff.note} Pool is now ${pool[eff.energyType]} ${eff.energyType} Energy. ${apLeft} AP left in the shared pool.` });
+          apLeft -= cost; apUsedByConduit += cost;
+          pool[d.energyType] = (pool[d.energyType] || 0) + d.energy;
+          if(d.intervalStep){
+            const cap = sbConduitIntervalStepCap(teamPortray['Coppélia'] || 0);
+            intervalStep[name] = Math.min(cap, (intervalStep[name] || 0) + d.intervalStep);
+          }
+          roundActions.push({ name, note:`Energy card played (${cost} AP): ${escapeAttr(cardKey)}${assumedLabel}${d.portrayFrom ? ` [upgraded by P${d.portrayFrom}]` : ''} — ${d.note} Pool is now ${pool[d.energyType]} ${d.energyType} Energy. ${apLeft} AP left in the shared pool.` });
         });
-        // ---- PHASE 2: the chosen Incantation(s) resolve against what was gathered ----
-        cardKeys.filter(k => (catalog[k] || {}).kind === 'incantation').forEach(cardKey => {
-          const eff = catalog[cardKey];
-          const have = pool[eff.energyType] || 0;
-          if(eff.cost == null){
-            // Cost genuinely not sourced (Balancé). Say so; never invent a number to fill the gap.
-            roundActions.push({ name, note:`Incantation chosen: ${escapeAttr(cardKey)}${incAssumed} — ${eff.note} You have ${have} ${eff.energyType} Energy gathered, but with no sourced cost this sim cannot compute how many times it triggers.` });
-            return;
-          }
-          /* [Instrument Tuning I] pays first — each stack cuts this Incantation's Energy cost by 1.
-             Applied to the PER-TRIGGER cost, which is where the real leverage is: at cost 3 with 3
-             stacks the cost drops to 0, and a 0-cost Incantation is treated as a single free
-             trigger rather than an infinite loop (guarded below). Stacks are consumed only as far
-             as the cost can absorb them, never burned on a discount larger than the bill. */
-          let unitCost = eff.cost;
-          const tuningUsed = Math.min(instrumentTuning[name] || 0, unitCost);
-          if(tuningUsed > 0){
-            instrumentTuning[name] -= tuningUsed;
-            unitCost -= tuningUsed;
-            roundActions.push({ name, note:`[Instrument Tuning I] consumed ${tuningUsed} stack${tuningUsed===1?'':'s'} — ${escapeAttr(cardKey)}'s Energy cost drops from ${eff.cost} to ${unitCost} (${instrumentTuning[name]} stack${instrumentTuning[name]===1?'':'s'} left, they persist across rounds)` });
-          }
-          if(unitCost === 0){
-            harmonization[name] += (eff.harmonization || 0);
-            roundActions.push({ name, note:`Incantation triggered (free): ${escapeAttr(cardKey)}${incAssumed} — [Instrument Tuning I] cut its cost to 0, so it fires without consuming Energy. Counted as ONE trigger: a 0-cost Incantation has no Energy limit to divide by, so this sim does not loop it. No Harmonization from Energy consumed, since none was.` });
-            return;
-          }
-          const triggers = Math.floor(have / unitCost);
-          if(triggers < 1){
-            roundActions.push({ name, note:`Incantation chosen: ${escapeAttr(cardKey)}${incAssumed} — did NOT trigger: it costs ${unitCost} ${eff.energyType} Energy and only ${have} was gathered this round. Feed the Conduit more ${eff.energyType} Energy cards first.` });
-            return;
-          }
-          const spent = triggers * unitCost;
-          pool[eff.energyType] = have - spent;
-          // +1 Harmonization per Energy consumed — the engine of the resource (see §20.1).
-          harmonization[name] += spent;
-          if(eff.harmonization) harmonization[name] += eff.harmonization * triggers;
-          roundActions.push({ name, note:`Incantation triggered ${triggers}x (AP-free — fired by the Conduit off gathered Energy, not cast from hand): ${escapeAttr(cardKey)}${incAssumed} — ${eff.note} Spent ${spent} of ${have} ${eff.energyType} Energy (${unitCost} each), leaving ${pool[eff.energyType]}. Harmonization +${spent} (1 per Energy consumed)${eff.harmonization ? ` and +${eff.harmonization * triggers} from the Incantation itself` : ''}.` });
-          /* [Interval Step] — +1 per Energy consumed by an allied Conduit, cap 30 at P0, each stack
-             +1% Ultimate Might. Only Coppelia holds it in the current roster, so it is credited to
-             her whoever spent the Energy. Stack count is real state; the Ultimate Might it grants is
-             NOT simulated (no Conduit damage model) — the same applied/not-applied split as §17.2. */
-          if(conduitArr.some(x => x.name === 'Coppélia')){
-            const before = intervalStep['Coppélia'];
-            intervalStep['Coppélia'] = Math.min(INTERVAL_STEP_CAP_P0, before + spent);
-            const got = intervalStep['Coppélia'] - before;
-            roundActions.push({ name, note: got > 0
-              ? `[Interval Step] +${got} for Coppélia (1 per Energy consumed) — now ${intervalStep['Coppélia']}/${INTERVAL_STEP_CAP_P0}, worth +${intervalStep['Coppélia']}% Ultimate Might (stack count is real; Ultimate Might itself is not simulated — no Conduit damage model)`
-              : `[Interval Step] already at its ${INTERVAL_STEP_CAP_P0}-stack P0 cap for Coppélia — no further gain` });
-          }
-        });
-        // ---- Ultimate, if picked ----
-        cardKeys.filter(k => (catalog[k] || {}).kind === 'ultimate').forEach(cardKey => {
-          const eff = catalog[cardKey];
-          if(eff.energy) pool[eff.energyType] = (pool[eff.energyType] || 0) + eff.energy;
-          roundActions.push({ name, note:`Ultimate cast (AP-free): ${escapeAttr(cardKey)}${incAssumed} — ${eff.note}` });
+        /* ---- PHASE 2: the chosen Skill Set casts ----
+           Benson: "By selecting the sets, once I have the energy, it will cast the incantations."
+           BOTH Arcane Skills in the set fire, each when its own cost is met. Cheapest first, so a
+           0-cost Arcane Skill I always resolves before the Skill II that needs the Energy — which
+           matches the kit, where Skill I is the self-buff that helps pay for Skill II.
+           [Interval] skills fire at most once per round. */
+        if(setKey){
+          const set = kit.sets[setKey];
+          roundActions.push({ name, note:`Skill Set selected: ${escapeAttr(setKey)}${setAssumed} — its Arcane Skills cast below as the gathered ${set.energyType} Energy allows.` });
+          const ordered = set.skills.slice().sort((x,y) => (x.cost == null ? 99 : x.cost) - (y.cost == null ? 99 : y.cost));
+          ordered.forEach(sk => {
+            const have = pool[set.energyType] || 0;
+            if(sk.cost == null){
+              harmonization[name] += (sk.harmonization || 0);
+              roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast (AP-free; fired by the Conduit, not from hand). ${sk.note} No Energy cost is sourced for it, so no Energy was deducted and no trigger count is computed rather than inventing one.` });
+              return;
+            }
+            if(sk.cost === 0){
+              harmonization[name] += (sk.harmonization || 0);
+              roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast once (0 ${set.energyType} Energy${sk.interval ? ', [Interval] so once per round' : ''}). ${sk.note} Harmonization +${sk.harmonization || 0}.` });
+              return;
+            }
+            let unit = sk.cost;
+            const tUsed = Math.min(instrumentTuning[name] || 0, unit);
+            if(tUsed > 0){
+              instrumentTuning[name] -= tUsed; unit -= tUsed;
+              roundActions.push({ name, note:`[Instrument Tuning I] consumed ${tUsed} stack${tUsed===1?'':'s'} — ${escapeAttr(sk.name)}'s Energy cost drops from ${sk.cost} to ${unit} (${instrumentTuning[name]} left, they persist across rounds)` });
+            }
+            if(unit === 0){
+              harmonization[name] += (sk.harmonization || 0);
+              roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast once for free ([Instrument Tuning I] cut its cost to 0). Counted as ONE cast: a 0-cost skill has no Energy limit to divide by, so this sim does not loop it.` });
+              return;
+            }
+            const times = sk.interval ? Math.min(1, Math.floor(have / unit)) : Math.floor(have / unit);
+            if(times < 1){
+              roundActions.push({ name, note:`${escapeAttr(sk.name)} — did NOT cast: it needs ${unit} ${set.energyType} Energy and only ${have} was gathered. Play more ${set.energyType} Energy cards first.` });
+              return;
+            }
+            const spent = times * unit;
+            pool[set.energyType] = have - spent;
+            harmonization[name] += spent + (sk.harmonization || 0) * times;
+            roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast ${times}x (AP-free; fired by the Conduit off gathered Energy). ${sk.note} Spent ${spent} of ${have} ${set.energyType} Energy (${unit} each), leaving ${pool[set.energyType]}. Harmonization +${spent} (1 per Energy consumed)${sk.harmonization ? ` and +${sk.harmonization * times} from the skill itself` : ''}.` });
+            if(conduitArr.some(x => x.name === 'Coppélia')){
+              const cap = sbConduitIntervalStepCap(teamPortray['Coppélia'] || 0);
+              const before = intervalStep['Coppélia'];
+              intervalStep['Coppélia'] = Math.min(cap, before + spent);
+              const got = intervalStep['Coppélia'] - before;
+              roundActions.push({ name, note: got > 0
+                ? `[Interval Step] +${got} for Coppélia (1 per Energy consumed) — now ${intervalStep['Coppélia']}/${cap}, worth +${intervalStep['Coppélia']}% Ultimate Might (stack count is real; Ultimate Might is not simulated — no Conduit damage model)`
+                : `[Interval Step] already at its ${cap}-stack cap for Coppélia — no further gain` });
+            }
+          });
+        }
+        // ---- Ultimate, if picked (kind is now a distinct pick value, not a catalog entry) ----
+        if(setPick === 'ULTIMATE' && kit.ultimate){
+          const ult = kit.ultimate;
+          if(ult.energy) pool[ult.energyType] = (pool[ult.energyType] || 0) + ult.energy;
+          roundActions.push({ name, note:`Ultimate cast (AP-free): ${escapeAttr(ult.name)} — ${ult.note}` });
           if(name === 'Coppélia'){
             if(intervalStep[name] > 0){
               roundActions.push({ name, note:`Ultimate consumes all ${intervalStep[name]} [Interval Step] (converted into [Instrument Energy Consumption] levels — damage-side, not simulated)` });
               intervalStep[name] = 0;
             }
-            /* Scope: two sourced phrasings disagree — "herself and the teammate behind her" vs "all
-               crew members in the team". In a Conduit pairing BOTH readings land on the other
-               Conduit character, so granting to every Conduit teammate is the reading both support,
-               not a third invented one. Standard allies are excluded because they have no Energy
-               pool for a cost discount to apply to. */
             conduitArr.forEach(o => { instrumentTuning[o.name] += 3; });
             const others = conduitArr.filter(o => o.name !== name).map(o => `${o.name} now ${instrumentTuning[o.name]}`);
-            roundActions.push({ name, note:`Ultimate grants 3 stacks of [Instrument Tuning I] to every Conduit teammate — Coppélia now ${instrumentTuning[name]}${others.length ? ', ' + others.join(', ') : ''}. Each stack cuts a later Incantation's Energy cost by 1 and they persist across rounds. Standard (non-Conduit) allies are excluded: they have no Energy pool for the discount to apply to.` });
+            roundActions.push({ name, note:`Ultimate grants 3 stacks of [Instrument Tuning I] to every Conduit teammate — Coppélia now ${instrumentTuning[name]}${others.length ? ', ' + others.join(', ') : ''}. Each stack cuts a later Arcane Skill's Energy cost by 1 and they persist across rounds. Standard allies are excluded: they have no Energy pool for the discount to apply to.` });
           }
-          if(eff.resetOnCast){
+          if(ult.resetOnCast){
             harmonization[name] = 0;
             Object.keys(pool).forEach(k => { pool[k] = 0; });
           }
-        });
+        }
       }
     });
     // Deep-copy the typed pools — Object.assign would share the per-character pool objects across
@@ -12442,9 +12496,9 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
 function renderConduitPicker(c, round){
   const key = mpOverrideKey(c.name, round);
   const incVal = conduitIncantationPick[key] || '';
-  const incOpts = sbGetConduitIncantationOptions(c).map(o =>
+  const incOpts = sbGetConduitSetOptions(c).map(o =>
     `<option value="${escapeAttr(o.value)}" ${incVal===o.value?'selected':''}>${escapeAttr(o.label)}</option>`).join('');
-  const incHtml = `<span class="mp-row"><b>Incantation:</b> <select class="ci-select" data-ci-char="${escapeAttr(c.name)}" data-ci-round="${round}">${incOpts}</select></span>`;
+  const incHtml = `<span class="mp-row"><b>Skill Set:</b> <select class="ci-select" data-ci-char="${escapeAttr(c.name)}" data-ci-round="${round}">${incOpts}</select></span>`;
   const arr = manualPlayOverride[key] || [''];
   const energyOpts = sbGetConduitEnergyOptions(c);
   const rowsHtml = arr.map((val, idx) => {
@@ -12551,7 +12605,7 @@ function renderConduitPanel(conduitArr){
       ${gate ? linkTerms(gate.note) : 'No verified Ultimate Energy/Harmonization threshold on record for this character yet — not simulated rather than guessed at.'}</div>`;
   }).join('');
   return `<div class="sb-round"><div class="rt">Conduit resource loop (${conduitArr.map(c=>c.name).join(', ')})</div>
-    <div class="sb-action" style="opacity:.85"><b>⚠ Untested:</b> the per-card Energy/Harmonization math below (CONDUIT_CARD_EFFECTS) uses real per-card numbers, not a flat default — but it still hasn't been run against an actual match. Treat the round-by-round output as a sourced first pass, not a verified simulation. Two things to know about where the numbers come from: the Energy figures came from kit text pasted directly and are the stronger half; The Twins' per-card <b>Harmonization</b> (+20/10/20/6) and Polymeric Ray's <b>3 Energy cost</b> were sourced from web search because the kit sites are unreachable from here, so they sit one notch lower in confidence — and the Harmonization figures may be a Portray-2 value rather than the P0 base. If your match numbers disagree, those are the ones to doubt first.</div>
+    <div class="sb-action" style="opacity:.85"><b>⚠ Untested:</b> the Conduit Energy/Skill-Set math below (CONDUIT_KIT) uses real per-card numbers, not a flat default — but it still hasn't been run against an actual match. Treat the round-by-round output as a sourced first pass, not a verified simulation. Two things to know about where the numbers come from: the Energy figures came from kit text pasted directly and are the stronger half; The Twins' per-card <b>Harmonization</b> (+20/10/20/6) and Polymeric Ray's <b>3 Energy cost</b> were sourced from web search because the kit sites are unreachable from here, so they sit one notch lower in confidence — and the Harmonization figures may be a Portray-2 value rather than the P0 base. If your match numbers disagree, those are the ones to doubt first.</div>
     <div class="sb-action" style="opacity:.85"><b>Now tracked as real numbers:</b> <b>[Interval Step]</b> (+1 per Energy an allied Conduit consumes, capped at 30 at P0; each stack is +1% Ultimate Might — the stack count is real, the Ultimate Might is not simulated because this tool models no Conduit damage) and <b>[Instrument Tuning I]</b> (3 stacks from Coppélia's Ultimate, each cutting a later Instrument's Energy cost by 1, persisting across rounds). Both used to be prose-only.</div>
     <div class="sb-actions">${rows}</div></div>`;
 }
@@ -12796,7 +12850,23 @@ function renderStateBlockPlan(teamArr, skipped, conduitArr){
       ? `<div class="sb-toggle-row sb-bond-row"><button class="ult-toggle-btn sb-bond-btn${manualSensoryBond[rd.round]?' on':''}" data-sbround="${rd.round}">${manualSensoryBond[rd.round] ? '🕊️ Sensory Bond activated this round — click to undo' : '🕊️ Activate Sensory Bond (0 AP, free turn — extends the plan by 1 round)'}</button></div>`
       : '';
     const mergeLine = rd.merges.length ? `Free Merges (1/round): ${rd.merges.join(', ')} +1 Moxie.` : 'Free Merges: none available yet.';
-    const apLine = rd.apBonusFrom.length ? `${rd.apPool} (base ${fullTeamSize} +1, non-stacking, from ${rd.apBonusFrom.join(', ')}'s Continuous Action I)` : `${rd.apPool}`;
+    /* v0.7 — account for EVERY point of the shared pool on screen.
+       Benson reported "3/3 AP when i select copellia, twins, rhiannon and enigma. should be 4/4 AP".
+       The number was arithmetically right and completely unexplained, which made it read as a bug:
+       the pool really is 4 headcount +1 from The Twins' Insight I = 5, the Conduit side had already
+       spent 2 of it on Energy cards (v0.6), so 3 remained for the standard characters — but the
+       line just said "AP available: 3". Every term is now named, so a surprising number can be
+       traced instead of guessed at. */
+    const conduitSpent = (conduitRounds.find(x => x.round === rd.round) || {}).apUsedByConduit || 0;
+    const twinsAp = conduitArr.some(c => c.name === 'The Twins') ? 1 : 0;
+    const headcount = teamArr.length + conduitArr.length;
+    const poolParts = [`${headcount} character${headcount===1?'':'s'}`];
+    if(twinsAp) poolParts.push(`+1 from The Twins' Insight I "AP +1"`);
+    if(rd.apBonusFrom.length) poolParts.push(`+1 non-stacking from ${rd.apBonusFrom.join(', ')}'s Continuous Action I`);
+    const totalPool = fullTeamSize + (rd.apBonusFrom.length ? 1 : 0);
+    const apLine = conduitSpent || twinsAp || rd.apBonusFrom.length
+      ? `<b>${rd.apPool}</b> available to ${teamArr.map(c=>c.name).join(', ') || 'standard characters'} — shared pool is ${totalPool} (${poolParts.join(', ')})${conduitSpent ? `, of which ${conduitSpent} was spent by Conduit Energy cards this round` : ''}`
+      : `${rd.apPool}`;
     const apFreeLine = rd.apFreeActive.length ? `\nAP-free this round: <b>${rd.apFreeActive.join(', ')}</b> (own casts cost 0 AP)` : '';
     // Per-character active statuses with rounds remaining — sits directly under the Moxie line and
     // above the merge line. Snapshot is taken after this round's casts resolve, so a buff cast this
@@ -12849,7 +12919,7 @@ function renderStateBlockPlan(teamArr, skipped, conduitArr){
     const ongoingLine = ongoingChars.length
       ? `Ongoing mechanics:\n${ongoingChars.map(c => `  ${c.name}: ${rd.ongoingSnapshot[c.name].map(n=>linkTerms(sbStatusLabel(c,n))).join(', ')}`).join('\n')}\n`
       : '';
-    const stateText = `AP available: <b>${apLine}</b>\nMoxie: <b>${moxieLine}</b>\n${sensoryBondToggleHtml}${statusLine}\n${effectsLine}${damageLine}${ongoingLine}${mergeLine}${apFreeLine}`;
+    const stateText = `AP: ${apLine}\nMoxie: <b>${moxieLine}</b>\n${sensoryBondToggleHtml}${statusLine}\n${effectsLine}${damageLine}${ongoingLine}${mergeLine}${apFreeLine}`;
     // Slot-by-slot action bar (redesigned 2026-08-17, Benson's request) — one bar per TEAM SLOT
     // (not per individual action), single column, combining what used to be 3 separate widgets
     // (the plain auto-plan action list, the Ultimate-ready toggle row, and the manual override

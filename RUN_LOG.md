@@ -2262,3 +2262,97 @@ unmodeled; Matilda / Lady by the Lake rarity; The Twins' dual element; An-an Lee
 has no `PORTRAY_DB` data; fuller real-time round tracker.
 
 → Delivered as `2026-08-24_v0.6_RE1999TeamBuilder.html`
+
+## Session 27 (v0.7) — 2026-08-24 — CONDUIT_KIT rebuilt from Benson's kit paste; AP display bug
+
+**Trigger.** Benson pasted The Twins' and Coppélia's real kit text — Skill Sets, the Energy deck, and
+the fact that Coppélia's Portray levels rewrite her Energy cards — plus a bug report
+(*"3/3 AP when i select copellia, twins, rhiannon and enigma. should be 4/4 AP"*), and mid-run the
+verbatim definition of `[Interval]`.
+
+### The model was wrong one level down from §21 — same class of error
+`CONDUIT_CARD_EFFECTS` had **"Set A: Atomic Fusion" as an ENERGY CARD** and **"Set A: Polymeric Ray"
+as an INCANTATION**. Both wrong: they are **Arcane Skill I and Arcane Skill II of the same Skill
+Set**. **The real Energy cards are a separate deck that had never been in this tool at all** —
+Mineral Energy I/II, Efficient Conversion, Skip Motion, and the Star equivalents.
+
+`CONDUIT_KIT` replaces `CONDUIT_CARD_EFFECTS` (an intentional rename, not a silent deletion — the old
+shape could not express the kit, so keeping the name would have misled). Now:
+- **The SET is the selection.** Benson: *"these 2 sets are what I should see being selected"*,
+  *"by selecting the sets, once I have the energy, it will cast the incantations."* Both Arcane
+  Skills fire, each when its own cost is met, **cheapest first** — matching the kit, where Skill I is
+  the 0-cost self-buff that helps pay for Skill II.
+- Real costs, from his paste: Atomic Fusion **0 Mineral**, Polymeric Ray **3 Mineral**, Extreme
+  Overclocking **0 Star**, Balancé **1 Star** — closing the Balancé gap that had been open since v0.3
+  (its cost was never "low", it is exactly 1, and at 1 Star it genuinely multi-casts).
+- **Coppélia's skills are `Clarity in Clefs` and `Tuning Technique`**, neither with a sourced Energy
+  cost, so they report as firing without being gated on an invented number.
+
+### Portray rewrites the Energy DECK — a new kind of Portray effect (§24.2)
+Benson: *"at higher portray levels, she CHANGES the energy cards."* Read straight from her
+`PORTRAY_DB` text, which states each change: **P1** one `Mineral Energy I` → +2; **P2** a second one
+→ +2; **P5** `Mineral Energy II` → +3, `Skip Motion` → +3 and 20 stacks, max `[Interval Step]`
+**30 → 50**. `CONDUIT_PORTRAY_DECK` applies these cumulatively; `sbConduitEnergyDeck()` returns a
+fresh object each time so `CONDUIT_KIT` is never mutated. Verified at P5: the picker labels the
+upgraded cards "[upgraded by P5]" and the cap reads `/50`.
+
+### Alias table recorded (§24.3)
+`SKILL_KIT["Coppélia"]` and Benson's paste use **different English names for the same things** —
+Tuning Technique ≡ Finger Training, Clarity in Clefs ≡ Vowel Basics, Skip Motion ≡ Interval Skip,
+Chromatic Progression ≡ Interval Step, Instrument Energy Consumption ≡ Energy Accumulation. Recorded
+so a future run does not "fix" one into the other or add duplicate entries.
+
+### `[Interval]` — defined, enforced, and now hoverable (§24.5)
+His verbatim definition: *"After a Conduit casts this incantation, it cannot cast this incantation
+again this round."* That is what was already implemented, and the three tagged skills he named are
+exactly the three flagged. Added `TERM_GLOSSARY["Interval"]` so it has a real tooltip; verified it
+links (a bracketed term matching a glossary name passes the §18.3 bracket guard). **Both halves are
+required for a future unit — the flag enforces, the glossary explains.**
+
+### The AP bug — the number was right and unexplained (§24.4)
+Reproduced exactly: pool = 4 headcount **+1** (The Twins' Insight I "AP +1") = **5**; the Conduit side
+spent **2** on Energy cards (v0.6); **3** left for the standard characters. The line just read
+`AP available: 3`, so a correct number read as a bug. Every term is now named on screen:
+*"AP: 3 available to Rhiannon, Enigma — shared pool is 5 (4 characters, +1 from The Twins' Insight I
+"AP +1"), of which 2 was spent by Conduit Energy cards this round."*
+
+**The Twins' +1 was deliberately NOT removed.** STANDING_RULES records it as Benson's own confirmed
+2026-08-18 correction (he caught it *missing*), so silently dropping it because a later message
+implied 4 would be overwriting one of his instructions with another. It is displayed instead — see
+open item 1.
+
+### Verification
+- **`node --check`: PASS.** Declaration diff **187 → 190**. Three removals, **all intentional and
+  named** (`CONDUIT_CARD_EFFECTS`, `sbConduitCardKind`, `sbGetConduitIncantationOptions` — the old
+  model). Six additions, all wired: a seventh (`sbIsConduitModelled`) was written, caught as **dead
+  data** by the reference count, and removed before shipping rather than left in.
+- A `ReferenceError` (`CONDUIT_ENERGY_AP_DEFAULT` lost inside a splice) was caught by the **runtime
+  harness**, not by `node --check` — the exact failure class §8's lesson describes.
+- **Playwright: zero non-network errors.** All 129 live characters simulate solo, 0 errors;
+  `applied` still **423**.
+- **Screenshot check performed** on Benson's exact reported team (Coppélia, The Twins, Rhiannon,
+  Enigma at Coppélia P5): the AP breakdown reads correctly, both Conduit bars show "Skill Set:" and
+  "Energy cards played: + Energy card", and Polymeric Ray correctly reports *"did NOT cast: it needs
+  3 Mineral Energy and only 2 was gathered."*
+
+### Open items
+1. **The Twins' "AP +1" — needs Benson to settle.** He confirmed it as real on 2026-08-18; his
+   "should be 4/4" implies 4 characters = 4 AP with no bonus. Displayed transparently rather than
+   changed unilaterally. **If the +1 is wrong, say so and it comes out of `conduitApContribution`.**
+2. **Coppélia's Arcane Skill Energy costs are not sourced** — `Clarity in Clefs` and
+   `Tuning Technique` fire without a gate. If they have costs, they are the last real gap in her set.
+3. **Conduit math still untested against a real match.**
+4. **Per-card AP costs unsourced** — all Energy cards default to 1 AP (§22.0).
+5. **Energy-card DRAW still not modelled** — AP rations plays, but hand availability from the
+   personal Energy deck is a further real constraint.
+6. Search-sourced numbers pending verbatim re-verification (§19.0); `PORTRAY_SIMULATED` covers 6
+   levels across 5 characters; Cornerstone kit data retained while `upcoming:true`.
+
+Unchanged from v0.6: 32 characters produce no stat effects; 51 effect instances dropped; effect layer
+is a bulk pass; Portray backlog spot-checking (16 of 126); `BUFF_STACK_MODE` unverified; damage model
+untested; `ULT_HOLD_OVERRIDE` unwired; `AP_SURPLUS_OVERRIDE` unused; Corvus monotonic counter; Ezio
+Synchronization underestimate; Kassandra card-injection thresholds; Cheng Heguang's ≥10 `[Feathered
+Blades]`; Beryl's Emanation crystal; Tuning card interaction unmodeled; Matilda / Lady by the Lake
+rarity; The Twins' dual element; An-an Lee's portrait; Everecho has no `PORTRAY_DB` data.
+
+→ Delivered as `2026-08-24_v0.7_RE1999TeamBuilder.html`

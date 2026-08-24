@@ -1,6 +1,6 @@
 # RE1999 Team Builder — Standing Operating Rules  
   
-**Doc version: v0.6** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
+**Doc version: v0.7** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
 the HTML tool file's version number. This pair of docs (`STANDING_RULES.md` + `RUN_LOG.md`) revises on  
 its own schedule rather than being re-versioned alongside the tool file. Bump the version (v0.1 → v0.2  
 → ...) any run that makes a REAL rule change here — a new/removed constraint, a corrected methodology, a  
@@ -8,8 +8,8 @@ changed source-of-truth priority. Do NOT bump it for a run that only reads this 
 without editing it. Record what changed and why in `RUN_LOG.md` under a "Doc vX.Y" heading each time it  
 bumps, same append-only pattern as everything else there.  
   
-**HTML tool version: v0.6 as of 2026-08-24** — the delivered file is now named  
-`<date>_v0.6_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
+**HTML tool version: v0.7 as of 2026-08-24** — the delivered file is now named  
+`<date>_v0.7_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
 through 2026-08-20 (that counter is retired, not renumbered — every historical "v58"/"v72"/"v79"/"v80"  
 mention elsewhere in this file and in `RUN_LOG.md` stays exactly as originally written; don't rewrite  
 history to match the new scheme). The 2026-08-20 file's actual content is unchanged by this reset — only  
@@ -910,3 +910,99 @@ So the sharper rule, which supersedes §0.7.1's framing:
   didn't apply, and `node --check` plus the declaration diff catch the real risks.
 - Do not paste large tool output into the reply. Report the computed numbers.
 - Do not read the HTML to find a function. `grep -n 'function name'` then `sed -n` the range.
+
+---
+
+## §24 CONDUIT_KIT — the real structure, from Benson's kit paste (v0.7, 2026-08-24)
+
+**Supersedes the DATA SHAPE of §19–§22.** Their numbers mostly survive; the table they lived in did
+not. Benson pasted the actual kit text, which outranks every web source used up to v0.6 (§3 — and
+Prydwen/fandom remain egress-blocked, §19.0).
+
+### §24.0 What was wrong, and it is the same error as §21's, one level down
+`CONDUIT_CARD_EFFECTS` listed **"Set A: Atomic Fusion" as an ENERGY CARD** and **"Set A: Polymeric
+Ray" as an INCANTATION.** Both wrong. They are **Arcane Skill I and Arcane Skill II of the same
+Skill Set** — two incantations that belong together. **The real Energy cards are a separate deck
+that had never appeared in this tool at all.**
+
+### §24.1 The real structure
+- **ENERGY DECK** — cards played from hand, each producing Energy of one Afflatus, each costing AP
+  (§22.0). The Twins: `Mineral Energy I` (+1), `Mineral Energy II` (+2), `Efficient Conversion`
+  (+1, Conduit Might +30% when casting Polymeric Ray), and the three Star equivalents.
+  Coppélia: `Mineral Energy I` (+1), `Mineral Energy II` (+2), `Skip Motion` (+2 and 10 stacks).
+- **SKILL SETS — the set is what you select.** Benson: *"these 2 sets are what I should see being
+  selected"*, *"by selecting the sets, once I have the energy, it will cast the incantations"*.
+  **BOTH Arcane Skills in the chosen set fire**, each when its own Energy cost is met, **cheapest
+  first** — which matches the kit, where Skill I is the 0-cost self-buff that helps pay for Skill II.
+
+| Set | Arcane Skill I | Arcane Skill II |
+|---|---|---|
+| A (Mineral) | Atomic Fusion — **0 Mineral**, `[Interval]` | Polymeric Ray — **3 Mineral** |
+| B (Star) | Extreme Overclocking — **0 Star**, `[Interval]` | Balancé Across the Stars — **1 Star** |
+
+Coppélia has ONE set: `Clarity in Clefs` (`[Interval]`, mass buff) and `Tuning Technique` (1-target
+attack). **Neither states an Energy cost in the sourced text**, so they are reported as firing but
+not gated on a guessed number.
+
+- **`[Interval]` is now tracked** — it caps a skill at once per round. It sits on every Arcane Skill
+  I, and without it a 0-cost skill would fire unboundedly.
+
+### §24.2 Portray rewrites the Energy DECK — a new kind of Portray effect
+Benson: *"at higher portray levels, she CHANGES the energy cards read her portray to find out."*
+Correct, and it is unlike anything in `PORTRAY_MECHANIC`: it does not add a buff, it **edits card
+values in the deck**. `CONDUIT_PORTRAY_DECK` applies these cumulatively for every level ≤ selected:
+- **P1** — one `Mineral Energy I` produces **+2** instead of +1.
+- **P2** — a **second** `Mineral Energy I` also produces +2.
+- **P5** — `Mineral Energy II` produces **+3**; `Skip Motion` produces **+3** and grants **20**
+  stacks; max `[Interval Step]` rises **30 → 50** (`INTERVAL_STEP_CAP_BY_PORTRAY`).
+
+The deck is rebuilt per render via `sbConduitEnergyDeck(name, portrayLevel)`, which returns a fresh
+object — **never mutate `CONDUIT_KIT`**, or one character's Portray would permanently corrupt it.
+
+### §24.3 Alias table — two English names for one thing, do NOT split them
+Both naming schemes appear in this file's own data. `SKILL_KIT["Coppélia"]` uses the right column;
+Benson's kit paste uses the left. **They are aliases, not separate mechanics** — do not "fix" one
+into the other, and do not add a second entry:
+
+| Benson's kit text | This tool's `SKILL_KIT` |
+|---|---|
+| Tuning Technique | Finger Training |
+| Clarity in Clefs | Vowel Basics |
+| Skip Motion | Interval Skip |
+| Chromatic Progression | Interval Step |
+| Instrument Energy Consumption | Energy Accumulation |
+
+### §24.4 The AP display bug — the number was right and unexplained
+Benson: *"3/3 AP when i select copellia, twins, rhiannon and enigma. should be 4/4 AP"*.
+Reproduced exactly. The arithmetic was correct: pool = **4 headcount + 1** (The Twins' Insight I
+"AP +1") = **5**, the Conduit side had spent **2** on Energy cards (§22), leaving **3** for the
+standard characters. But the line just read `AP available: 3`, so a correct number looked like a bug.
+
+**Every term is now named on screen** — "AP: 3 available to Rhiannon, Enigma — shared pool is 5
+(4 characters, +1 from The Twins' Insight I "AP +1"), of which 2 was spent by Conduit Energy cards
+this round". **The Twins' +1 was NOT silently removed**: STANDING_RULES records it as Benson's own
+confirmed 2026-08-18 correction, so dropping it because a later message implied 4 would be
+overwriting one instruction with another. It is displayed instead, so he can settle it — see the
+open item in RUN_LOG session 27.
+
+### §24.5 `[Interval]` — definition confirmed, and it is enforced, not decorative
+Benson, verbatim (2026-08-24): *"After a Conduit casts this incantation, it cannot cast this
+incantation again this round."* Confirmed present on exactly **three** skills so far, all of which
+are the **0-cost Arcane Skill I** of their set:
+
+| Character | Skill |
+|---|---|
+| Coppélia | Clarity in Clefs |
+| The Twins | Set A — Arcane Skill I: Atomic Fusion |
+| The Twins | Set B — Arcane Skill I: Extreme Overclocking |
+
+Two separate things carry this, and **both are required** when a future Conduit unit has the tag:
+1. **`interval:true` on that skill in `CONDUIT_KIT`** — this is what actually enforces the cap. It
+   matters most on a 0-cost skill, which would otherwise fire unboundedly since there is no Energy
+   limit to divide by.
+2. **The `TERM_GLOSSARY["Interval"]` entry** — this is what explains it to the user on hover, via
+   `linkTerms` (§11). Verified rendering: `[Interval]` links, because a bracketed term whose content
+   exactly equals a glossary name passes the §18.3 bracket guard.
+
+Setting only the glossary entry gives a correct tooltip over a wrong simulation; setting only the
+flag silently caps a skill the user was never told about. **Do both.**
