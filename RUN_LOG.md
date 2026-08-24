@@ -2178,3 +2178,87 @@ team; Tuning card interaction unmodeled; Matilda / Lady by the Lake rarity; The 
 An-an Lee's portrait; Everecho has no `PORTRAY_DB` data; fuller real-time round tracker.
 
 → Delivered as `2026-08-24_v0.5_RE1999TeamBuilder.html`
+
+## Session 26 (v0.6) — 2026-08-24 — Conduit AP was free (a real bug from a doc contradiction); split picker
+
+**Trigger.** Benson: *"is the AP cost separated intentional? i cant seem to select the energy cards
+to play, only the incantations that will play based on the energy which comes from these energy
+cards.."* Plus a process question about token usage, answered in STANDING_RULES §23.
+
+### The AP separation was NOT intentional — it was a bug, and the doc caused it (§22.0)
+STANDING_RULES had contradicted itself since v73: §8 (Benson's own 2026-08-17 correction) said
+Conduit characters pay "the same 1 AP/card cost as everyone else"; §4's v73 primer and the resource
+model said the Energy-card play AND the triggered skill are "AP-free". v0.5's code implemented the
+second, so **the whole Conduit side of a team consumed zero AP** — free actions all round while
+standard teammates competed for the pool.
+
+§21.0's sourced turn structure resolves it, and each half was right about a different thing:
+- **Energy cards cost AP** — cast from hand like any card. Source: *"Energy cards **can** have no AP
+  cost"*, i.e. 0-AP is a per-card exception, not the rule. `CONDUIT_ENERGY_AP_DEFAULT = 1` is the
+  game-wide default for casting from hand, NOT a per-card verified number, with an `apCost:0`
+  override hook per the `ULTIMATE_AP_OVERRIDE` pattern.
+- **The Incantations and Ultimate they trigger really are AP-free** — fired by the Conduit off
+  gathered Energy, not cast from hand. That is what "AP-free" was pointing at.
+
+This also supplies the constraint v0.5 was missing: it let you play unlimited Energy cards because
+nothing rationed them (logged as open item #4 last session). **AP rations them.**
+
+### Two simulators, one pool — they were double-counting it (§22.1)
+`simulateStateBlockPlan` and `simulateConduitPlan` both sized their pool to the full team and neither
+knew about the other's spending. Now the Conduit sim runs FIRST, reports `apUsedByConduit` per round,
+and the standard sim receives it as `reservedApByRound`. Verified: standard pool `4,4,4` becomes
+`1,3,4` with conduit spend `{1:3, 2:1}`. **Do not reverse the call order.**
+
+### The split picker (§22.2)
+Benson could see every card in the dropdown but nothing distinguished them, and they are not the same
+decision. Now: **one Incantation selector** (round-start standing choice, AP-free, own state
+`conduitIncantationPick`) plus **N Energy-card rows** (repeatable plays, each costing AP,
+`manualPlayOverride`). Labels carry the real numbers — "Set A: Polymeric Ray (3 Mineral Energy each
+trigger)", "Set A: Atomic Fusion (1 AP → +5 Mineral)". `renderConduitPicker()` is shared by both
+render paths; card kind comes from `CONDUIT_CARD_EFFECTS`, the same table the sim reads, so picker
+and math cannot disagree.
+
+### Verification
+- **`node --check`: PASS.** Declaration diff **181 → 187, REMOVED = 0** vs v0.5 and vs v0.1. Six
+  additions, all wired: `CONDUIT_ENERGY_AP_DEFAULT`, `conduitIncantationPick`, `renderConduitPicker`,
+  `sbConduitCardKind`, `sbGetConduitEnergyOptions`, `sbGetConduitIncantationOptions`.
+- **Playwright: zero non-network errors.** All 129 live characters simulate solo, 0 errors.
+  `applied` still **423**.
+- **AP cap verified**: 5 Energy cards against a 3-AP pool plays 3 and refuses 2 with a stated reason.
+- **Screenshot check performed**: the round card shows "Incantation: [...]" and "Energy cards played:
+  [...] + Energy card" per Conduit character, AP decrementing per card ("3 AP left" → "2 AP left"),
+  and **Sonetto's own AP correctly reduced to 1** because the Conduit side spent 3 of the 4 — the
+  coupling is visible in the UI, not just the data.
+
+### Token-efficiency answer recorded as STANDING_RULES §23
+Scripts: decisively yes — the Node `vm` harness is what let 129 characters be *executed and queried*
+instead of read, and is the only reason claims like "`applied` unchanged at 423, so this change is
+display-only" could be made at all. Markdown conversion: mostly NO for this project — the 1.4 MB HTML
+was never read linearly, so converting it would have saved nothing. **§0.7.1 is superseded**: the
+stronger rule is *don't read the file, query it* (`grep -n` to locate, `sed -n` to extract, run the
+code to answer behavioural questions). Markdown conversion is reserved for genuine prose that must be
+read end to end — which is what `STANDING_RULES.md`/`RUN_LOG.md` are.
+
+### Open items
+1. **Conduit math still untested against a real match** — model shape and AP economy are now right;
+   only real play confirms the numbers.
+2. **Per-card AP costs are not sourced** — all Energy cards use the game-wide default of 1. If any is
+   really 0-AP, it needs an `apCost:0` entry.
+3. **Per-round Energy-card DRAW still not modelled** — AP now rations plays, but hand availability
+   from the personal Energy deck is a further real constraint.
+4. **`[Exhaust]` / `[Interval]` once-per-round restrictions still not tracked** (Coppélia's Vowel
+   Basics, The Twins' Extreme Overclocking).
+5. **Balancé's Star Energy cost** still unsourced; triggers left uncomputed.
+6. Search-sourced numbers pending verbatim re-verification (§19.0); `PORTRAY_SIMULATED` covers 6
+   levels across 5 characters; Cornerstone kit data retained while `upcoming:true`.
+
+Unchanged from v0.5: 32 characters produce no stat effects; 51 effect instances dropped; effect layer
+is a bulk pass; Portray backlog spot-checking (16 of 126); `BUFF_STACK_MODE` unverified; damage model
+untested; 6 characters with untagged conditional entering-battle Moxie grants; `ULT_HOLD_OVERRIDE`
+unwired; `AP_SURPLUS_OVERRIDE` unused; Corvus monotonic counter; Ezio Synchronization underestimate;
+Kassandra card-injection thresholds; Cheng Heguang's ≥10 `[Feathered Blades]`; Beryl's Emanation
+crystal; slot-bar layout never stress-tested against an Anjo Nala Bind team; Tuning card interaction
+unmodeled; Matilda / Lady by the Lake rarity; The Twins' dual element; An-an Lee's portrait; Everecho
+has no `PORTRAY_DB` data; fuller real-time round tracker.
+
+→ Delivered as `2026-08-24_v0.6_RE1999TeamBuilder.html`

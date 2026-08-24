@@ -8710,6 +8710,46 @@ let manualPlayOverride = {};
 function mpOverrideKey(name, round){ return name + '|' + round; }
 // Dropdown choices for the manual play override selector — reuses the same real card/Ultimate data
 // the simulator itself reads, so the picker never offers a card the character doesn't actually own.
+/* v0.6 — Conduit characters get TWO different pickers, because they make two different choices.
+   Benson: "i cant seem to select the energy cards to play, only the incantations that will play
+   based on the energy which comes from these energy cards."
+   He was reading a flat dropdown that mixed both kinds together with nothing to tell them apart.
+   In the real turn these are not the same decision at all:
+     - the INCANTATION is picked ONCE per round, up front — "at the start of the round you can pick
+       (per character) what Incantation they'll be casting". It is not an action you take; it is a
+       standing choice that resolves automatically off whatever Energy you gathered, and it costs no
+       AP.
+     - the ENERGY CARDS are the actual plays: cast from hand, repeatable, each costing AP, and they
+       are what determines whether (and how many times) the chosen Incantation fires.
+   So the UI now shows one Incantation selector plus as many Energy-card rows as you want, instead
+   of one undifferentiated list of "actions". Kind comes from CONDUIT_CARD_EFFECTS, the same table
+   the simulation reads, so the picker and the math can't disagree about what a card is. */
+function sbConduitCardKind(charName, cardName){
+  const eff = (CONDUIT_CARD_EFFECTS[charName] || {})[cardName];
+  return eff ? eff.kind : null;
+}
+function sbGetConduitEnergyOptions(c){
+  const opts = [{ value:'', label:'— no Energy card —' }];
+  sbExtractDeckCards(c).forEach(card => {
+    if(sbConduitCardKind(c.name, card.name) !== 'energy') return;
+    const eff = CONDUIT_CARD_EFFECTS[c.name][card.name];
+    const cost = eff.apCost != null ? eff.apCost : CONDUIT_ENERGY_AP_DEFAULT;
+    opts.push({ value: card.name, label: `${card.name} (${cost} AP → +${eff.energy} ${eff.energyType})` });
+  });
+  return opts;
+}
+function sbGetConduitIncantationOptions(c){
+  const opts = [{ value:'', label:'Auto (default Incantation)' }, { value:'SKIP', label:'Cast nothing this round' }];
+  sbExtractDeckCards(c).forEach(card => {
+    if(sbConduitCardKind(c.name, card.name) !== 'incantation') return;
+    const eff = CONDUIT_CARD_EFFECTS[c.name][card.name];
+    const costLabel = eff.cost == null ? 'cost not sourced' : `${eff.cost} ${eff.energyType} Energy each trigger`;
+    opts.push({ value: card.name, label: `${card.name} (${costLabel})` });
+  });
+  const ultObj = sbFindUltimate(c);
+  if(ultObj) opts.push({ value:'ULTIMATE', label:`Ultimate: ${ultObj.name}` });
+  return opts;
+}
 function sbGetPlayOptions(c){
   const opts = [{ value:'', label:'Auto (best-case plan)' }, { value:'SKIP', label:'Skip this round' }];
   const ultObj = sbFindUltimate(c);
@@ -8726,6 +8766,12 @@ function sbGetPlayOptions(c){
 // flexible "configure whatever" version Benson asked for: plain editable numbers and a free-text
 // status/notes list per character per round, carried forward round to round. Independent of
 // simulateStateBlockPlan; does not touch or read from it.
+/* v0.6 — the Conduit Incantation choice, one per character per round. Deliberately NOT stored in
+   manualPlayOverride: that array means "actions taken", and the Incantation is not an action — it is
+   a standing round-start choice that resolves itself off gathered Energy. Keeping them apart is what
+   lets the picker offer Energy cards and Incantations as the two different decisions they are.
+   Same key shape as manualPlayOverride (mpOverrideKey) so both are addressed identically. */
+let conduitIncantationPick = {};
 let liveTracker = { active:false, round:1, chars:{}, apPool:4, history:[] };
 function liveTrackerCharState(name){
   if(!liveTracker.chars[name]) liveTracker.chars[name] = { moxie:0, cap:5, note:'', statuses:[] };
@@ -10977,9 +11023,15 @@ function sbGetPrecastCard(name){
 // leftover AP funds a forced merge rather than sitting idle. Any future addition to this allocator
 // should be checked against this goal — a choice that leaves AP unspent or a ready action unused
 // without a concrete, nameable reason is working against the stated objective.
-function simulateStateBlockPlan(teamArr, totalRounds, totalTeamSize){
+function simulateStateBlockPlan(teamArr, totalRounds, totalTeamSize, reservedApByRound){
   totalRounds = totalRounds || 10;
   totalTeamSize = totalTeamSize || teamArr.length;
+  /* v0.6 — AP the Conduit side already spent on Energy cards this round, so the standard characters
+     don't get to spend it again. Conduit teammates contribute headcount to the shared pool AND now
+     draw from it (see CONDUIT_ENERGY_AP_DEFAULT); before this, both simulators sized their pool to
+     the full team and neither knew about the other's spending, so every Conduit Energy card was
+     effectively free AP for the team. Indexed by round number; absent/0 means nothing reserved. */
+  reservedApByRound = reservedApByRound || {};
   // Declared early (before moxieCap and the startMoxie loop, both of which run before the main
   // per-round declarations further down) to avoid the exact TDZ bug fixed earlier this session
   // (referencing a later-declared `let` from code that executes first) — see corvusDynamoTransferred
@@ -11481,7 +11533,11 @@ function simulateStateBlockPlan(teamArr, totalRounds, totalTeamSize){
     const apBonusFrom = chars.filter(c => apPlusOneUntil[c.name] >= r).map(c => c.name);
     // AP pool = full team size (Conduit teammates count too — they draw from the same shared
     // pool at the same 1 AP/card cost as anyone; only their specific card choice isn't simulated).
-    const apPool = totalTeamSize + (apBonusFrom.length > 0 ? 1 : 0);
+    // Conduit Energy cards already took their share of the shared pool this round (v0.6) — subtract
+    // it so the same AP isn't spent twice by two simulators that don't otherwise know about each
+    // other. Floored at 0: a Conduit side that consumed the whole pool leaves standard characters
+    // with nothing, which is a real outcome, not an error.
+    const apPool = Math.max(0, totalTeamSize + (apBonusFrom.length > 0 ? 1 : 0) - (reservedApByRound[r] || 0));
 
     // Build every potential action this round, cheapest/most-obligated first, then let the
     // shared AP pool decide how many actually happen — NOT a rigid "1 per character" split.
@@ -12103,6 +12159,27 @@ function simulateStateBlockPlan(teamArr, totalRounds, totalTeamSize){
         was sourced.
    If a verbatim kit source ever becomes reachable, RE-CHECK these four numbers first. Do not
    silently promote them to the same confidence as the Energy figures. */
+/* CONDUIT ENERGY-CARD AP COST (v0.6) — resolves a real contradiction that had stood in
+   STANDING_RULES since v73, and answers Benson's "is the AP cost separated intentional?" with: no,
+   it was a bug. The two halves of the rules doc disagreed:
+     §8  (Benson's own 2026-08-17 correction): Conduit characters "draw from the same shared pool at
+         the same 1 AP/card cost as everyone else."
+     §4/v73 primer + resource model: "both the Energy-card play AND the skill/Ultimate it triggers
+         are AP-free."
+   v0.5's code implemented the second, so the entire Conduit side of a team consumed NO AP — free
+   actions all round, while standard teammates fought over the pool.
+   The sourced turn structure reconciles them, and both statements turn out to be half right:
+     - ENERGY CARDS are cast from your hand like any other card, so they cost AP. Source: "Energy
+       cards CAN have no AP cost" — i.e. 0-AP is a per-card EXCEPTION, not the rule.
+     - The INCANTATIONS and the Ultimate they trigger are genuinely AP-FREE: they are fired by the
+       Conduit off gathered Energy, not cast from hand. That is what "AP-free" was pointing at.
+   So AP is charged on the Energy card only. CONDUIT_ENERGY_AP_DEFAULT is the game-wide default for
+   casting a card from hand (1), NOT a per-card verified number — set `apCost:0` on a specific card
+   once a real 0-AP one is confirmed, the same override pattern as ULTIMATE_AP_OVERRIDE and
+   PRECAST_CARD's `versatile:true`.
+   This also supplies the constraint the sim was missing: v0.5 let you play unlimited Energy cards a
+   round because nothing rationed them. AP is what rations them. */
+const CONDUIT_ENERGY_AP_DEFAULT = 1;
 const CONDUIT_CARD_EFFECTS = {
   /* Coppelia. Sourced two-phase description, near-verbatim: "instead of drawing Incantation Spells
      on the spelldock... Coppelia will instead generate special Instrument Energy cards on the spell
@@ -12185,6 +12262,12 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
   const rounds = [];
   for(let r=1; r<=totalRounds; r++){
     const roundActions = [];
+    /* Shared-pool AP available to Conduit Energy cards this round. Conduit characters contribute
+       headcount to this pool (conduitApContribution) and now also SPEND from it, which they did not
+       before v0.6. apUsedByConduit is reported per round and handed to simulateStateBlockPlan so the
+       standard characters' pool is reduced by whatever the Conduit side actually spent — otherwise
+       the same AP would be counted twice, once by each simulator. */
+    let apLeft = apPool, apUsedByConduit = 0;
     conduitArr.forEach(c => {
       const name = c.name;
       // Energy reset: sbEnergyResetsEachRound was defined (2026-08-17) but never actually wired
@@ -12224,24 +12307,41 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
       const overrideArr = manualPlayOverride[mpOverrideKey(name, r)] || [];
       const skippedThisRound = overrideArr.includes('SKIP');
       const catalog = CONDUIT_CARD_EFFECTS[name] || {};
-      const explicitPicks = overrideArr.filter(v => v && v !== 'SKIP');
-      // No pick at all still falls back to a labeled ASSUMED default pair — one Energy card to feed
-      // the Conduit and the Incantation it feeds — rather than doing nothing.
-      const defaultPicks = name === 'The Twins'
-        ? ['Set A: Atomic Fusion', 'Set A: Polymeric Ray']
-        : ['Vowel Basics', 'Finger Training'];
-      const cardKeys = explicitPicks.length ? explicitPicks : defaultPicks;
-      const assumedLabel = explicitPicks.length ? '' : ' (ASSUMED default — no pick made this round)';
+      /* v0.6 — the two choices are now read from two places, matching how they're picked:
+         Energy cards come from manualPlayOverride (the repeatable "+ Energy card" rows), and the
+         single Incantation comes from conduitIncantationPick. Only Energy cards fall back to a
+         labeled ASSUMED default, since doing nothing at all would leave the Conduit unfed. */
+      const energyPicks = overrideArr.filter(v => v && v !== 'SKIP' && sbConduitCardKind(name, v) === 'energy');
+      const defaultEnergy = name === 'The Twins' ? ['Set A: Atomic Fusion'] : ['Vowel Basics'];
+      const usedDefaultEnergy = energyPicks.length === 0;
+      const energyKeys = usedDefaultEnergy ? defaultEnergy : energyPicks;
+      const assumedLabel = usedDefaultEnergy ? ' (ASSUMED default — no Energy card picked this round)' : '';
+      const incPick = conduitIncantationPick[mpOverrideKey(name, r)] || '';
+      const defaultInc = name === 'The Twins' ? 'Set A: Polymeric Ray' : 'Finger Training';
+      const incKey = incPick === 'SKIP' ? null : (incPick || defaultInc);
+      const incAssumed = (!incPick && incKey) ? ' (ASSUMED default — no Incantation chosen this round)' : '';
+      const cardKeys = energyKeys.concat(incKey ? [incKey] : []);
       if(skippedThisRound){
         roundActions.push({ name, note:'Skipped this round (manual pick) — no Energy cards played, no Incantation triggered, no Energy/Harmonization change' });
       } else {
         const pool = energy[name];   // { Mineral: n, Star: n } — typed, see energy[] init above
-        // ---- PHASE 1: play the Energy cards, feeding the Conduit ----
+        /* ---- PHASE 1: play the Energy cards, feeding the Conduit ----
+           These COST AP (see CONDUIT_ENERGY_AP_DEFAULT) and draw on the same shared team pool as
+           every standard teammate, so they are capped by what is actually left. A card that cannot
+           be paid for says so rather than being played for free — that free-for-all is exactly what
+           v0.5 did wrong. */
         cardKeys.filter(k => (catalog[k] || {}).kind === 'energy').forEach(cardKey => {
           const eff = catalog[cardKey];
+          const cost = eff.apCost != null ? eff.apCost : CONDUIT_ENERGY_AP_DEFAULT;
+          if(cost > apLeft){
+            roundActions.push({ name, note:`Energy card NOT played: ${escapeAttr(cardKey)}${assumedLabel} — it costs ${cost} AP and only ${apLeft} AP is left in the shared team pool this round. Conduit Energy cards are cast from hand like any other card, so they compete for AP with your standard teammates; the Incantation they trigger is what's free.` });
+            return;
+          }
+          apLeft -= cost;
+          apUsedByConduit += cost;
           pool[eff.energyType] = (pool[eff.energyType] || 0) + eff.energy;
           if(eff.harmonization) harmonization[name] += eff.harmonization;
-          roundActions.push({ name, note:`Energy card played: ${escapeAttr(cardKey)}${assumedLabel} — ${eff.note} Pool is now ${pool[eff.energyType]} ${eff.energyType} Energy.` });
+          roundActions.push({ name, note:`Energy card played (${cost} AP): ${escapeAttr(cardKey)}${assumedLabel} — ${eff.note} Pool is now ${pool[eff.energyType]} ${eff.energyType} Energy. ${apLeft} AP left in the shared pool.` });
         });
         // ---- PHASE 2: the chosen Incantation(s) resolve against what was gathered ----
         cardKeys.filter(k => (catalog[k] || {}).kind === 'incantation').forEach(cardKey => {
@@ -12249,7 +12349,7 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
           const have = pool[eff.energyType] || 0;
           if(eff.cost == null){
             // Cost genuinely not sourced (Balancé). Say so; never invent a number to fill the gap.
-            roundActions.push({ name, note:`Incantation chosen: ${escapeAttr(cardKey)}${assumedLabel} — ${eff.note} You have ${have} ${eff.energyType} Energy gathered, but with no sourced cost this sim cannot compute how many times it triggers.` });
+            roundActions.push({ name, note:`Incantation chosen: ${escapeAttr(cardKey)}${incAssumed} — ${eff.note} You have ${have} ${eff.energyType} Energy gathered, but with no sourced cost this sim cannot compute how many times it triggers.` });
             return;
           }
           /* [Instrument Tuning I] pays first — each stack cuts this Incantation's Energy cost by 1.
@@ -12266,12 +12366,12 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
           }
           if(unitCost === 0){
             harmonization[name] += (eff.harmonization || 0);
-            roundActions.push({ name, note:`Incantation triggered (free): ${escapeAttr(cardKey)}${assumedLabel} — [Instrument Tuning I] cut its cost to 0, so it fires without consuming Energy. Counted as ONE trigger: a 0-cost Incantation has no Energy limit to divide by, so this sim does not loop it. No Harmonization from Energy consumed, since none was.` });
+            roundActions.push({ name, note:`Incantation triggered (free): ${escapeAttr(cardKey)}${incAssumed} — [Instrument Tuning I] cut its cost to 0, so it fires without consuming Energy. Counted as ONE trigger: a 0-cost Incantation has no Energy limit to divide by, so this sim does not loop it. No Harmonization from Energy consumed, since none was.` });
             return;
           }
           const triggers = Math.floor(have / unitCost);
           if(triggers < 1){
-            roundActions.push({ name, note:`Incantation chosen: ${escapeAttr(cardKey)}${assumedLabel} — did NOT trigger: it costs ${unitCost} ${eff.energyType} Energy and only ${have} was gathered this round. Feed the Conduit more ${eff.energyType} Energy cards first.` });
+            roundActions.push({ name, note:`Incantation chosen: ${escapeAttr(cardKey)}${incAssumed} — did NOT trigger: it costs ${unitCost} ${eff.energyType} Energy and only ${have} was gathered this round. Feed the Conduit more ${eff.energyType} Energy cards first.` });
             return;
           }
           const spent = triggers * unitCost;
@@ -12279,7 +12379,7 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
           // +1 Harmonization per Energy consumed — the engine of the resource (see §20.1).
           harmonization[name] += spent;
           if(eff.harmonization) harmonization[name] += eff.harmonization * triggers;
-          roundActions.push({ name, note:`Incantation triggered ${triggers}x: ${escapeAttr(cardKey)}${assumedLabel} — ${eff.note} Spent ${spent} of ${have} ${eff.energyType} Energy (${unitCost} each), leaving ${pool[eff.energyType]}. Harmonization +${spent} (1 per Energy consumed)${eff.harmonization ? ` and +${eff.harmonization * triggers} from the Incantation itself` : ''}.` });
+          roundActions.push({ name, note:`Incantation triggered ${triggers}x (AP-free — fired by the Conduit off gathered Energy, not cast from hand): ${escapeAttr(cardKey)}${incAssumed} — ${eff.note} Spent ${spent} of ${have} ${eff.energyType} Energy (${unitCost} each), leaving ${pool[eff.energyType]}. Harmonization +${spent} (1 per Energy consumed)${eff.harmonization ? ` and +${eff.harmonization * triggers} from the Incantation itself` : ''}.` });
           /* [Interval Step] — +1 per Energy consumed by an allied Conduit, cap 30 at P0, each stack
              +1% Ultimate Might. Only Coppelia holds it in the current roster, so it is credited to
              her whoever spent the Energy. Stack count is real state; the Ultimate Might it grants is
@@ -12297,7 +12397,7 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
         cardKeys.filter(k => (catalog[k] || {}).kind === 'ultimate').forEach(cardKey => {
           const eff = catalog[cardKey];
           if(eff.energy) pool[eff.energyType] = (pool[eff.energyType] || 0) + eff.energy;
-          roundActions.push({ name, note:`Ultimate cast: ${escapeAttr(cardKey)}${assumedLabel} — ${eff.note}` });
+          roundActions.push({ name, note:`Ultimate cast (AP-free): ${escapeAttr(cardKey)}${incAssumed} — ${eff.note}` });
           if(name === 'Coppélia'){
             if(intervalStep[name] > 0){
               roundActions.push({ name, note:`Ultimate consumes all ${intervalStep[name]} [Interval Step] (converted into [Instrument Energy Consumption] levels — damage-side, not simulated)` });
@@ -12323,7 +12423,8 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
     // every round snapshot, so later rounds would retroactively rewrite earlier ones.
     const energySnap = {};
     Object.keys(energy).forEach(k => { energySnap[k] = Object.assign({}, energy[k]); });
-    rounds.push({ round:r, apPool, harmonization: Object.assign({}, harmonization), energy: energySnap,
+    rounds.push({ round:r, apPool, apUsedByConduit, apLeft,
+      harmonization: Object.assign({}, harmonization), energy: energySnap,
       intervalStep: Object.assign({}, intervalStep), instrumentTuning: Object.assign({}, instrumentTuning),
       actions: roundActions });
   }
@@ -12333,6 +12434,27 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
    helper, used by BOTH Conduit render paths, so they cannot drift apart (the v74 lesson: display
    and simulation were kept in sync only by accident, and weren't). Types holding 0 are omitted so a
    Mineral-only round doesn't read "0 Star". */
+/* v0.6 — the split Conduit picker, shared by both render paths so they can't drift.
+   One Incantation selector (the round-start standing choice, AP-free) + N Energy-card rows (the
+   actual AP-costing plays that feed it). Reuses the existing .mp-add/.mp-remove delegated handlers
+   for the Energy rows; the Incantation selector gets its own class so it writes to
+   conduitIncantationPick instead of manualPlayOverride. */
+function renderConduitPicker(c, round){
+  const key = mpOverrideKey(c.name, round);
+  const incVal = conduitIncantationPick[key] || '';
+  const incOpts = sbGetConduitIncantationOptions(c).map(o =>
+    `<option value="${escapeAttr(o.value)}" ${incVal===o.value?'selected':''}>${escapeAttr(o.label)}</option>`).join('');
+  const incHtml = `<span class="mp-row"><b>Incantation:</b> <select class="ci-select" data-ci-char="${escapeAttr(c.name)}" data-ci-round="${round}">${incOpts}</select></span>`;
+  const arr = manualPlayOverride[key] || [''];
+  const energyOpts = sbGetConduitEnergyOptions(c);
+  const rowsHtml = arr.map((val, idx) => {
+    const opts = energyOpts.map(o => `<option value="${escapeAttr(o.value)}" ${val===o.value?'selected':''}>${escapeAttr(o.label)}</option>`).join('');
+    const removeBtn = idx > 0 ? `<button class="mp-remove" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${round}" data-mp-idx="${idx}">×</button>` : '';
+    return `<span class="mp-row"><select class="mp-select" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${round}" data-mp-idx="${idx}">${opts}</select>${removeBtn}</span>`;
+  }).join('');
+  const addBtn = `<button class="mp-add" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${round}">+ Energy card</button>`;
+  return `${incHtml} <span class="mp-row"><b>Energy cards played:</b></span> ${rowsHtml}${addBtn}`;
+}
 function conduitEnergyLabel(pool){
   if(!pool || typeof pool !== 'object') return `${pool || 0} Energy banked`;
   const parts = Object.keys(pool).filter(k => pool[k] > 0).map(k => `${pool[k]} ${k}`);
@@ -12369,17 +12491,10 @@ function renderConduitRounds(rounds, conduitArr){
     // change/click listeners, no new wiring needed), so Benson can log which Incantation card he
     // actually played each round instead of always seeing the fixed assumed default. Added
     // 2026-08-18 per Benson: "for now give them a space in the turn by turn to choose a card."
-    const pickerHtml = conduitArr.map(c => {
-      const arr = manualPlayOverride[mpOverrideKey(c.name, rd.round)] || [''];
-      const rowOpts = sbGetPlayOptions(c);
-      const rowsHtml = arr.map((val, idx) => {
-        const opts = rowOpts.map(o => `<option value="${escapeAttr(o.value)}" ${val===o.value?'selected':''}>${escapeAttr(o.label)}</option>`).join('');
-        const removeBtn = idx > 0 ? `<button class="mp-remove" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${rd.round}" data-mp-idx="${idx}">×</button>` : '';
-        return `<span class="mp-row"><select class="mp-select" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${rd.round}" data-mp-idx="${idx}">${opts}</select>${removeBtn}</span>`;
-      }).join('');
-      const addBtn = `<button class="mp-add" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${rd.round}">+ action</button>`;
-      return `<span class="who">${c.name}</span>: ${rowsHtml}${addBtn}`;
-    }).join(' &nbsp;|&nbsp; ');
+    // v0.6 — split picker (Incantation choice + Energy-card plays), shared with the merged path.
+    const pickerHtml = conduitArr.map(c =>
+      `<span class="who">${c.name}</span>: ${renderConduitPicker(c, rd.round)}`
+    ).join('<br>');
     return `<div class="sb-round"><div class="rt">Round ${rd.round}</div><div class="loop-note">AP pool: ${rd.apPool}${twinsBonusNote} — Conduit's own Energy-card casts are AP-FREE per kit text, but this pool is still shared with any standard teammates' AP-costed casts.</div><div class="sb-state">${stateLine}</div><div class="sb-actions">${actionLines}</div><div class="loop-note">${pickerHtml}</div></div>`;
   }).join('');
   return `<div class="loop-note"><b>Conduit round-by-round tracker</b> — each character's own Incantation/Ultimate pick and this team's shared AP pool contribution (see code comment on <code>simulateConduitPlan</code>/<code>conduitApContribution</code> for exactly what is and isn't modeled; the Ultimate is a manual pick below, not auto-triggered).</div>${roundsHtml}`;
@@ -12537,8 +12652,13 @@ function renderStateBlockPlan(teamArr, skipped, conduitArr){
   const hasRhiannon = teamArr.some(c => c.name === 'Rhiannon');
   const sensoryBondCount = hasRhiannon ? Object.values(manualSensoryBond).filter(Boolean).length : 0;
   const totalRounds = 10 + sensoryBondCount;
-  const rounds = teamArr.length ? simulateStateBlockPlan(teamArr, totalRounds, fullTeamSize) : [];
+  /* Order matters as of v0.6: the Conduit sim runs FIRST because the standard sim now needs to know
+     how much of the shared AP pool the Conduit side spent on Energy cards each round. The Conduit
+     sim has no reciprocal dependency, so there is no cycle here. */
   const conduitRounds = conduitArr.length ? simulateConduitPlan(conduitArr, totalRounds, fullTeamSize) : [];
+  const reservedApByRound = {};
+  conduitRounds.forEach(cr => { reservedApByRound[cr.round] = cr.apUsedByConduit || 0; });
+  const rounds = teamArr.length ? simulateStateBlockPlan(teamArr, totalRounds, fullTeamSize, reservedApByRound) : [];
   // The round-by-round Harmonization/Energy/action breakdown is now shown INLINE in each round's
   // own card (see the slotBarsHtml addition below) rather than as a separate trailing section —
   // Benson, "conduit characters must also have actions I can take. I suggest add them
@@ -12787,15 +12907,9 @@ function renderStateBlockPlan(teamArr, skipped, conduitArr){
         const stateLabel = crdState
           ? `<div class="slot-bar-line sb-state">${crdState.harmonization[c.name]} Harmonization (Ultimate resource — no Moxie; unlocks at maximum Harmonization, which is not a sourced number, so no readiness % is claimed) · ${conduitEnergyLabel(crdState.energy[c.name])}${(crdState.instrumentTuning && crdState.instrumentTuning[c.name]) ? ` · ${crdState.instrumentTuning[c.name]} [Instrument Tuning I] (each cuts a later Instrument's Energy cost by 1)` : ''}${(c.name === 'Coppélia' && crdState.intervalStep && crdState.intervalStep[c.name]) ? ` · ${crdState.intervalStep[c.name]}/30 [Interval Step]` : ''}</div>`
           : '';
-        const arr = manualPlayOverride[mpOverrideKey(c.name, rd.round)] || [''];
-        const rowOpts = sbGetPlayOptions(c);
-        const rowsHtml = arr.map((val, idx) => {
-          const opts = rowOpts.map(o => `<option value="${escapeAttr(o.value)}" ${val===o.value?'selected':''}>${escapeAttr(o.label)}</option>`).join('');
-          const removeBtn = idx > 0 ? `<button class="mp-remove" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${rd.round}" data-mp-idx="${idx}">×</button>` : '';
-          return `<span class="mp-row"><select class="mp-select" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${rd.round}" data-mp-idx="${idx}">${opts}</select>${removeBtn}</span>`;
-        }).join('');
-        const addBtn2 = `<button class="mp-add" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${rd.round}">+ action</button>`;
-        return `<div class="slot-bar"><div class="slot-bar-head"><span class="who">${c.name} (Conduit)</span>${rowsHtml}${addBtn2}</div>${stateLabel}${actsHtml}</div>`;
+        // v0.6 — same split picker as the Conduit-only path (renderConduitPicker), so a mixed team
+        // and a Conduit-only team offer identical controls.
+        return `<div class="slot-bar"><div class="slot-bar-head"><span class="who">${c.name} (Conduit)</span>${renderConduitPicker(c, rd.round)}</div>${stateLabel}${actsHtml}</div>`;
       }).join('')
       + renderTuningRoundBar(rd.round)}</div>`;
     return `<div class="sb-round"><div class="rt"><span class="n">${rd.round}</span>Round ${rd.round}</div>
@@ -13170,6 +13284,17 @@ document.addEventListener('click', e => {
 // Manual play override — now an array of rows per character/round (added 2026-08-17, full
 // multi-action control). Delegated so it keeps working across every re-render of stepsBox's
 // innerHTML (same pattern as wireSkillTooltip/the click handlers above).
+/* v0.6 — the Conduit Incantation selector. Its own handler and its own state
+   (conduitIncantationPick), because it is a standing round-start choice rather than an action row:
+   it must NOT be appended into manualPlayOverride, or it would be counted as an Energy-card play
+   and charged AP. Delegated on document like every other handler here so it survives re-renders. */
+document.addEventListener('change', e => {
+  const sel = e.target.closest && e.target.closest('.ci-select');
+  if(!sel) return;
+  const key = mpOverrideKey(sel.getAttribute('data-ci-char'), parseInt(sel.getAttribute('data-ci-round'),10));
+  if(sel.value) conduitIncantationPick[key] = sel.value; else delete conduitIncantationPick[key];
+  renderSteps();
+});
 document.addEventListener('change', e => {
   const sel = e.target.closest && e.target.closest('.mp-select');
   if(!sel) return;

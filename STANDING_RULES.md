@@ -1,6 +1,6 @@
 # RE1999 Team Builder — Standing Operating Rules  
   
-**Doc version: v0.5** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
+**Doc version: v0.6** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
 the HTML tool file's version number. This pair of docs (`STANDING_RULES.md` + `RUN_LOG.md`) revises on  
 its own schedule rather than being re-versioned alongside the tool file. Bump the version (v0.1 → v0.2  
 → ...) any run that makes a REAL rule change here — a new/removed constraint, a corrected methodology, a  
@@ -8,8 +8,8 @@ changed source-of-truth priority. Do NOT bump it for a run that only reads this 
 without editing it. Record what changed and why in `RUN_LOG.md` under a "Doc vX.Y" heading each time it  
 bumps, same append-only pattern as everything else there.  
   
-**HTML tool version: v0.5 as of 2026-08-24** — the delivered file is now named  
-`<date>_v0.5_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
+**HTML tool version: v0.6 as of 2026-08-24** — the delivered file is now named  
+`<date>_v0.6_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
 through 2026-08-20 (that counter is retired, not renumbered — every historical "v58"/"v72"/"v79"/"v80"  
 mention elsewhere in this file and in `RUN_LOG.md` stays exactly as originally written; don't rewrite  
 history to match the new scheme). The 2026-08-20 file's actual content is unchanged by this reset — only  
@@ -38,7 +38,7 @@ it records the specific past bugs and rejected designs so you don't re-derive an
 - Only touch `PORTRAIT_IMG[name]` when Benson has said he replaced that image and given a new Drive file ID.  
 - Run Step 8 (verification + screenshot check) before every delivery, including "small" changes. Two real visually-broken bugs have shipped clean through automated checks alone.  
 - **Reduce token usage as much as possible, every run.** Two concrete rules, both mandatory:  
- 1. **Convert a file to Markdown before reading it** — never `Read` the raw `RE1999TeamBuilder.html` (or any other large raw file) directly; extract/convert it (e.g. pull just the `<script>` block, or run it through a markdown/text converter) and read that instead. Applies to any file this task reads, not just the tool file.  
+ 1. **(SUPERSEDED by §23.2 — the stronger rule is "don't read the file, query it": `grep -n` to locate, `sed -n` to extract, and *run* the code to answer behavioural questions. Convert to Markdown only for genuine prose that must be read end to end.)** ~~Convert a file to Markdown before reading it~~ — never `Read` the raw `RE1999TeamBuilder.html` (or any other large raw file) directly; extract/convert it (e.g. pull just the `<script>` block, or run it through a markdown/text converter) and read that instead. Applies to any file this task reads, not just the tool file.  
  2. **Prefer scripts over OCR for reading a webpage** — when fetching Prydwen/fandom/meta-source pages, use a script-based fetch (WebFetch, or a headless-browser text/HTML extraction) to pull real page text, not a screenshot-and-OCR pass. Screenshot+OCR is reserved for Step 8's verification/visual-check work, where you're actually verifying a render, not extracting source text. See §12 for the fetch-quality detail this applies to.  
   
 ## 1. Mission & cadence  
@@ -814,3 +814,99 @@ Every previous Conduit "fix" — v75's per-card numbers, v0.3's multi-cast, v0.4
 engine — was a real improvement layered onto a wrong shape, and each one made the output look more
 convincing without making it correct. **When Benson says the Conduit output is wrong, check the
 SHAPE of the turn against §21.0 before adjusting any number.**
+
+---
+
+## §22 Conduit AP and the split picker (v0.6, 2026-08-24)
+
+### §22.0 The AP contradiction, resolved — both halves of this doc were half right
+Benson: *"is the AP cost separated intentional?"* **No — it was a bug**, and it came from a genuine
+contradiction that had stood in this file since v73:
+
+| Where | What it said |
+|---|---|
+| §8 (Benson's own 2026-08-17 correction) | Conduit characters "draw from the same shared pool at the same **1 AP/card cost** as everyone else" |
+| §4 v73 primer + the resource model | "both the Energy-card play **AND** the skill/Ultimate it triggers are **AP-free**" |
+
+v0.5's code implemented the second, so the **entire Conduit side of a team consumed no AP at all** —
+free actions every round while standard teammates fought over the pool.
+
+§21.0's turn structure reconciles them, and each was right about a different half:
+- **ENERGY CARDS cost AP.** They are cast from your hand like any other card. Source: *"Energy cards
+  **can** have no AP cost"* — 0-AP is a per-card **exception**, not the rule.
+- **The INCANTATIONS and the Ultimate they trigger are genuinely AP-FREE.** They are fired by the
+  Conduit off gathered Energy, not cast from hand. That is what "AP-free" was pointing at.
+
+`CONDUIT_ENERGY_AP_DEFAULT = 1` is the **game-wide default for casting a card from hand, not a
+per-card verified number.** Set `apCost:0` on a specific card once a real 0-AP one is confirmed —
+same override pattern as `ULTIMATE_AP_OVERRIDE` and `PRECAST_CARD`'s `versatile:true`.
+
+**This also supplies the constraint the sim was missing.** v0.5 let you play unlimited Energy cards a
+round because nothing rationed them (logged then as "per-round Energy-card draw is not modelled").
+**AP is what rations them** — the draw limit is a further real constraint, but AP is the first one.
+
+### §22.1 Two simulators, one pool — order now matters
+`simulateStateBlockPlan` and `simulateConduitPlan` both sized their pool to the full team and
+**neither knew about the other's spending**, so every Conduit Energy card was effectively free AP for
+the team. Now `simulateConduitPlan` runs **FIRST**, reports `apUsedByConduit` per round, and
+`renderStateBlockPlan` passes that to `simulateStateBlockPlan` as `reservedApByRound` so the standard
+pool shrinks by what the Conduit side actually spent. The Conduit sim has no reciprocal dependency,
+so there is no cycle — but **do not reverse this call order.**
+
+### §22.2 The split picker — two decisions, two controls
+Benson: *"i cant seem to select the energy cards to play, only the incantations that will play based
+on the energy which comes from these energy cards."* The dropdown did contain every card, but as one
+flat list with nothing distinguishing them — and they are not the same kind of decision:
+
+- **Incantation** — picked **once per round, up front**; a standing choice, not an action. Resolves
+  automatically off gathered Energy. **No AP.** State: `conduitIncantationPick`.
+- **Energy cards** — the actual plays: cast from hand, **repeatable**, **each costing AP**, and what
+  determines whether and how many times the Incantation fires. State: `manualPlayOverride` rows.
+
+`renderConduitPicker()` renders both and is shared by **both** render paths (Conduit-only and the
+mixed-team merged bar) so they cannot drift. Card kind comes from `CONDUIT_CARD_EFFECTS`, the same
+table the simulation reads, so **the picker and the math cannot disagree about what a card is.**
+
+**Do not fold the Incantation back into `manualPlayOverride`.** That array means "actions taken"; an
+Incantation appended there would be treated as an Energy-card play and charged AP.
+
+---
+
+## §23 Token efficiency — what actually worked, measured (v0.6, 2026-08-24)
+
+Benson asked whether scripts help, and whether converting documents to Markdown and reading the `.md`
+helps. **Answer from this session's actual behaviour, not theory — and §0.7's rule 1 is now
+demoted, because it is the weaker of the two ideas.**
+
+### §23.1 Scripts: YES, decisively — this is the rule that matters
+The single biggest saving was a **Node `vm` harness** that loads the tool's real `<script>` with DOM
+stubs, exposes `CHAR_DB`/`SKILL_KIT`/`simulateStateBlockPlan`/etc., and lets the file be *executed
+and queried* instead of read. Concretely, across these sessions it produced:
+- all 129-131 characters simulated solo, reported as **four lines** ("0 errors, 32 with no stat
+  effects, 1403 instances, 423 applied");
+- before/after comparisons that **proved** a change was display-only (`applied` unchanged at 423) —
+  a claim that could not otherwise be made honestly at all;
+- targeted behaviour checks (Liang Yue P0 vs P1, Star Energy refusing to pay a Mineral Incantation)
+  costing a few lines each.
+
+Same family: `node --check`, the top-level declaration-name diff, `grep -n`, `sed -n '<range>p'`.
+
+### §23.2 Markdown conversion: mostly NO for this project — the better rule is DON'T READ, QUERY
+Converting the 1.4 MB HTML to Markdown would not have helped, because **the file was never read
+linearly at all.** It was grepped dozens of times and executed dozens more. A converted 90 KB
+Markdown file still costs ~25k tokens to read; a `grep -n` answering the same question costs ~50.
+
+So the sharper rule, which supersedes §0.7.1's framing:
+
+> **Don't convert a file so you can read it — avoid reading it.** Locate with `grep -n`, extract the
+> exact range with `sed -n`, and answer behavioural questions by *running* the code rather than
+> reading it. Convert to Markdown only for a genuine prose document that must be read end to end.
+
+`STANDING_RULES.md` and `RUN_LOG.md` are the real exceptions — they are prose, they must be read, and
+`RUN_LOG` is best read as headings first (`grep -n '^#'`) then only the recent entries in full.
+
+### §23.3 What is NOT worth doing
+- Do not re-read a file after editing it to "check" the edit — the edit tool fails loudly if it
+  didn't apply, and `node --check` plus the declaration diff catch the real risks.
+- Do not paste large tool output into the reply. Report the computed numbers.
+- Do not read the HTML to find a function. `grep -n 'function name'` then `sed -n` the range.
