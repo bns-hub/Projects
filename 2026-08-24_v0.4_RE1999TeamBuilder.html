@@ -1455,7 +1455,17 @@ C({name:"Click",arch:["Flex"],role:"Sub DPS / Debuffer",priority:3,owned:false,u
         "<b>The Witness (Skill):</b> Single-target Mental hit that reduces the enemy's Moxie at higher ranks.",
         "<b>A Picture at a Price (Ultimate):</b> AoE Mental damage, plus grants all allies 50% Reality DMG reduction for 1 round."],
   tip:"Alternate her Blind-inflicting basic attack and Moxie-draining skill to keep the enemy suppressed, saving the Ultimate for its team-wide Reality damage-reduction shield."}),
-C({name:"Cornerstone",arch:["FollowUp"],role:"Tank / Counter DPS",priority:2,owned:false,upcoming:false,
+/* upcoming FLIPPED false -> true, v0.4. Researched rather than assumed: Cornerstone is a
+   VERSION 3.8 character, and Global is currently on 3.7 ("On Another's Sorrow", live 2026-08-13)
+   while CN runs ahead at 3.9. So she is CN-only and not yet live in Global, which matches RUN_LOG
+   session 17 recording Benson confirming she "isn't live yet" — the flag simply never got flipped
+   to match, so the picker was showing her without a SOON badge as though she were playable.
+   Her SKILL_KIT/INSIGHT_KIT/PORTRAY_DB/EUPHORIA_DB entries are deliberately LEFT IN PLACE rather
+   than removed. STANDING_RULES 5.2 describes CN-only characters as having those entries removed,
+   but that rule exists so their absence is not mistaken for a rebuild gap to close — it is not an
+   instruction to destroy verified data that already exists. Per 6.2 the correct action on finding
+   a not-yet-live character is to leave upcoming:true and report it, which is what this does. */
+C({name:"Cornerstone",arch:["FollowUp"],role:"Tank / Counter DPS",priority:2,owned:false,upcoming:true,
   does:["<b>As Things Are (Passive):</b> Stores damage Cornerstone takes and adds bonus Reality damage to allies' Riposte attacks scaled off that stored amount.",
         "<b>Concrete Functionality (Basic Attack):</b> Single-target Reality hit that deals bonus damage while her counter-stance is active; counts as a Riposte.",
         "<b>Figure-Ground Relationship (Skill):</b> Self-counter for 2 rounds, stacking a damage buff, and triggers a large AoE counterattack after enemy turns.",
@@ -12226,6 +12236,15 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
         const isUlt = cardKey === 'ULTIMATE';
         const label = explicitPicks.length ? `${cardKey}${cardKeys.length>1?` (cast ${castIdx+1} of ${cardKeys.length} this round)`:''}` : `${cardKey} (ASSUMED default — no pick made this round)`;
         roundActions.push({ name, note:`${isUlt ? 'Ultimate cast' : 'Incantation cast'}: ${escapeAttr(label)} — ${effect.note || 'no Energy/Harmonization effect stated in the sourced kit text.'}` });
+        /* v0.4 — Harmonization per Energy consumed. Sourced: "They gain one Harmonization for each
+           Energy consumed to activate their Conduit." This is the ENGINE of the Harmonization
+           economy and it was missing entirely — before this, Harmonization only came from the flat
+           per-card grants and Coppelia's +15/round, so spending Energy (the thing the archetype is
+           actually about) moved nothing. It is credited to the character who spent the Energy. */
+        if(spentThisCast > 0){
+          harmonization[name] += spentThisCast;
+          extra.push(`Harmonization +${spentThisCast} for ${name} — 1 per Energy consumed to activate the Conduit`);
+        }
         // [Interval Step]: +1 per Energy actually consumed by an allied Conduit this round. Coppelia
         // is the only holder in the current roster, so the gain is credited to her whoever spent it.
         if(spentThisCast > 0 && conduitArr.some(x => x.name === 'Coppélia')){
@@ -12240,8 +12259,19 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
             extra.push(`Ultimate consumes all ${intervalStep[name]} [Interval Step] (converted into [Instrument Energy Consumption] levels — damage-side, not simulated)`);
             intervalStep[name] = 0;
           }
-          instrumentTuning[name] += 3;
-          extra.push(`Ultimate grants 3 stacks of [Instrument Tuning I] — now ${instrumentTuning[name]}, each cutting a later Instrument's Energy cost by 1. The matching 3 stacks her kit also gives the ally directly behind her are NOT tracked: that ally is a standard character with no Energy pool in this model.`);
+          /* Scope, and why it reaches the whole Conduit side of the team. Two sourced phrasings
+             disagree: one says the Ultimate grants the stacks to "herself and the teammate behind
+             her", the other to "all crew members in the team". In a Conduit pairing BOTH readings
+             land on the other Conduit character — they are either the ally behind her or a crew
+             member — so granting to every Conduit on the team is the reading both support, not a
+             third invented one. STANDARD characters are still excluded, and not because of the
+             wording: they have no Energy pool in this model, so a discount on Energy cost has
+             nothing to apply to. Stated in the round note rather than silently dropped. */
+          conduitArr.forEach(other => {
+            instrumentTuning[other.name] += 3;
+          });
+          const others = conduitArr.filter(o => o.name !== name).map(o => o.name);
+          extra.push(`Ultimate grants 3 stacks of [Instrument Tuning I] to every Conduit teammate — Coppélia now ${instrumentTuning[name]}${others.length ? ', ' + others.map(o => `${o} now ${instrumentTuning[o]}`).join(', ') : ''}. Each stack cuts a later Instrument's Energy cost by 1 and they persist across rounds. Standard (non-Conduit) allies are excluded: they have no Energy pool for the discount to apply to.`);
         }
         extra.forEach(note => roundActions.push({ name, note }));
         // Energy/Harmonization reset LAST, so the lines above report what the cast actually did
@@ -12261,9 +12291,26 @@ function renderConduitRounds(rounds, conduitArr){
   const apPool = rounds[0].apPool;
   const twinsBonusNote = conduitArr.some(c => c.name === 'The Twins') ? ` (${conduitArr.length} headcount +1 from The Twins' Insight I "AP +1")` : '';
   const roundsHtml = rounds.map(rd => {
-    // Harmonization/Energy state line removed per Benson (same v77 change as the merged round-card
-    // view) — numbers still computed in rd.harmonization/rd.energy, just not surfaced as text here.
-    const stateLine = '';
+    /* v0.4 — Harmonization is BACK on the round card, deliberately and narrowly.
+       v77 stripped the old "45 Harmonization, 2 Energy — AP-free..." line on Benson's explicit
+       instruction ("stop talking about energy and harmonization in the play-by-play as a
+       resource"), and STANDING_RULES records: don't re-add resource framing without checking this
+       is still what he wants. He asked for it back in as many words -- "i dont see the energy
+       economy, can you show the harmonization levels? (for ults)" -- so this IS that check.
+       What changed is the FRAMING, which is why it isn't simply the old line restored. Sourced:
+       "Conduit characters do not have any Moxie... At maximum Harmonization, their Ultimate becomes
+       available to cast via their Conduit." Harmonization is the Conduit analogue of Moxie, so it
+       is presented as ULTIMATE READINESS next to the Energy that feeds it -- the same job the
+       Moxie line does for standard characters -- not as a bare resource readout.
+       Honesty: the MAXIMUM is not sourced. v75 removed an ASSUMED cap of 100 rather than keep
+       guessing, and that stands -- so this shows the level and says plainly that the threshold is
+       unconfirmed, instead of drawing a fake progress bar to an invented number. */
+    const stateLine = conduitArr.map(c => {
+      const h = rd.harmonization[c.name], e = rd.energy[c.name];
+      const gate = CONDUIT_ULT_GATE[c.name];
+      const gateNote = gate ? ` — at ${gate.harmonization} Harmonization + ${gate.energy} Energy the Ultimate gains its bonus Penetration Rate` : '';
+      return `<b>${c.name}</b> ${h} Harmonization (Ultimate resource — Conduit characters have no Moxie; the Ultimate unlocks at maximum Harmonization, and that maximum is NOT sourced, so no readiness % is claimed here), ${e} Energy banked${gateNote}`;
+    }).join('<br>');
     const actionLines = rd.actions.map(a => `<div class="sb-action"><span class="who">${a.name}</span> — ${a.note}</div>`).join('');
     // Manual card picker per Conduit character per round — reuses the exact same
     // manualPlayOverride/.mp-select mechanism already built for standard characters (same global
@@ -12281,7 +12328,7 @@ function renderConduitRounds(rounds, conduitArr){
       const addBtn = `<button class="mp-add" data-mp-char="${escapeAttr(c.name)}" data-mp-round="${rd.round}">+ action</button>`;
       return `<span class="who">${c.name}</span>: ${rowsHtml}${addBtn}`;
     }).join(' &nbsp;|&nbsp; ');
-    return `<div class="sb-round"><div class="rt">Round ${rd.round}</div><div class="loop-note">AP pool: ${rd.apPool}${twinsBonusNote} — Conduit's own Energy-card casts are AP-FREE per kit text, but this pool is still shared with any standard teammates' AP-costed casts.</div><div class="sb-actions">${actionLines}</div><div class="loop-note">${pickerHtml}</div></div>`;
+    return `<div class="sb-round"><div class="rt">Round ${rd.round}</div><div class="loop-note">AP pool: ${rd.apPool}${twinsBonusNote} — Conduit's own Energy-card casts are AP-FREE per kit text, but this pool is still shared with any standard teammates' AP-costed casts.</div><div class="sb-state">${stateLine}</div><div class="sb-actions">${actionLines}</div><div class="loop-note">${pickerHtml}</div></div>`;
   }).join('');
   return `<div class="loop-note"><b>Conduit round-by-round tracker</b> — each character's own Incantation/Ultimate pick and this team's shared AP pool contribution (see code comment on <code>simulateConduitPlan</code>/<code>conduitApContribution</code> for exactly what is and isn't modeled; the Ultimate is a manual pick below, not auto-triggered).</div>${roundsHtml}`;
 }
@@ -12675,11 +12722,19 @@ function renderStateBlockPlan(teamArr, skipped, conduitArr){
         const cActs = crd ? crd.actions.filter(a => a.name === c.name) : [];
         const actsHtml = cActs.length ? cActs.map(a => `<div class="slot-bar-line">→ ${linkTerms(a.note)}</div>`).join('')
           : `<div class="slot-bar-line sb-none">no action this round</div>`;
-        // Harmonization/Energy state line removed per Benson: "stop talking about energy and
-        // harmonization in the play-by-play as a resource... im gonna strip it out." The numbers are
-        // still computed/tracked in conduitRounds (crd.harmonization/crd.energy) for whatever the
-        // Conduit panel below still shows — just not surfaced in this per-round slot bar anymore.
-        const stateLabel = '';
+        /* v0.4 — restored, reframed. v77 stripped this on Benson's "stop talking about energy and
+           harmonization in the play-by-play as a resource"; he has now asked for it back ("can you
+           show the harmonization levels? (for ults)"), which is the re-check STANDING_RULES requires
+           before re-adding resource framing here. It comes back as ULTIMATE READINESS rather than a
+           bare resource dump — Harmonization is the Conduit analogue of Moxie ("Conduit characters
+           do not have any Moxie... At maximum Harmonization, their Ultimate becomes available"), so
+           this slot bar now carries the same kind of line the standard slot bars carry for Moxie.
+           The maximum itself is NOT sourced (v75 removed an ASSUMED 100 rather than guess), so the
+           level is shown without a fabricated readiness percentage. */
+        const crdState = conduitRounds.find(x => x.round === rd.round);
+        const stateLabel = crdState
+          ? `<div class="slot-bar-line sb-state">${crdState.harmonization[c.name]} Harmonization (Ultimate resource — no Moxie; unlocks at maximum Harmonization, which is not a sourced number, so no readiness % is claimed) · ${crdState.energy[c.name]} Energy banked${(crdState.instrumentTuning && crdState.instrumentTuning[c.name]) ? ` · ${crdState.instrumentTuning[c.name]} [Instrument Tuning I] (each cuts a later Instrument's Energy cost by 1)` : ''}${(c.name === 'Coppélia' && crdState.intervalStep && crdState.intervalStep[c.name]) ? ` · ${crdState.intervalStep[c.name]}/30 [Interval Step]` : ''}</div>`
+          : '';
         const arr = manualPlayOverride[mpOverrideKey(c.name, rd.round)] || [''];
         const rowOpts = sbGetPlayOptions(c);
         const rowsHtml = arr.map((val, idx) => {

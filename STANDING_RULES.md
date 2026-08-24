@@ -1,6 +1,6 @@
 # RE1999 Team Builder — Standing Operating Rules  
   
-**Doc version: v0.3** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
+**Doc version: v0.4** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
 the HTML tool file's version number. This pair of docs (`STANDING_RULES.md` + `RUN_LOG.md`) revises on  
 its own schedule rather than being re-versioned alongside the tool file. Bump the version (v0.1 → v0.2  
 → ...) any run that makes a REAL rule change here — a new/removed constraint, a corrected methodology, a  
@@ -8,8 +8,8 @@ changed source-of-truth priority. Do NOT bump it for a run that only reads this 
 without editing it. Record what changed and why in `RUN_LOG.md` under a "Doc vX.Y" heading each time it  
 bumps, same append-only pattern as everything else there.  
   
-**HTML tool version: v0.3 as of 2026-08-24** — the delivered file is now named  
-`<date>_v0.3_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
+**HTML tool version: v0.4 as of 2026-08-24** — the delivered file is now named  
+`<date>_v0.4_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
 through 2026-08-20 (that counter is retired, not renumbered — every historical "v58"/"v72"/"v79"/"v80"  
 mention elsewhere in this file and in `RUN_LOG.md` stays exactly as originally written; don't rewrite  
 history to match the new scheme). The 2026-08-20 file's actual content is unchanged by this reset — only  
@@ -679,3 +679,75 @@ the source label used a non-taxonomy word the mapping is stated rather than sile
 
 Note while there: **Cornerstone is `upcoming:false` in `CHAR_DB` but RUN_LOG records Benson
 confirming she is not live yet.** Not changed unilaterally — flagged for him to settle.
+
+---
+
+## §20 Harmonization as the Conduit Ultimate resource (v0.4, 2026-08-24)
+
+### §20.0 v77's removal is REVERSED — on Benson's explicit ask, with a changed framing
+§8's v77 entry records Benson saying *"stop talking about energy and harmonization in the
+play-by-play as a resource"*, and instructs: **don't re-add resource framing without checking this
+is still what he wants.** He asked for it back in as many words — *"i dont see the energy economy,
+can you show the harmonization levels? (for ults)"* — so **that instruction has been satisfied, not
+ignored.** A future run must not revert this as a v77 regression.
+
+What came back is **not the old line**. v77 stripped a bare resource readout
+(`"45 Harmonization, 2 Energy — AP-free..."`). What v0.4 renders is **Ultimate readiness**, because
+that is what the resource actually is. Sourced: *"Conduit characters do not have any Moxie, and
+instead generate Harmonization... At maximum Harmonization, their Ultimate becomes available to cast
+via their Conduit."* **Harmonization is the Conduit analogue of Moxie**, so a Conduit slot bar now
+carries the same kind of line a standard slot bar carries for Moxie, in the same position.
+
+**The maximum is still NOT sourced.** v75 removed an ASSUMED cap of 100 rather than keep guessing,
+and that stands — so the line shows the level and says plainly that the threshold is unconfirmed
+rather than drawing a progress bar to an invented number. `CONDUIT_ULT_GATE`'s 100 Harmonization +
+9 Energy remains what it always was: a bonus **Penetration Rate condition on the attack**, not a
+cast gate.
+
+Both render paths were wired, because both had been stripped: `renderConduitRounds` (Conduit-only
+teams) and the merged slot bar in `renderStateBlockPlan` (mixed teams — the common case). Note that
+`stateLine` had been left as dead `''` in the first of these since v77; check both when touching
+Conduit display, exactly as §8's v74 entry warns for the display-vs-simulation split.
+
+### §20.1 The missing engine — Harmonization per Energy consumed
+Sourced: *"They gain one Harmonization for each Energy consumed to activate their Conduit."*
+
+This was **absent entirely**. Harmonization previously came only from flat per-card grants and
+Coppélia's +15/round, so **spending Energy — the thing the whole archetype is about — moved the
+Ultimate resource not at all.** Now +1 Harmonization per Energy consumed, credited to whoever spent
+it. Combined with §19.3's multi-cast fix and §19.2's Polymeric Ray cost, the Conduit loop finally
+closes: cast to gain Energy → spend Energy → gain Harmonization → Ultimate.
+
+### §20.2 Coppélia's Energy-cost reduction reaches the whole Conduit side
+`[Instrument Tuning I]` (called **`[Conduit Calibration I]`** in some sources — same mechanic,
+translation variance; don't file them as two things) is granted 3 stacks by her Ultimate.
+
+**Two sourced phrasings disagree on scope**: one says *"herself and the teammate behind her"*, the
+other *"all crew members in the team"*. In a Conduit pairing **both readings land on the other
+Conduit character** — they are either the ally behind her or a crew member — so granting to every
+Conduit on the team is **the reading both support**, not a third invented one. Standard characters
+stay excluded, and not on wording: they have no Energy pool for a cost discount to apply to.
+
+This is what makes Coppélia + The Twins a real modeled synergy rather than a note — her Ultimate now
+demonstrably cuts Polymeric Ray's 3-Energy cost to 0 on a later round.
+
+### §20.3 Cornerstone — resolved, she is CN-only
+`upcoming` flipped **false → true**. Researched, not assumed: **Cornerstone is a Version 3.8
+character; Global is on 3.7** ("On Another's Sorrow", live 2026-08-13) while **CN runs ahead at
+3.9**. That matches RUN_LOG session 17 recording Benson confirming she isn't live — the flag simply
+never got flipped, so the picker showed her with no SOON badge as though playable.
+
+Her `SKILL_KIT`/`INSIGHT_KIT`/`PORTRAY_DB`/`EUPHORIA_DB` entries were **deliberately kept**. §5.2
+describes CN-only characters as having those removed, but that rule exists so their absence is not
+mistaken for a rebuild gap — it is **not** an instruction to destroy verified data that already
+exists. §6.2's actual instruction on finding a not-yet-live character is to leave `upcoming:true`
+and report it.
+
+**Live character count is now 129, not 130.** Recompute per §5; don't carry the old number.
+
+### §20.4 Balancé's Star Energy cost — still NOT entered, deliberately
+Researched again this run. The only figures available are *"a low-cost Mass Attack"* and *"stack up
+to at least 4 Star Energy to max out these benefits"* — a scaling recommendation, not a cost.
+Per §12, **a vague number is not real per-level content**; it stays a tracked gap rather than an
+entered guess. Polymeric Ray's 3 is not transferable to it: that number was independently
+corroborated for that specific card, and the two sets are not symmetric elsewhere either.

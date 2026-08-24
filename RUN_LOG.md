@@ -2009,3 +2009,90 @@ unmodeled; Matilda / Lady by the Lake rarity; The Twins' dual element; An-an Lee
 has no `PORTRAY_DB` data; fuller real-time round tracker.
 
 → Delivered as `2026-08-24_v0.3_RE1999TeamBuilder.html`
+
+## Session 24 (v0.4) — 2026-08-24 — Harmonization surfaced as the Conduit Ultimate resource; Cornerstone resolved
+
+**Trigger.** Benson: *"i dont see the energy economy, can you show the harmonization levels? (for
+ults) / btw copellia reduces the energy required for some skills?"*, plus *"you should research
+this"* on the two items v0.3 had flagged for him (Cornerstone's `upcoming` flag, Balancé's cost).
+
+### The economy was invisible for two separate reasons, one display and one real
+1. **Display:** v77 stripped the Harmonization/Energy line from BOTH Conduit render paths. In
+   `renderConduitRounds` the variable was left as dead `const stateLine = ''` and never rendered.
+2. **Real:** Harmonization had **no engine**. Sourced this run: *"They gain one Harmonization for
+   each Energy consumed to activate their Conduit."* That rule was missing entirely — Harmonization
+   came only from flat per-card grants and Coppélia's +15/round, so **spending Energy moved the
+   Ultimate resource not at all.** Fixed (+1 per Energy consumed, credited to the spender).
+
+Together with v0.3's multi-cast fix and Polymeric Ray's 3-Energy cost, the Conduit loop now closes
+end to end: cast to gain Energy → spend Energy → gain Harmonization → Ultimate.
+
+### Harmonization is back on the round card — reframed, not restored (§20.0)
+v77 removed it on Benson's *"stop talking about energy and harmonization as a resource"*, and
+STANDING_RULES requires a re-check before re-adding. **He asked for it, which is that check.**
+It returns as **Ultimate readiness**, not a bare resource dump, because that is what it is:
+*"Conduit characters do not have any Moxie... At maximum Harmonization, their Ultimate becomes
+available."* A Conduit slot bar now carries the same kind of line the standard bars carry for Moxie,
+in the same position. **The maximum stays unsourced** — v75's removal of the ASSUMED 100 stands, so
+the line states the threshold is unconfirmed rather than faking a readiness %. Both render paths
+wired (Conduit-only and the mixed-team merged bar).
+
+### Coppélia's Energy-cost reduction — yes, and it now works across characters (§20.2)
+Benson's question was right. `[Instrument Tuning I]` (= `[Conduit Calibration I]`, same mechanic,
+translation variance) is her Ultimate's 3-stack grant, each stack cutting a later Instrument's Energy
+cost by 1. **Two sourced phrasings disagree on scope** — "herself and the teammate behind her" vs
+"all crew members in the team" — but in a Conduit pairing both readings land on the other Conduit
+character, so granting to every Conduit teammate is the reading both support rather than a third
+invented one. Standard allies excluded because they have no Energy pool to discount.
+Verified end to end: Coppélia's round-2 Ultimate grants 3 stacks to The Twins, who spend them in
+round 3 to cut Polymeric Ray's cost **3 → 0**. Coppélia + The Twins is now a *modeled* synergy.
+
+### Cornerstone — RESOLVED, she is CN-only (§20.3)
+Researched: **Cornerstone is a Version 3.8 character. Global is on 3.7** ("On Another's Sorrow",
+live 2026-08-13); **CN runs ahead at 3.9.** So she is CN-only, exactly as Benson said in session 17
+— the `upcoming` flag just never got flipped, so the picker showed her with no SOON badge as though
+playable. Flipped `false → true`. Kit data deliberately **kept**: §5.2 describes CN-only entries as
+removed so their absence isn't mistaken for a rebuild gap, which is not a licence to delete verified
+data. **Live character count is now 129, not 130** — recompute, don't carry the old number.
+
+### Balancé's Star Energy cost — researched, still NOT entered (§20.4)
+Only "a low-cost Mass Attack" and "stack up to at least 4 Star Energy to max out these benefits" —
+a scaling recommendation, not a cost. Per §12 a vague number is not real content, so it stays a
+tracked gap rather than a guess. Polymeric Ray's 3 was corroborated for that specific card and is
+not transferable.
+
+### Verification
+- **`node --check`: PASS.** Declaration diff **180 → 180, REMOVED = 0** vs v0.3, and **REMOVED = 0
+  vs v0.1** — nothing lost across any step of this work.
+- **Playwright load: zero non-network errors.** All **129** live characters simulate solo, 0 errors.
+- **`applied` still 423** — the Conduit work again left standard-character math untouched.
+- Role audit still clean (`rolesMissing: []`, `badRoleValues: []`); 265 tooltip spans, 0 missing
+  attributes; `⚠ Untested` disclaimer intact.
+- **Screenshot check performed** on a MIXED team (The Twins + Coppélia + Sonetto): Sonetto's Moxie
+  line and the two Conduit Harmonization lines render in the same position on their respective slot
+  bars, Interval Step shows `5/30`, and both Conduit characters show two card dropdowns plus
+  "+ action".
+
+### Open items
+1. **Conduit math still untested against a real match** — needs Benson's match data. Now the ONLY
+   item from his original three still open, and still not closable by research.
+2. **Search-sourced numbers pending verbatim re-verification** — The Twins' Harmonization
+   (+20/10/20/6, possible P0-vs-P2 ambiguity), Polymeric Ray's 3-Energy cost, the +1-Harmonization-
+   per-Energy rule, Interval Step's 30 cap, and Instrument Tuning's scope. All labeled in code.
+   Re-check the moment a kit host is reachable (§19.0).
+3. **Balancé's Star Energy cost** — see §20.4.
+4. **Cornerstone's kit data is present while `upcoming:true`** — intentional (§20.3), but if Benson
+   prefers the §5.2 convention strictly, it should be removed and re-added on Global release.
+5. `PORTRAY_SIMULATED` still covers 6 levels across 5 characters.
+
+Unchanged from v0.3: 32 characters produce no stat effects; 51 effect instances dropped as
+target-unresolvable; effect layer is a bulk pass (20 hand-read of 131); Portray backlog spot-checking
+(16 of 126); `BUFF_STACK_MODE` unverified; damage model untested against a real match; 6 characters
+with untagged conditional entering-battle Moxie grants; `ULT_HOLD_OVERRIDE` (47/130) populated but
+unwired; `AP_SURPLUS_OVERRIDE` unused; Corvus monotonic counter; Ezio Synchronization underestimate;
+Kassandra card-injection thresholds; Cheng Heguang's ≥10 `[Feathered Blades]`; Beryl's Emanation
+crystal; slot-bar layout never stress-tested against an Anjo Nala Bind team; Tuning card interaction
+unmodeled; Matilda / Lady by the Lake rarity; The Twins' dual element; An-an Lee's portrait; Everecho
+has no `PORTRAY_DB` data; fuller real-time round tracker.
+
+→ Delivered as `2026-08-24_v0.4_RE1999TeamBuilder.html`
