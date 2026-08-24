@@ -1,6 +1,6 @@
 # RE1999 Team Builder — Standing Operating Rules  
   
-**Doc version: v0.9** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
+**Doc version: v0.10** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
 the HTML tool file's version number. This pair of docs (`STANDING_RULES.md` + `RUN_LOG.md`) revises on  
 its own schedule rather than being re-versioned alongside the tool file. Bump the version (v0.1 → v0.2  
 → ...) any run that makes a REAL rule change here — a new/removed constraint, a corrected methodology, a  
@@ -8,8 +8,8 @@ changed source-of-truth priority. Do NOT bump it for a run that only reads this 
 without editing it. Record what changed and why in `RUN_LOG.md` under a "Doc vX.Y" heading each time it  
 bumps, same append-only pattern as everything else there.  
   
-**HTML tool version: v0.9 as of 2026-08-24** — the delivered file is now named  
-`<date>_v0.9_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
+**HTML tool version: v0.10 as of 2026-08-24** — the delivered file is now named  
+`<date>_v0.10_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
 through 2026-08-20 (that counter is retired, not renumbered — every historical "v58"/"v72"/"v79"/"v80"  
 mention elsewhere in this file and in `RUN_LOG.md` stays exactly as originally written; don't rewrite  
 history to match the new scheme). The 2026-08-20 file's actual content is unchanged by this reset — only  
@@ -631,11 +631,14 @@ below. The `⚠ Untested` disclaimer **stays**, and now names exactly which figu
 ### §19.2 What was actually missing (all sourced, all labeled)
 - **The Twins' per-card Harmonization** — Atomic Fusion **+20**, Polymeric Ray **+10**, Extreme
   Overclocking **+20**, Balancé Across the Stars **+6**. Corroborated across two independent
-  searches. **Caveat recorded in code:** the phrasing found was "*now* grant", and in the same
-  source family "now deals" marked a **Portray 2** value — so these may be P2 figures, not the P0
-  base. Applied flat at every Portray level because no per-level split was sourced.
+  searches. **The P0-vs-P2 caveat here is RESOLVED as of v0.10 (§26) — they ARE P2 figures**,
+  confirmed by Benson's own `PORTRAY_DB["The Twins"]` text ("P2 ... entry skills grant Harmonization
+  +20/10/20/6"). They were applied flat at every Portray level from v0.3 through v0.9, which was a
+  real over-credit at P0/P1 for six versions — see §26.0. Now gated at P2+ via
+  `CONDUIT_PORTRAY_SKILL`; below P2 these four skills grant 0 modelled Harmonization, stated as such
+  rather than silently substituting the P2 number.
   This also settles a mislabel: **Balancé Across the Stars is not a no-op card.** Its *Energy* delta
-  is a confirmed real 0, but it grants Harmonization.
+  is a confirmed real 0, but it grants Harmonization (P2+ only, per the correction above).
 - **Polymeric Ray costs 3 Mineral Energy** (corroborated twice). Net **-3 +2 = -1** Energy. Before
   this, *no card in the entire Conduit catalog spent Energy except Coppélia's Finger Training.*
 - **`[Interval Step]` and `[Instrument Tuning I]` are now real numeric state** — the third blocker.
@@ -1055,3 +1058,103 @@ cards."*
 pools now exist in this tool (the shared team pool and the standard characters' remainder after
 Conduit spending) and an unlabelled number will read as a bug even when it is arithmetically right —
 this is the second time that has happened (§24.4 was the first).
+
+---
+
+## §26 The Twins' Harmonization numbers were P2-only, applied at every level for six versions (v0.10, 2026-08-24)
+
+### §26.0 The real error, and how it was found
+Benson pointed at a screenshot of an in-game Energy card (4-diamond "Energy II" tier) and said it
+came from "P2 twins" — surfacing that **The Twins' own `PORTRAY_DB` text had already been in this
+tool the whole time and simply never been read for this purpose.** Re-reading it settled two things
+§19.2 had left open, and revealed a real bug on top:
+
+Her Portray text, verbatim on the relevant clauses:
+> P1: "1 copy of [Mineral/Star Energy I] in each set now grants +2 Energy. [Technological
+> Breakthrough] deals 4160% Reality DMG plus +416% per Energy consumed..."
+> P2: "[Mineral/Star Energy I] copies now grant +2, [Energy II] copies now grant +3.
+> [Polymeric Ray]/[Balancé Across the Stars] damage and per-hit scaling both increase; entry skills
+> grant Harmonization +20/10/20/6. On entering battle, gains Harmonization +100, +2 per Energy
+> consumed thereafter."
+> P4: "[Atomic Fusion] now grants Mineral Energy +6. [Extreme Overclocking] now grants Critical Rate
+> +30% and Critical DMG +60%."
+> P5: "...[Efficient Conversion]/[Pulse Amplification] grant +2 Energy and Conduit Might +50% each."
+
+**The bug:** `CONDUIT_KIT`'s four Twins skills (`Atomic Fusion`/`Polymeric Ray`/`Extreme
+Overclocking`/`Balancé Across the Stars`) carried `harmonization:20/10/20/6` as **unconditional**
+fields from v0.3 through v0.9 — applied at every Portray level, including P0. Her own text confirms
+these are **P2-only grants**. So P0 and P1 were over-credited by the full P2 amount for six shipped
+versions. Additionally the flat +70 entering-battle Insight III grant was never checked against her
+P2 text's "+100" override, and the "+2 per Energy consumed" P2 rate multiplier and the P4 "Atomic
+Fusion now grants +6 Mineral Energy" self-generation number had never been modelled at all — Atomic
+Fusion's note claimed it "gains Mineral Energy" but no code path ever added any.
+
+### §26.1 The fix — `CONDUIT_PORTRAY_SKILL`, gated correctly, nothing invented below P2
+`CONDUIT_KIT`'s four skill entries had their `harmonization` fields **removed entirely**, not
+re-sourced to a smaller number — the P0/P1 base is genuinely not stated anywhere, so per §0.3 it is
+not invented as a placeholder. `CONDUIT_PORTRAY_SKILL['The Twins']` now carries, cumulatively:
+- **P2**: `harmonizationGrants` (the 20/10/20/6, now correctly gated), `entryHarmonization:100`
+  (supersedes the Insight III +70), `harmonizationPerEnergy:2` (doubles the 1-per-Energy rate from
+  §20.1, applied to Energy actually consumed by a skill cast).
+- **P4**: `skillEnergy` — Atomic Fusion self-generates **+6 Mineral Energy** on cast. Below P4, this
+  skill correctly adds 0 self-generated Energy, and the round note states the base amount isn't
+  sourced rather than silently doing nothing while its own flavor text claims otherwise.
+
+`sbConduitPortraySkill(name, portrayLevel)` resolves all of this cumulatively per character per
+round and is read at three points in `simulateConduitPlan`: the one-time entry grant, every
+Arcane-Skill cast (for `harmonizationGrants` and, on Atomic Fusion specifically, `skillEnergy`), and
+the Energy-consumption Harmonization rate (`harmonizationPerEnergy`, replacing the hardcoded 1x used
+through v0.9). **Verified end to end**: solo Twins, 2 Energy cards → Polymeric Ray consumes 3 —
+Harmonization totals **73** at P0/P1 (base-only sources, no over-credit), **136** at P2 (entry +100,
+rate ×2, both skill grants), **168** at P4 (Atomic Fusion's own +6 lets Polymeric Ray triple-cast).
+
+### §26.2 The Twins' Energy-deck copy upgrades — the same §25.0 pattern, previously unmodelled
+Her Portray text ALSO upgrades Energy-deck card copies, the identical per-copy mechanic §25.0
+documented for Coppélia, and it had simply never been added for The Twins. `CONDUIT_PORTRAY_DECK`
+now has a `'The Twins'` entry: P1 upgrades 1 copy of each `Energy I` card to +2; P2 upgrades further
+(count not stated — see §26.3) and adds `Energy II` → +3; P5 adds `Efficient Conversion` → +2 each.
+Resolved through the same `sbConduitEnergyDeck`/upgraded-vs-base-copy picker as Coppélia's.
+
+### §26.3 A real label bug the new data exposed: "undefined copies upgraded"
+Coppélia's Portray text states an exact copy count at every level ("1", then "2"). **The Twins'
+does not** — "[Energy I] copies now grant +2" names no number. The picker/panel label template read
+`${d.upgraded.copies}` unconditionally, which is a valid number for Coppélia but literally
+`undefined` for the Twins entries where `copies` was never set — rendering **"undefined copies
+upgraded"** verbatim in the UI. Fixed: the label now reads **"some copies (exact count not
+sourced)"** when no number is available, instead of fabricating one or leaking the JS undefined
+value. Never set a fake `copies:1` here to make the label pretty — that would silently claim a
+sourced count that doesn't exist.
+
+### §26.4 A real display-vs-simulation bug: the note text lagged the applied number
+Screenshot-verified (§14.4) on a live P2 Twins round: picking the **upgraded** copy of Mineral
+Energy I correctly added +2 to the pool, but the round-log sentence still read **"Mineral Energy
++1."** — the base card's hardcoded note string, because `raw.upgraded` carries no `note` field of
+its own and `Object.assign` never touched `d.note`. Exactly the class of bug the v74 lesson warns
+about: the math was right, the text describing it was stale. Same bug existed for Coppélia's Skip
+Motion stack-count mention ("grants 10 stacks..." staying "10" even when the P5-upgraded copy
+actually grants 20).
+
+**Fixed by never trusting the base note's embedded number again.** The Energy-amount clause and any
+digit-bearing flavor clause (Skip Motion's stack count) are now rebuilt programmatically from the
+actually-applied `d.energy`/`d.intervalStep` on every render, with only the non-numeric flavor text
+(Conduit Might mentions, etc.) kept verbatim from the base card — Portray has never been sourced to
+change flavor text, only amounts and copy counts. **Any future card-upgrade addition must route
+its printed amount through the applied value, never through a card's static note string, or this
+exact bug returns.**
+
+### §26.5 "整合程序启动" — investigated, NOT resolved, NOT modelled
+Benson sent two screenshots: an in-game screen titled "整合程序启动" ("Integration Procedure:
+Activate") offering 6 cards with a "confirm, 0/1" selector, arrows pointing at two 4-diamond cards;
+and a Spelldock row from actual play. Two separate WebSearch passes turned up real, useful
+**adjacent** facts — The Twins have **10 total Energy Card types** across 1 ultimate + 4 skills (this
+tool models 6; the other 4 are very plausibly the Portray-upgraded copies rendering as visually
+distinct cards in the real UI, which would corroborate §26.2/§25.0's per-copy model, but this is
+inference, not a confirmed match) — but **neither search named or explained this specific screen.**
+
+**No mechanic was modelled for it.** The visual reading (a one-time 1-of-6 pick, arrows on the
+higher-tier cards) is consistent with several different real systems — a battle-start deck
+customization step that lets the player CHOOSE which card receives a Portray upgrade, a Psychube/
+relic-style pick, or something unrelated to Energy cards entirely — and picking wrong here would add
+an eighth wrong guess to a chain of them this session (§21, §24, §25 were all corrections of a prior
+guess). This is recorded as an **open item requiring Benson's own description of what selecting a
+card there actually does**, not modelled speculatively. See RUN_LOG open items.

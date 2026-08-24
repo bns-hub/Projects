@@ -2466,3 +2466,91 @@ Blades]`; Beryl's Emanation crystal; Tuning card interaction unmodeled; Matilda 
 rarity; The Twins' dual element; An-an Lee's portrait; Everecho has no `PORTRAY_DB` data.
 
 → Delivered as `2026-08-24_v0.9_RE1999TeamBuilder.html`
+
+## Session 30 (v0.10) — 2026-08-24 — The Twins' Harmonization numbers were P2-only for six versions; a real display-vs-simulation bug found and fixed
+
+**Trigger.** Benson: a screenshot of an in-game Energy card, *"energy incantation that provides 3
+energy cause of i have p2 twins"*; then two more screenshots of an "整合程序启动" screen and a live
+Spelldock row, asking *"how come i see this UI when twins enter combat?"*; then *"find out what
+整合程序启动 is"*. Also: *"also run log and standing rule should have vX.X as a label and should
+match the version of the html output"* — confirming the convention already followed; both files are
+bumped to v0.10 alongside the HTML this session.
+
+### The real bug: unconditional Harmonization on four skills, for six versions
+`The Twins' PORTRAY_DB` text was already in the tool and had simply never been read for this. It
+states plainly: *"P2 ... entry skills grant Harmonization +20/10/20/6."* `CONDUIT_KIT`'s four Twins
+skills had carried that exact `harmonization:20/10/20/6` as an **unconditional** field since v0.3 —
+applied at every Portray level, including P0. **P0 and P1 were over-credited by the full P2 amount
+for six shipped versions.** Also newly modelled from her text: the P2 entry grant is **+100**, not
+the Insight III +70 (superseding it); P2's 1-per-Energy Harmonization rate is actually **+2 per
+Energy**; and P4's *"[Atomic Fusion] now grants Mineral Energy +6"* — the only sourced number for a
+skill whose note claimed it "gains Mineral Energy" but never actually added any in the sim.
+
+### The fix
+`CONDUIT_KIT`'s hardcoded harmonization fields were **removed, not re-sourced smaller** — the P0/P1
+base genuinely isn't stated anywhere, so nothing was invented to fill it. New `CONDUIT_PORTRAY_SKILL`
+table + `sbConduitPortraySkill()` resolves the P2/P4 overrides cumulatively and is read at the entry
+grant, every skill cast, and the Energy-consumption Harmonization rate.
+
+**Verified:** solo Twins, 2 Energy cards, Polymeric Ray consumes 3 — Harmonization totals **73** at
+P0/P1 (correct, base-only), **136** at P2, **168** at P4 (Atomic Fusion's own +6 self-generation
+lets Polymeric Ray triple-cast that round).
+
+### The Twins' deck ALSO has per-copy Portray upgrades — the §25.0 pattern, never added for her
+Same mechanic as Coppélia's Mineral I/II upgrades, sourced from the same paragraph, simply never
+transcribed into `CONDUIT_PORTRAY_DECK`. Added: P1 upgrades 1 copy of each Energy I; P2 upgrades
+further (count unstated) plus Energy II → +3; P5 adds Efficient Conversion → +2.
+
+### Two real bugs the new data exposed
+1. **"undefined copies upgraded"** — Coppélia's text states an exact copy count ("1", "2"); The
+   Twins' doesn't ("copies now grant +2", no number). The label template read `copies` unconditionally
+   and leaked the literal JS `undefined` into the UI. Fixed: renders "some copies (exact count not
+   sourced)" when no number exists, rather than fabricating one.
+2. **Note text lagged the applied number** — screenshot-caught: picking the upgraded Mineral Energy I
+   correctly added +2 to the pool, but the round log still printed "Mineral Energy +1." (the base
+   card's hardcoded note string; `raw.upgraded` carries no `note` of its own). Same bug existed for
+   Coppélia's Skip Motion stack-count mention. Fixed by rebuilding the amount clause and any
+   digit-bearing flavor clause from the actually-applied values on every render, never from a card's
+   static note string. Recorded as a standing rule for any future card-upgrade addition (§26.4).
+
+### "整合程序启动" — investigated, explicitly NOT modelled
+Two WebSearch passes found real adjacent facts (The Twins have **10 total Energy Card types** across
+1 ultimate + 4 skills — this tool models 6, and the other 4 may well be the Portray-upgraded copies
+rendering as visually distinct cards, which would corroborate the per-copy model, but that's
+inference) — neither named or explained this specific screen. **No mechanic was modelled for it.**
+The visual reading is consistent with several different systems, and guessing wrong here would be an
+eighth wrong guess in a chain of corrected ones this session (§21/§24/§25 were each fixing a prior
+guess). Left as an open item — see below.
+
+### Verification
+- **`node --check`: PASS.** Declaration diff **190 → 192, REMOVED = 0.** Two additions
+  (`CONDUIT_PORTRAY_SKILL`, `sbConduitPortraySkill`), both confirmed wired via the P0/P1/P2/P4 test
+  above, not just declared.
+- **Playwright: zero non-network errors.** All 129 live characters simulate solo, 0 errors;
+  `applied` still **423** — Conduit-only work, standard character math untouched again.
+- **Screenshot check (§14.4) performed** on a live P2 Twins + Coppélia mixed round — this is what
+  caught the note-text staleness bug in the first place, not a code review.
+- Deck-option labels re-verified at P0/P1/P2/P5 for both characters after the fix.
+
+### Open items
+1. **"整合程序启动" — needs Benson's own description of what selecting a card there does.** Does it
+   assign the Portray upgrade to a specific chosen card, is it a one-time bonus draw, or something
+   else? This is the last real unknown blocking a fuller Conduit model.
+2. **Energy-deck copy counts and per-round draw** — the "10 total Energy Card types" figure narrows
+   this (6 modelled + up to 4 unaccounted, very plausibly the upgraded-copy variants) but doesn't
+   close it outright.
+3. **The Twins' "AP +1"** — still needs him to settle (§24.4); displayed, not silently changed.
+4. **Conduit math untested against a real match** — the model is now internally consistent and every
+   number sourced; this is confirmation, not a data gap.
+5. Per-card AP costs unsourced (default 1); search-sourced numbers pending verbatim re-verification
+   (§19.0); `PORTRAY_SIMULATED` covers 6 levels across 5 characters; Cornerstone kit data retained
+   while `upcoming:true`.
+
+Unchanged from v0.9: 32 characters produce no stat effects; 51 effect instances dropped; effect layer
+is a bulk pass; Portray backlog spot-checking (16 of 126); `BUFF_STACK_MODE` unverified; damage model
+untested; `ULT_HOLD_OVERRIDE` unwired; `AP_SURPLUS_OVERRIDE` unused; Corvus monotonic counter; Ezio
+Synchronization underestimate; Kassandra card-injection thresholds; Cheng Heguang's ≥10 `[Feathered
+Blades]`; Beryl's Emanation crystal; Tuning card interaction unmodeled; Matilda / Lady by the Lake
+rarity; The Twins' dual element; An-an Lee's portrait; Everecho has no `PORTRAY_DB` data.
+
+→ Delivered as `2026-08-24_v0.10_RE1999TeamBuilder.html`

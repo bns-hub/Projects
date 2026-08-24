@@ -8773,7 +8773,12 @@ function sbGetConduitEnergyOptions(c){
        rest still give +1, and which copy you drew is not something this tool can know. Listing
        both lets the real draw be entered instead of assuming. */
     if(d.upgraded){
-      opts.push({ value:`${k}#up`, label:`${k} — upgraded copy (${ap} AP → +${d.upgraded.energy} ${d.energyType}, P${d.upgraded.portrayFrom}; ${d.upgraded.copies} ${d.upgraded.copies===1?'copy':'copies'} upgraded)` });
+      // v0.10 fix: `copies` is a genuinely unstated count for The Twins ("[Energy I] copies now
+      // grant +2" — no number given, unlike Coppélia's explicit "1"/"2"). Rendering it unconditionally
+      // produced a literal "undefined copies upgraded" label. Say "some copies" rather than fabricate
+      // a count, and only print a specific number when one was actually sourced.
+      const copiesLabel1 = d.upgraded.copies != null ? `${d.upgraded.copies} ${d.upgraded.copies===1?'copy':'copies'}` : 'some copies (exact count not sourced)';
+      opts.push({ value:`${k}#up`, label:`${k} — upgraded copy (${ap} AP → +${d.upgraded.energy} ${d.energyType}, P${d.upgraded.portrayFrom}; ${copiesLabel1} upgraded)` });
     }
     opts.push({ value:k, label:`${k}${d.upgraded ? ' — base copy' : ''} (${ap} AP → +${d.energy} ${d.energyType})` });
   });
@@ -12214,16 +12219,25 @@ const CONDUIT_KIT = {
         note:'Energy card — Star Energy +1. Also grants Conduit Might +30% (unstackable) when casting [Balancé Across the Stars] this round — Conduit Might is not simulated, so only the Energy is applied.' }
     },
     sets: {
+      /* v0.10 — the harmonization:20/10/20/6 baked into these four skills through v0.9 has been
+         REMOVED, not just re-sourced. Benson's own PORTRAY_DB text settles what STANDING_RULES
+         19.2 already flagged as uncertain: "P2 ... entry skills grant Harmonization +20/10/20/6"
+         — those are P2 FIGURES, and applying them unconditionally at every Portray level
+         (including P0) was a real over-credit for six versions (v0.3-v0.9). The base P0/P1
+         Harmonization for casting these skills is NOT sourced anywhere, so it is NOT invented as
+         a smaller placeholder number either — CONDUIT_PORTRAY_SKILL supplies the real P2+ value,
+         and below P2 these skills grant 0 modelled Harmonization (stated in the round note, not
+         silently omitted). See sbConduitPortraySkill / CONDUIT_PORTRAY_SKILL below. */
       'Skill Set A (Mineral)': { energyType:'Mineral', skills:[
-        { name:'Arcane Skill I: Atomic Fusion', cost:0, interval:true, harmonization:20,
-          note:'Self buff, [Interval] so once per round. Gains Mineral Energy and Harmonization. Costs 0 Mineral Energy.' },
-        { name:'Arcane Skill II: Polymeric Ray', cost:3, harmonization:10,
+        { name:'Arcane Skill I: Atomic Fusion', cost:0, interval:true,
+          note:'Self buff, [Interval] so once per round. Gains Mineral Energy and Harmonization — neither\'s BASE (P0/P1) amount is sourced, so neither is added below P2/P4 (see CONDUIT_PORTRAY_SKILL). Costs 0 Mineral Energy.' },
+        { name:'Arcane Skill II: Polymeric Ray', cost:3,
           note:'Mass attack, 3 Mineral Energy per cast. Counts only as a Mineral Afflatus attack. Its bonus damage scales with Mineral Energy consumed by all allied Conduits this round — informational-only, this sim computes no Conduit damage.' }
       ]},
       'Skill Set B (Star)': { energyType:'Star', skills:[
-        { name:'Arcane Skill I: Extreme Overclocking', cost:0, interval:true, harmonization:20,
-          note:'Self buff, [Interval] so once per round. Gains Critical Rate, Critical DMG and Harmonization. Costs 0 Star Energy. The crit buff is not simulated — no crit roll here.' },
-        { name:'Arcane Skill II: Balancé Across the Stars', cost:1, harmonization:6,
+        { name:'Arcane Skill I: Extreme Overclocking', cost:0, interval:true,
+          note:'Self buff, [Interval] so once per round. Gains Critical Rate, Critical DMG and Harmonization — none of these BASE (P0/P1) amounts are sourced, so none are added (crit is not simulated regardless — no crit roll here).' },
+        { name:'Arcane Skill II: Balancé Across the Stars', cost:1,
           note:'Mass attack, 1 Star Energy per cast. Counts only as a Star Afflatus attack. Its bonus damage scales with this Conduit\'s attack count this round — informational-only.' }
       ]}
     },
@@ -12265,11 +12279,6 @@ const CONDUIT_KIT = {
      Instrument Energy Consumption ≡ Energy Accumulation (the level counter)
    SKILL_KIT["Coppélia"] uses the right-hand names; Benson's kit paste uses the left-hand ones. */
 
-/* CONDUIT_PORTRAY_DECK — Portray levels that REWRITE the Energy deck. Benson: "at higher portray
-   levels, she CHANGES the energy cards read her portray to find out."
-   This is a genuinely different kind of Portray effect from anything in PORTRAY_MECHANIC: it does
-   not add a buff, it edits the deck's card values. Read straight from PORTRAY_DB["Coppélia"] text,
-   which states each change explicitly. Applied cumulatively for every level ≤ the selected one. */
 /* CONDUIT_PORTRAY_DECK — Portray levels that upgrade INDIVIDUAL COPIES in the Energy deck.
    Benson: "at higher portray levels, she CHANGES the energy cards read her portray to find out."
 
@@ -12287,12 +12296,71 @@ const CONDUIT_KIT = {
    Because that is unresolved, the picker offers the upgraded and base copies as SEPARATE choices
    rather than assuming which one you drew — see sbGetConduitEnergyOptions. */
 const CONDUIT_PORTRAY_DECK = {
+  /* The Twins — added v0.10. This data was ALREADY in PORTRAY_DB["The Twins"] and had simply never
+     been modelled; Benson surfaced it with a screenshot of a 3-Energy card and "cause of i have p2
+     twins". Her Portray text, verbatim on the relevant clauses:
+       P1: "1 copy of [Mineral/Star Energy I] in each set now grants +2 Energy."
+       P2: "[Mineral/Star Energy I] copies now grant +2, [Energy II] copies now grant +3."
+       P5: "[Energy II] copies now grant +3. [Efficient Conversion]/[Pulse Amplification] grant
+            +2 Energy and Conduit Might +50% each."
+     P2's "[Energy II] copies now grant +3" is exactly the card he pointed at. Note P1 upgrades ONE
+     copy per set while P2 upgrades the copies generally, the same per-copy pattern as Coppélia
+     (§25.0) — so P1 carries copies:1 and P2 does not cap the count. */
+  'The Twins': {
+    1: { 'Mineral Energy I': { energy:2, copies:1 }, 'Star Energy I': { energy:2, copies:1 } },
+    2: { 'Mineral Energy I': { energy:2 }, 'Star Energy I': { energy:2 },
+         'Mineral Energy II': { energy:3 }, 'Star Energy II': { energy:3 } },
+    5: { 'Mineral Energy II': { energy:3 }, 'Star Energy II': { energy:3 },
+         'Efficient Conversion (Mineral)': { energy:2 }, 'Efficient Conversion (Star)': { energy:2 } }
+  },
   'Coppélia': {
     1: { 'Mineral Energy I': { energy:2, copies:1 } },
     2: { 'Mineral Energy I': { energy:2, copies:2 } },
     5: { 'Mineral Energy II': { energy:3, copies:1 }, 'Skip Motion': { energy:3, intervalStep:20, copies:1 } }
   }
 };
+/* CONDUIT_PORTRAY_SKILL — Portray levels that change an Arcane Skill itself (not a deck card).
+   Added v0.10, and it corrects a REAL ERROR that stood from v0.3 to v0.9.
+
+   §19.2 recorded the Harmonization grants +20/10/20/6 with an explicit caveat: the phrasing found
+   by WebSearch was "*now* grant", and in the same source family "now deals" marked a PORTRAY 2
+   value, so they might be P2 figures rather than the P0 base. **Benson's own PORTRAY_DB text now
+   settles it — they ARE P2**: "P2 ... entry skills grant Harmonization +20/10/20/6."
+   So applying them flat at every Portray level over-credited P0 and P1 for six versions.
+
+   They are now gated at P2+. The P0/P1 base is NOT sourced anywhere, and is therefore NOT
+   invented — at those levels the skills grant no modelled Harmonization and the round note says
+   why, rather than silently substituting a P2 number (§0.3).
+
+   Also from her P2/P4 text, previously unmodelled:
+     P2: "On entering battle, gains Harmonization +100, +2 per Energy consumed thereafter."
+         (supersedes the Insight III +70 entry grant, and doubles the per-Energy rate from §20.1)
+     P4: "[Atomic Fusion] now grants Mineral Energy +6." */
+const CONDUIT_PORTRAY_SKILL = {
+  'The Twins': {
+    2: { harmonizationGrants:{ 'Arcane Skill I: Atomic Fusion':20, 'Arcane Skill II: Polymeric Ray':10,
+                               'Arcane Skill I: Extreme Overclocking':20, 'Arcane Skill II: Balancé Across the Stars':6 },
+         entryHarmonization:100, harmonizationPerEnergy:2,
+         note:'P2: entry skills grant Harmonization +20/10/20/6; on entering battle Harmonization +100, and +2 per Energy consumed thereafter.' },
+    4: { skillEnergy:{ 'Arcane Skill I: Atomic Fusion':6 },
+         note:'P4: [Atomic Fusion] now grants Mineral Energy +6.' }
+  }
+};
+// Resolve the cumulative Portray-level skill changes for a character at a given level.
+function sbConduitPortraySkill(name, portrayLevel){
+  const t = CONDUIT_PORTRAY_SKILL[name] || {};
+  const out = { harmonizationGrants:{}, skillEnergy:{}, entryHarmonization:null, harmonizationPerEnergy:1, notes:[] };
+  for(let lv = 1; lv <= (portrayLevel || 0); lv++){
+    const m = t[lv];
+    if(!m) continue;
+    Object.assign(out.harmonizationGrants, m.harmonizationGrants || {});
+    Object.assign(out.skillEnergy, m.skillEnergy || {});
+    if(m.entryHarmonization != null) out.entryHarmonization = m.entryHarmonization;
+    if(m.harmonizationPerEnergy != null) out.harmonizationPerEnergy = m.harmonizationPerEnergy;
+    if(m.note) out.notes.push(m.note);
+  }
+  return out;
+}
 const INTERVAL_STEP_CAP_BY_PORTRAY = { 0:30, 1:30, 2:30, 3:30, 4:30, 5:50 };
 // Conduit characters DO draw from the shared team AP pool — they're just AP-FREE to cast (their own
 // Energy-card casts don't spend it; see the Conduit ARCH_INFO primer: "arranging/casting these
@@ -12338,9 +12406,17 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
      dual-Afflatus character, so this is exactly where it mattered most. */
   conduitArr.forEach(c => { harmonization[c.name] = 0; energy[c.name] = { Mineral:0, Star:0 };
     intervalStep[c.name] = 0; instrumentTuning[c.name] = 0; });
-  // One-time entering-battle grants (kit-confirmed, real numbers).
-  if(conduitArr.some(c => c.name === 'The Twins')) harmonization['The Twins'] += 70; // Insight III
-  if(conduitArr.some(c => c.name === 'Coppélia')) harmonization['Coppélia'] += 30; // Insight III
+  /* One-time entering-battle grants. Base values are Insight III (kit-confirmed, real numbers).
+     The Twins' P2 Portray text supersedes the Insight III +70 with a stated +100 — "On entering
+     battle, gains Harmonization +100" — via sbConduitPortraySkill's entryHarmonization, resolved
+     per-character since teamPortray is known by here. Coppélia has no such override sourced. */
+  conduitArr.forEach(c => {
+    if(c.name === 'The Twins'){
+      const psk0 = sbConduitPortraySkill('The Twins', teamPortray['The Twins'] || 0);
+      harmonization['The Twins'] += (psk0.entryHarmonization != null) ? psk0.entryHarmonization : 70;
+    }
+    if(c.name === 'Coppélia') harmonization['Coppélia'] += 30; // Insight III
+  });
   const rounds = [];
   for(let r=1; r<=totalRounds; r++){
     const roundActions = [];
@@ -12394,6 +12470,9 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
       const portrayLv = teamPortray[name] || 0;
       const deck = sbConduitEnergyDeck(name, portrayLv);
       const kit = CONDUIT_KIT[name] || {};
+      // v0.10 — resolved Portray-level skill overrides for THIS character (empty object for anyone
+      // without a CONDUIT_PORTRAY_SKILL entry, so this is always safe to read).
+      const psk = sbConduitPortraySkill(name, portrayLv);
       /* A pick may name the UPGRADED copy of a card ("Mineral Energy I#up") or the base one.
          sbConduitResolveCard collapses either to the concrete {energy, intervalStep} actually
          produced, so the phase-1 loop below doesn't need to care which variant was chosen. */
@@ -12431,7 +12510,26 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
             const cap = sbConduitIntervalStepCap(teamPortray['Coppélia'] || 0);
             intervalStep[name] = Math.min(cap, (intervalStep[name] || 0) + d.intervalStep);
           }
-          roundActions.push({ name, note:`Energy card played (${cost} AP): ${escapeAttr(cardKey)}${assumedLabel}${isUp && d.portrayFrom ? ` [upgraded copy, P${d.portrayFrom}]` : ''} — ${d.note} Pool is now ${pool[d.energyType]} ${d.energyType} Energy. ${apLeft} AP left in the shared pool.` });
+          /* v0.10 fix: a REAL display-vs-simulation bug (same class as the v74 lesson). The base
+             card's `note` string hardcodes its OWN energy amount in prose ("Mineral Energy +1."),
+             but when the upgraded copy was picked, `d.energy` correctly becomes 2 while `d.note`
+             stayed the BASE card's note (raw.upgraded has no note field of its own, so
+             Object.assign never touched it) — the round text kept saying "+1" while the pool
+             correctly went up by 2. The amount clause is now always rebuilt from the real d.energy
+             actually applied; only the trailing flavor text (Conduit Might mentions etc.) is kept
+             verbatim from the base card, since Portray upgrades only ever change the copy count and
+             the energy number sourced so far — never the flavor effect. */
+          let flavorText = raw.note.replace(/^Energy card — (?:Mineral|Star) Energy \+\d+[.,]\s*/, '');
+          // Same fix, second field: Skip Motion's flavor text also hardcodes a stack count in
+          // prose ("grants 10 stacks of..."). Rebuild that number from d.intervalStep too, so a
+          // P5-upgraded Skip Motion (20 stacks) doesn't keep printing the base card's "10".
+          if(d.intervalStep) flavorText = flavorText.replace(/\d+(?= stacks of)/, String(d.intervalStep));
+          // Cosmetic: Skip Motion's flavor continues the sentence lowercase ("and grants...") since
+          // the base note originally used a comma there — join with a comma, not a period, when the
+          // flavor clause starts lowercase, so the rebuilt sentence still reads naturally.
+          const joiner = flavorText && /^[a-z]/.test(flavorText) ? ', ' : '. ';
+          const cardNoteText = `Energy card — ${d.energyType} Energy +${d.energy}${flavorText ? joiner + flavorText : '.'}`;
+          roundActions.push({ name, note:`Energy card played (${cost} AP): ${escapeAttr(cardKey)}${assumedLabel}${isUp && d.portrayFrom ? ` [upgraded copy, P${d.portrayFrom}]` : ''} — ${cardNoteText} Pool is now ${pool[d.energyType]} ${d.energyType} Energy. ${apLeft} AP left in the shared pool.` });
         });
         /* ---- PHASE 2: the chosen Skill Set casts ----
            Benson: "By selecting the sets, once I have the energy, it will cast the incantations."
@@ -12446,13 +12544,26 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
           ordered.forEach(sk => {
             const have = pool[set.energyType] || 0;
             if(sk.cost == null){
-              harmonization[name] += (sk.harmonization || 0);
-              roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast (AP-free; fired by the Conduit, not from hand). ${sk.note} No Energy cost is sourced for it, so no Energy was deducted and no trigger count is computed rather than inventing one.` });
+              const hg0 = psk.harmonizationGrants[sk.name] != null ? psk.harmonizationGrants[sk.name] : (sk.harmonization || 0);
+              harmonization[name] += hg0;
+              const hgNote0 = hg0 ? ` Harmonization +${hg0}${psk.harmonizationGrants[sk.name] != null ? ' (Portray-granted)' : ''}.` : '';
+              roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast (AP-free; fired by the Conduit, not from hand). ${sk.note} No Energy cost is sourced for it, so no Energy was deducted and no trigger count is computed rather than inventing one.${hgNote0}` });
               return;
             }
             if(sk.cost === 0){
-              harmonization[name] += (sk.harmonization || 0);
-              roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast once (0 ${set.energyType} Energy${sk.interval ? ', [Interval] so once per round' : ''}). ${sk.note} Harmonization +${sk.harmonization || 0}.` });
+              const hg1 = psk.harmonizationGrants[sk.name] != null ? psk.harmonizationGrants[sk.name] : (sk.harmonization || 0);
+              harmonization[name] += hg1;
+              // Self-generated Energy from casting this skill (e.g. Atomic Fusion's own Mineral
+              // Energy gain). Only a Portray-sourced override exists (CONDUIT_PORTRAY_SKILL) — the
+              // P0/P1 base amount was never sourced, so nothing is added below that Portray level.
+              const selfE = psk.skillEnergy[sk.name];
+              let selfENote = '';
+              if(selfE){
+                pool[set.energyType] = (pool[set.energyType] || 0) + selfE;
+                selfENote = ` Also grants +${selfE} ${set.energyType} Energy (Portray-granted, pool now ${pool[set.energyType]}).`;
+              }
+              const hgNote1 = psk.harmonizationGrants[sk.name] != null ? ' (Portray-granted)' : (hg1 ? '' : ' — base amount not sourced, so 0 added');
+              roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast once (0 ${set.energyType} Energy${sk.interval ? ', [Interval] so once per round' : ''}). ${sk.note} Harmonization +${hg1}${hgNote1}.${selfENote}` });
               return;
             }
             let unit = sk.cost;
@@ -12473,8 +12584,16 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
             }
             const spent = times * unit;
             pool[set.energyType] = have - spent;
-            harmonization[name] += spent + (sk.harmonization || 0) * times;
-            roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast ${times}x (AP-free; fired by the Conduit off gathered Energy). ${sk.note} Spent ${spent} of ${have} ${set.energyType} Energy (${unit} each), leaving ${pool[set.energyType]}. Harmonization +${spent} (1 per Energy consumed)${sk.harmonization ? ` and +${sk.harmonization * times} from the skill itself` : ''}.` });
+            // v0.10 — Portray can change the 1-per-Energy Harmonization RATE itself (Twins P2:
+            // "+2 per Energy consumed"), not just the flat per-skill grant, so both are resolved
+            // through psk rather than the hardcoded 1x/sk.harmonization used through v0.9.
+            const perEnergyRate = psk.harmonizationPerEnergy || 1;
+            const hg2 = psk.harmonizationGrants[sk.name] != null ? psk.harmonizationGrants[sk.name] : (sk.harmonization || 0);
+            const fromEnergy = spent * perEnergyRate;
+            harmonization[name] += fromEnergy + hg2 * times;
+            const rateNote = perEnergyRate !== 1 ? ` (${perEnergyRate} per Energy, Portray-granted)` : ' (1 per Energy consumed)';
+            const hgNote2 = hg2 ? ` and +${hg2 * times} from the skill itself${psk.harmonizationGrants[sk.name] != null ? ' (Portray-granted)' : ''}` : '';
+            roundActions.push({ name, note:`${escapeAttr(sk.name)} — cast ${times}x (AP-free; fired by the Conduit off gathered Energy). ${sk.note} Spent ${spent} of ${have} ${set.energyType} Energy (${unit} each), leaving ${pool[set.energyType]}. Harmonization +${fromEnergy}${rateNote}${hgNote2}.` });
             if(conduitArr.some(x => x.name === 'Coppélia')){
               const cap = sbConduitIntervalStepCap(teamPortray['Coppélia'] || 0);
               const before = intervalStep['Coppélia'];
@@ -12651,7 +12770,7 @@ function renderConduitPanel(conduitArr){
       const rows = names.map(k => {
         const d = deck[k];
         return d.upgraded
-          ? `<li>${k} — base copy +${d.energy} ${d.energyType}; <b>${d.upgraded.copies} ${d.upgraded.copies===1?'copy':'copies'} upgraded to +${d.upgraded.energy}</b> by P${d.upgraded.portrayFrom}</li>`
+          ? `<li>${k} — base copy +${d.energy} ${d.energyType}; <b>${d.upgraded.copies != null ? `${d.upgraded.copies} ${d.upgraded.copies===1?'copy':'copies'}` : 'some copies (exact count not sourced)'} upgraded to +${d.upgraded.energy}</b> by P${d.upgraded.portrayFrom}</li>`
           : `<li>${k} — +${d.energy} ${d.energyType}</li>`;
       }).join('');
       return `<div class="sb-action" style="opacity:.85"><b>${c.name}'s Energy deck</b> at P${teamPortray[c.name] || 0} — <b>${names.length} card types</b>:<ul style="margin:4px 0 0 18px">${rows}</ul>
