@@ -1,6 +1,6 @@
 # RE1999 Team Builder — Standing Operating Rules  
   
-**Doc version: v0.4** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
+**Doc version: v0.5** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
 the HTML tool file's version number. This pair of docs (`STANDING_RULES.md` + `RUN_LOG.md`) revises on  
 its own schedule rather than being re-versioned alongside the tool file. Bump the version (v0.1 → v0.2  
 → ...) any run that makes a REAL rule change here — a new/removed constraint, a corrected methodology, a  
@@ -8,8 +8,8 @@ changed source-of-truth priority. Do NOT bump it for a run that only reads this 
 without editing it. Record what changed and why in `RUN_LOG.md` under a "Doc vX.Y" heading each time it  
 bumps, same append-only pattern as everything else there.  
   
-**HTML tool version: v0.4 as of 2026-08-24** — the delivered file is now named  
-`<date>_v0.4_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
+**HTML tool version: v0.5 as of 2026-08-24** — the delivered file is now named  
+`<date>_v0.5_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
 through 2026-08-20 (that counter is retired, not renumbered — every historical "v58"/"v72"/"v79"/"v80"  
 mention elsewhere in this file and in `RUN_LOG.md` stays exactly as originally written; don't rewrite  
 history to match the new scheme). The 2026-08-20 file's actual content is unchanged by this reset — only  
@@ -751,3 +751,66 @@ to at least 4 Star Energy to max out these benefits"* — a scaling recommendati
 Per §12, **a vague number is not real per-level content**; it stays a tracked gap rather than an
 entered guess. Polymeric Ray's 3 is not transferable to it: that number was independently
 corroborated for that specific card, and the two sets are not symmetric elsewhere either.
+
+---
+
+## §21 The Conduit turn, correctly modelled (v0.5, 2026-08-24) — SUPERSEDES §19/§20's structure
+
+**This section corrects a STRUCTURAL error, not a number.** Benson: *"you are still wrong about
+harmonization, u play energy cards that uses energy"*, then *"then the 'skills' will be used
+depending on the type and amount of energy fed."* He was right, and §19/§20 shipped a model that
+could not express the archetype at all. Their **numbers** survive; their **shape** does not.
+
+### §21.0 The real turn (sourced, near-verbatim — treat as ground truth)
+> "Every Conduit character has a personal Energy deck, which draws their Energy cards into your
+> Spelldock. Instead of casting Incantations from hand, they are displayed right under the AP Area,
+> and at the start of the round you can pick (per character) what Incantation they'll be casting.
+> You cast the Energy cards from your hand and when those have resolved, your gathered Energy for
+> the turn (if sufficient) will trigger the chosen Incantations. These Conduit Incantations usually
+> have an Energy cost... Energy you gather has an Afflatus, so you have separate pools for Mineral
+> Energy, Star, Beast etc. Some Incantations may require specific types of Energy to cast. So long
+> as you have enough Energy, Conduit Incantations can trigger multiple times. Your unused Energy
+> resets at the start of each round."
+
+**Two phases, in this order: Energy cards are PLAYED to feed the Conduit → the chosen Incantation
+then RESOLVES against what was gathered.** Any future Conduit work starts from this paragraph.
+
+### §21.1 The three things v0.3/v0.4 got structurally wrong
+1. **Energy cards and Incantations were treated as the same thing.** `CONDUIT_CARD_EFFECTS` put an
+   `energyGain` *and* an `energyCost` on the SAME entry, so each pick both produced and spent Energy
+   in one action. They are different objects with different roles. Every entry now declares
+   **`kind:'energy'`** (played from hand, produces Energy), **`kind:'incantation'`** (consumes
+   Energy, resolves afterwards), or **`kind:'ultimate'`**.
+2. **Incantations only ever fired once.** They trigger **`floor(pool / cost)`** times. This is the
+   entire point of feeding the Conduit, and the old shape could not represent it — which is also why
+   the economy looked inert no matter how many numbers got fixed.
+3. **Energy was one flat counter.** It is **typed**: `{ Mineral, Star }` per character. The old model
+   let The Twins' Set B **Star** Energy pay for a Set A **Mineral** Incantation. The Twins are the
+   dual-Afflatus character, so this was wrong exactly where it mattered most.
+
+**Which set is which** — confirmed, and it matches `SKILL_KIT`'s own `type` field, so the data was
+always there to read: the **"Basic Attack"** entries are the **Energy cards** (Atomic Fusion,
+Extreme Overclocking, Vowel Basics), the **"Skill"/"Attack"** entries are the **Incantations**
+(Polymeric Ray, Balancé, Finger Training). Source: *"Set A is the Mineral set, where Atomic Fusion
+grants a big +4 Mineral Energy, which is important as the attacking Incantation of this set costs at
+least 3 Mineral Energy."*
+
+### §21.2 Rules that fall out of the correct shape
+- **`[Instrument Tuning I]` discounts the PER-TRIGGER cost**, which is where its real leverage is:
+  3 stacks against a cost-3 Incantation takes it to 0. A 0-cost Incantation is counted as **one free
+  trigger**, never looped — there is no Energy limit to divide by, and inventing an iteration count
+  would be fabrication. Stacks are consumed only as far as the cost can absorb them.
+- **Harmonization +1 per Energy consumed** (§20.1) now fires off real consumption, and an
+  Incantation's own flat Harmonization grant is applied **per trigger**.
+- **An Incantation that cannot pay says so** ("did NOT trigger: it costs N and only M was gathered")
+  rather than silently doing nothing.
+- **Balancé Across the Stars still has no sourced cost**, so its trigger count is left **uncomputed
+  and labelled**, not guessed (§20.4). Polymeric Ray's 3 is not transferable to it.
+- `conduitEnergyLabel()` renders the typed pool for **both** display paths, so they cannot drift —
+  the v74 lesson (display and simulation are not kept in sync for free).
+
+### §21.3 Standing warning
+Every previous Conduit "fix" — v75's per-card numbers, v0.3's multi-cast, v0.4's Harmonization
+engine — was a real improvement layered onto a wrong shape, and each one made the output look more
+convincing without making it correct. **When Benson says the Conduit output is wrong, check the
+SHAPE of the turn against §21.0 before adjusting any number.**

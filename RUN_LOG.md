@@ -2096,3 +2096,85 @@ unmodeled; Matilda / Lady by the Lake rarity; The Twins' dual element; An-an Lee
 has no `PORTRAY_DB` data; fuller real-time round tracker.
 
 → Delivered as `2026-08-24_v0.4_RE1999TeamBuilder.html`
+
+## Session 25 (v0.5) — 2026-08-24 — Benson: "u play energy cards that uses energy" — the Conduit turn had the wrong SHAPE
+
+**Trigger.** Benson: *"well, you are still wrong about harmonization, u play energy cards that uses
+energy"*, then mid-run *"then the 'skills' will be used depending on the type and amount of energy
+fed."*
+
+**He was right, and this was structural, not numeric.** v0.3 and v0.4 each fixed real things —
+per-card numbers, the multi-cast bug, the Harmonization-per-Energy engine — but all of it was
+layered onto a model that could not express the archetype. Researched the actual turn this run
+(§21.0), sourced near-verbatim: Energy cards are **played** to feed the Conduit, and the Incantation
+**chosen at round start** then resolves against whatever was gathered.
+
+### Three structural errors, all fixed
+1. **Energy cards and Incantations were the same object.** `CONDUIT_CARD_EFFECTS` carried an
+   `energyGain` AND an `energyCost` on one entry, so a pick both produced and spent Energy in a
+   single action. Now every entry declares `kind:'energy'` / `kind:'incantation'` / `kind:'ultimate'`
+   and the round runs in two real phases.
+2. **Incantations fired once.** They trigger `floor(pool / cost)` times — *"so long as you have
+   enough Energy, Conduit Incantations can trigger multiple times."* This is the whole point of
+   feeding the Conduit and the old shape could not represent it, which is the real reason the
+   economy kept looking inert however many numbers got corrected.
+3. **Energy was one flat counter. It is typed** (`{Mineral, Star}`). The old model let The Twins'
+   Set B **Star** Energy pay for a Set A **Mineral** Incantation — wrong precisely where it mattered
+   most, since The Twins are the dual-Afflatus character.
+
+The Energy-card/Incantation split was confirmed against `SKILL_KIT`'s own `type` field, which had
+encoded it all along: "Basic Attack" = Energy card, "Skill"/"Attack" = Incantation.
+
+### Verified end to end
+- **Multi-trigger:** 2× Atomic Fusion (+10 Mineral) → Polymeric Ray triggers **3×**, spends 9,
+  leaves 1, Harmonization +9 from consumption plus +30 from the Incantation itself.
+- **Type separation:** Extreme Overclocking feeds **Star**; a Mineral Polymeric Ray with 0 Mineral
+  correctly does not draw on it.
+- **Tuning discount on per-trigger cost:** 3 stacks take Polymeric Ray's cost 3 → 0, and a 0-cost
+  Incantation is counted as ONE free trigger, never looped (no Energy limit to divide by, and an
+  invented iteration count would be fabrication).
+- **Unpayable Incantations say so** instead of silently doing nothing.
+- **Balancé still has no sourced cost**, so its trigger count is left uncomputed and labelled.
+
+### Verification
+- **`node --check`: PASS.** Declaration diff **180 → 181, REMOVED = 0** vs v0.4, and **REMOVED = 0
+  vs v0.1**. One addition: `conduitEnergyLabel`, used by both Conduit render paths so the typed pool
+  cannot render inconsistently (the v74 display-vs-simulation lesson).
+- **Playwright: zero non-network errors.** All 129 live characters simulate solo, 0 errors.
+  `applied` still **423** — standard-character math untouched again.
+- Role audit clean; 0 tooltip spans missing attributes; `⚠ Untested` disclaimer intact.
+- **Screenshot check performed** on a mixed team: the round now reads "Energy card played... Pool is
+  now 5 Mineral Energy" → "...now 10 Mineral Energy" → "**Incantation triggered 3x**... Spent 9 of
+  10 (3 each), leaving 1", with the Harmonization/Energy line above it. That is the real turn.
+
+### Lesson recorded in STANDING_RULES §21.3
+Each earlier Conduit fix made the output look more convincing without making it correct. **When
+Benson says the Conduit output is wrong, check the SHAPE of the turn against §21.0 before adjusting
+any number.**
+
+### Open items
+1. **Conduit math still untested against a real match** — the model shape is now right and every
+   sourced number is in, but only real play confirms it. Disclaimer stays.
+2. **Balancé's Star Energy cost** — still unsourced (§20.4).
+3. **Search-sourced numbers pending verbatim re-verification** (§19.0) — Harmonization +20/10/20/6
+   (possible P0-vs-P2 ambiguity), Polymeric Ray's 3, +1-Harmonization-per-Energy, Interval Step's
+   30 cap, Instrument Tuning's scope.
+4. **Per-round Energy-card DRAW is not modelled** — the sim lets you play any number of a
+   character's Energy cards each round, but the real game deals them from a personal Energy deck
+   into the Spelldock, so hand availability is a real constraint this does not represent.
+5. **`[Exhaust]` / `[Interval]` once-per-round restrictions are not tracked** (Coppélia's Vowel
+   Basics, The Twins' Extreme Overclocking) — with #4, this is the main reason a round here can be
+   more generous than the real game.
+6. `PORTRAY_SIMULATED` still covers 6 levels across 5 characters; Cornerstone kit data retained
+   while `upcoming:true` (§20.3).
+
+Unchanged from v0.4: 32 characters produce no stat effects; 51 effect instances dropped;
+effect layer is a bulk pass; Portray backlog spot-checking (16 of 126); `BUFF_STACK_MODE` unverified;
+damage model untested; 6 characters with untagged conditional entering-battle Moxie grants;
+`ULT_HOLD_OVERRIDE` unwired; `AP_SURPLUS_OVERRIDE` unused; Corvus monotonic counter; Ezio
+Synchronization underestimate; Kassandra card-injection thresholds; Cheng Heguang's ≥10 `[Feathered
+Blades]`; Beryl's Emanation crystal; slot-bar layout never stress-tested against an Anjo Nala Bind
+team; Tuning card interaction unmodeled; Matilda / Lady by the Lake rarity; The Twins' dual element;
+An-an Lee's portrait; Everecho has no `PORTRAY_DB` data; fuller real-time round tracker.
+
+→ Delivered as `2026-08-24_v0.5_RE1999TeamBuilder.html`
