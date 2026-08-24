@@ -1,6 +1,6 @@
 # RE1999 Team Builder — Standing Operating Rules  
   
-**Doc version: v0.8** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
+**Doc version: v0.9** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
 the HTML tool file's version number. This pair of docs (`STANDING_RULES.md` + `RUN_LOG.md`) revises on  
 its own schedule rather than being re-versioned alongside the tool file. Bump the version (v0.1 → v0.2  
 → ...) any run that makes a REAL rule change here — a new/removed constraint, a corrected methodology, a  
@@ -8,8 +8,8 @@ changed source-of-truth priority. Do NOT bump it for a run that only reads this 
 without editing it. Record what changed and why in `RUN_LOG.md` under a "Doc vX.Y" heading each time it  
 bumps, same append-only pattern as everything else there.  
   
-**HTML tool version: v0.8 as of 2026-08-24** — the delivered file is now named  
-`<date>_v0.8_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
+**HTML tool version: v0.9 as of 2026-08-24** — the delivered file is now named  
+`<date>_v0.9_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
 through 2026-08-20 (that counter is retired, not renumbered — every historical "v58"/"v72"/"v79"/"v80"  
 mention elsewhere in this file and in `RUN_LOG.md` stays exactly as originally written; don't rewrite  
 history to match the new scheme). The 2026-08-20 file's actual content is unchanged by this reset — only  
@@ -940,9 +940,14 @@ that had never appeared in this tool at all.**
 | A (Mineral) | Atomic Fusion — **0 Mineral**, `[Interval]` | Polymeric Ray — **3 Mineral** |
 | B (Star) | Extreme Overclocking — **0 Star**, `[Interval]` | Balancé Across the Stars — **1 Star** |
 
-Coppélia has ONE set: `Clarity in Clefs` (`[Interval]`, mass buff) and `Tuning Technique` (1-target
-attack). **Neither states an Energy cost in the sourced text**, so they are reported as firing but
-not gated on a guessed number.
+Coppélia has ONE set: `Clarity in Clefs` — **0 Energy**, `[Interval]`, mass buff — and
+`Tuning Technique` — **2 MINERAL Energy**, 1-target attack (Benson: *"the cost is Mineral energy"* —
+her paste says only "Cost: 2 Energy", and her whole set is Mineral-typed, so it draws the Mineral
+pool; label it explicitly, since a bare "Energy" is ambiguous once pools are typed per §21.1). (Costs confirmed by Benson's kit paste
+2026-08-24; they were unsourced through v0.8. Note her kit numbers them the other way round,
+"Incantation 1: Tuning Technique" — the numbering is cosmetic, the COST ordering is what the sim
+uses.) Same shape as The Twins' sets: **the `[Interval]` skill is the free one**, so cheapest-first
+ordering fires the buff before the attack that drains the pool.
 
 - **`[Interval]` is now tracked** — it caps a skill at once per round. It sits on every Arcane Skill
   I, and without it a 0-cost skill would fire unboundedly.

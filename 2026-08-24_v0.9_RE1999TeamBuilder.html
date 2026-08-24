@@ -12239,10 +12239,16 @@ const CONDUIT_KIT = {
     },
     sets: {
       'Instrument (Mineral)': { energyType:'Mineral', skills:[
-        { name:'Clarity in Clefs', cost:null, interval:true, harmonization:0,
-          note:'Arcane Skill, [Interval] so once per round. Mass buff: grants [Symphonic Unity] to all allies for 3 rounds. Its Energy cost is NOT stated in the sourced kit text, so its firing is reported but not gated on a guessed number.' },
-        { name:'Tuning Technique', cost:null, harmonization:10,
-          note:'Arcane Skill. 1-target attack, 480% Reality DMG, +120% per level of [Energy Accumulation] up to 20 levels — damage informational-only. Its Energy cost is NOT stated in the sourced kit text, so its firing is reported but not gated on a guessed number.' }
+        /* Costs confirmed by Benson's kit paste 2026-08-24, closing the last unsourced gap in her
+           set. Note the same shape as The Twins' sets: the [Interval] skill is the FREE one, and
+           the attacking skill is what actually spends Energy — so cheapest-first ordering fires the
+           buff before the attack that drains the pool, which is the right play order. Her kit
+           numbers them the other way round (Incantation 1 = Tuning Technique); the numbering is
+           cosmetic, the cost ordering is what the sim uses. */
+        { name:'Clarity in Clefs', cost:0, interval:true, harmonization:0,
+          note:'Arcane Skill, 0 Mineral Energy, [Interval] so once per round. Mass buff: grants [Symphonic Unity] to all allies for 3 rounds.' },
+        { name:'Tuning Technique', cost:2, harmonization:10,
+          note:'Arcane Skill, 2 MINERAL Energy per cast (Benson: "the cost is Mineral energy" — her kit paste says only "Cost: 2 Energy", and her whole set is Mineral-typed, so it draws on the Mineral pool). 1-target attack, 480% Reality DMG, +120% per level of [Energy Accumulation] up to 20 levels — damage informational-only, this sim computes no Conduit damage.' }
       ]}
     },
     ultimate: { name:'The Solfège Carved On The Body', resetOnCast:true, energy:2, energyType:'Mineral',

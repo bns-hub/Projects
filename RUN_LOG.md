@@ -2418,3 +2418,51 @@ Blades]`; Beryl's Emanation crystal; Tuning card interaction unmodeled; Matilda 
 rarity; The Twins' dual element; An-an Lee's portrait; Everecho has no `PORTRAY_DB` data.
 
 → Delivered as `2026-08-24_v0.8_RE1999TeamBuilder.html`
+
+## Session 29 (v0.9) — 2026-08-24 — Coppélia's Arcane Skill costs sourced, closing her set
+
+**Trigger.** Benson pasted her incantation costs: *Tuning Technique — Cost: 2 Energy*;
+*Clarity in Clefs — Cost: 0 Energy, [Interval]*.
+
+Closes open item 3, unsourced since v0.7. Through v0.8 both skills fired ungated with an explicit
+"cost not sourced" note rather than a guessed number; they now spend real Energy.
+
+**The shape matches The Twins exactly** — the `[Interval]` skill is the **0-cost** one and the
+attacking skill is what drains the pool. Cheapest-first ordering therefore fires the buff before the
+attack, which is the right play order. Her kit numbers them the other way round ("Incantation 1:
+Tuning Technique"); the numbering is cosmetic, the cost ordering is what the sim uses.
+
+Benson added a clarification mid-run — *"the cost is Mineral energy"* — confirming the cost draws
+the **Mineral** pool specifically. Functionally this was already right (her set is Mineral-typed),
+but the labels read a bare "2 Energy", which is ambiguous now that pools are typed per §21.1. They
+now say **Mineral** explicitly everywhere.
+
+**Verified:** 3× `Mineral Energy II` (+6 Mineral) → `Clarity in Clefs` casts **once** (0 Energy,
+`[Interval]`) → `Tuning Technique` casts **3×** (6 ÷ 2). Before this she could not multi-cast at all,
+because an unsourced cost has nothing to divide by.
+
+### Verification
+- **`node --check`: PASS.** Declaration diff **190 → 190, REMOVED = 0, ADDED = 0** — a pure data
+  correction, no new surface.
+- **Playwright: zero non-network errors.** All 129 live characters simulate solo, 0 errors;
+  `applied` still **423**.
+- `[Interval]` cap re-verified unchanged (1 vs 8 casts).
+
+### Open items
+1. **Energy-deck copy counts and per-round draw** — now the last structural gap in the Conduit
+   model (§25.1). Benson's own game screen is the source.
+2. **The Twins' "AP +1"** — still needs him to settle (§24.4); displayed, not silently changed.
+3. **Conduit math untested against a real match** — every per-card number in the model is now
+   sourced, so this is the remaining confirmation step rather than a data gap.
+4. Per-card AP costs unsourced (default 1); search-sourced numbers pending verbatim re-verification
+   (§19.0); `PORTRAY_SIMULATED` covers 6 levels across 5 characters; Cornerstone kit data retained
+   while `upcoming:true`.
+
+Unchanged from v0.8: 32 characters produce no stat effects; 51 effect instances dropped; effect layer
+is a bulk pass; Portray backlog spot-checking (16 of 126); `BUFF_STACK_MODE` unverified; damage model
+untested; `ULT_HOLD_OVERRIDE` unwired; `AP_SURPLUS_OVERRIDE` unused; Corvus monotonic counter; Ezio
+Synchronization underestimate; Kassandra card-injection thresholds; Cheng Heguang's ≥10 `[Feathered
+Blades]`; Beryl's Emanation crystal; Tuning card interaction unmodeled; Matilda / Lady by the Lake
+rarity; The Twins' dual element; An-an Lee's portrait; Everecho has no `PORTRAY_DB` data.
+
+→ Delivered as `2026-08-24_v0.9_RE1999TeamBuilder.html`
