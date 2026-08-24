@@ -1,6 +1,6 @@
 # RE1999 Team Builder — Standing Operating Rules  
   
-**Doc version: v0.10** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
+**Doc version: v0.11** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
 the HTML tool file's version number. This pair of docs (`STANDING_RULES.md` + `RUN_LOG.md`) revises on  
 its own schedule rather than being re-versioned alongside the tool file. Bump the version (v0.1 → v0.2  
 → ...) any run that makes a REAL rule change here — a new/removed constraint, a corrected methodology, a  
@@ -8,8 +8,8 @@ changed source-of-truth priority. Do NOT bump it for a run that only reads this 
 without editing it. Record what changed and why in `RUN_LOG.md` under a "Doc vX.Y" heading each time it  
 bumps, same append-only pattern as everything else there.  
   
-**HTML tool version: v0.10 as of 2026-08-24** — the delivered file is now named  
-`<date>_v0.10_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
+**HTML tool version: v0.11 as of 2026-08-24** — the delivered file is now named  
+`<date>_v0.11_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
 through 2026-08-20 (that counter is retired, not renumbered — every historical "v58"/"v72"/"v79"/"v80"  
 mention elsewhere in this file and in `RUN_LOG.md` stays exactly as originally written; don't rewrite  
 history to match the new scheme). The 2026-08-20 file's actual content is unchanged by this reset — only  
@@ -1142,19 +1142,32 @@ change flavor text, only amounts and copy counts. **Any future card-upgrade addi
 its printed amount through the applied value, never through a card's static note string, or this
 exact bug returns.**
 
-### §26.5 "整合程序启动" — investigated, NOT resolved, NOT modelled
-Benson sent two screenshots: an in-game screen titled "整合程序启动" ("Integration Procedure:
-Activate") offering 6 cards with a "confirm, 0/1" selector, arrows pointing at two 4-diamond cards;
-and a Spelldock row from actual play. Two separate WebSearch passes turned up real, useful
-**adjacent** facts — The Twins have **10 total Energy Card types** across 1 ultimate + 4 skills (this
-tool models 6; the other 4 are very plausibly the Portray-upgraded copies rendering as visually
-distinct cards in the real UI, which would corroborate §26.2/§25.0's per-copy model, but this is
-inference, not a confirmed match) — but **neither search named or explained this specific screen.**
+### §26.5 "整合程序启动" — RESOLVED v0.11: real, battle-start-only, hand-only
+Benson confirmed directly: *"it puts the selected card into my hand. This only occurs at the start
+of the battle."* A real, one-time pick — 6 cards offered, choose 1, guaranteed into the opening
+hand. WebSearch had already turned up a corroborating adjacent fact: The Twins have **10 total
+Energy Card types** across 1 ultimate + 4 skills (this tool models 6; the other 4 are plausibly the
+Portray-upgraded copies rendering as visually distinct cards, consistent with §26.2's per-copy
+model, though which specific 6 are offered here is still not sourced).
 
-**No mechanic was modelled for it.** The visual reading (a one-time 1-of-6 pick, arrows on the
-higher-tier cards) is consistent with several different real systems — a battle-start deck
-customization step that lets the player CHOOSE which card receives a Portray upgrade, a Psychube/
-relic-style pick, or something unrelated to Energy cards entirely — and picking wrong here would add
-an eighth wrong guess to a chain of them this session (§21, §24, §25 were all corrections of a prior
-guess). This is recorded as an **open item requiring Benson's own description of what selecting a
-card there actually does**, not modelled speculatively. See RUN_LOG open items.
+Added as `PREROUND_ACTION["The Twins"]` — the exact pattern this table exists for (§4: "a real
+non-card battle-start choice/action NOT modeled in the State-Block math"). **Deliberately still not
+wired into the Energy math**, for a real reason: this tool has never modeled a hand-size/draw
+constraint for ANY Conduit character — every Energy card in the deck is already freely pickable
+every round with no cap via the manual override. A "guaranteed card in hand" grant only matters
+against a real draw limit, and none exists in this sim to interact with, so simulating it would be
+motion without effect. What it DOES confirm: hand/draw availability is a real constrained resource in
+the actual game that §25.1 had already flagged as an unmodelled gap — this is evidence that gap is
+real, not new information about its size.
+
+**A second real bug found while wiring this in**: `PREROUND_ACTION` was only ever rendered for
+characters in `teamArr` (standard characters). Conduit characters are always routed through
+`conduitArr` instead, so the new Twins entry would have been checked-and-silently-invisible — the
+exact "invisible by construction" class §17.0/§18.0 exist to close, now recurring one table over.
+Fixed by adding the identical lookup over `conduitArr` too, inside the same `renderStateBlockPlan`
+function that already serves both the mixed-team and Conduit-only render paths, so one fix covers
+both. **Verified in both**: a mixed team (Twins + standard characters) and a Conduit-only team (Twins
++ Coppélia, no standard characters) both render the "Battle-start setup" box correctly.
+
+Which specific 6 cards are offered, and on what basis, remains genuinely unsourced — recorded in
+RUN_LOG open items, not guessed at.

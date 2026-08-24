@@ -10274,6 +10274,21 @@ function sbGetBaseInsightMechanics(c){
 const ESTIMATED_MAX_HP = 30000;
 const PREROUND_ACTION = {
   "Beryl": { note:"Emanation crystal choice (Insight I, \"Multiple Refraction\"): at battle start, if [Lingering Glow] exists, Beryl selects 2 Emanation crystals (each choosable up to 2 times — Blue/Purple/Green, each with a different [Destined Doom]/[Mirrored from Above] effect). Which crystals are picked isn't modeled below — treat the round-by-round output as crystal-agnostic." },
+  /* v0.11 — "整合程序启动" (Integration Procedure), the screen Benson screenshotted, confirmed by
+     him directly: "it puts the selected card into my hand. This only occurs at the start of the
+     battle." A real, one-time battle-start pick — offered 6 cards (per his screenshot; likely the
+     base/upgraded pairs across her Energy deck, corroborating §26.2's per-copy Portray model, but
+     WHICH 6 and on what basis isn't confirmed), choose 1, it's guaranteed into your opening hand.
+     Deliberately NOT wired into simulateConduitPlan's Energy math, for a real reason, not laziness:
+     this tool has never modeled a hand-size/draw constraint at all — every Energy card in the deck
+     is already freely pickable every round via the manual override, with no limit on how many. A
+     "guaranteed card in hand" grant only matters against a real draw constraint, and this sim has
+     none to interact with — so simulating it would be motion without effect. It genuinely confirms
+     something STANDING_RULES §25.1/§26.2 already flagged as a real gap: hand/draw availability is a
+     constrained resource in the actual game that this tool does not represent. Stated here as an
+     honest battle-start note instead. Only added for The Twins — his screenshot was of her screen;
+     nothing confirms Coppélia (or any other Conduit character) shares it. */
+  "The Twins": { note:"Integration Procedure (\"整合程序启动\"), battle-start only: choose 1 of 6 offered cards and it is guaranteed into your opening hand. WHICH 6 cards are offered and on what basis (Portray level, fixed set, random) is not sourced. Not simulated: this tool has no hand-size/draw-limit model for any Conduit character to begin with — every Energy card in the deck is already freely playable every round with no cap — so a guaranteed-in-hand grant has no unmodeled constraint here to interact with. Recorded because it confirms a real draw mechanic exists that this tool doesn't otherwise represent." },
   "Nautika": { note:`Insight II: loses 50% Current HP to gain [Bloodtithe]/Max [Bloodtithe] +8 (HP won't drop below 15% from this). Moxie is REPLACED by Faith for her — Faith +1 whenever Bloodtithe increases, Ultimate (Divine Yoik) available at Faith 8. Bloodtithe itself accumulates from ANY ally's HP loss (self-inflicted counts in full; HP lost to enemy attacks only counts at 30% efficiency — see Rubuska's Shadow Friend note above if she's on this team). Illustrative only (ESTIMATED_MAX_HP = ${ESTIMATED_MAX_HP}, NOT your real stats): entering battle's 50%-HP loss is roughly ${Math.round(ESTIMATED_MAX_HP*0.5)} HP toward the "3000 combined HP = 1 Bloodtithe point" threshold — i.e. a rough ballpark of ${Math.round(ESTIMATED_MAX_HP*0.5/3000*10)/10} points just from her own entry loss, on top of the flat +8 her kit grants outright. Her Faith/Bloodtithe economy is still NOT simulated round-by-round below — she participates in the normal AP/card loop, but her Ultimate readiness must be tracked manually (use the manual play override's 'ULTIMATE' pick once you know Faith has reached 8 in-game).` }
 };
 // ALT_ULT_GATE_CHARACTERS — characters whose Ultimate is governed by a bespoke resource/condition
@@ -12916,6 +12931,15 @@ function renderStateBlockPlan(teamArr, skipped, conduitArr){
         ? `<div class="sb-action"><span class="who">Anjo Nala</span> — ${linkTerms(`Bind (Insight I, "Oath Bound") → binds to <b>${renderBind}</b> for this comp. Her Max Moxie becomes 12 and her Ultimate costs 8 Moxie; ${renderBind} can no longer gain or cast their own Ultimate, and all Moxie ${renderBind} would earn is transferred to Anjo Nala instead. When Anjo Nala casts [Interwoven Dreams], ${renderBind} loses 50% current HP and force-casts their own Ultimate for free. All of this IS modeled in the simulation below.`)}</div>`
         : `<div class="sb-action"><span class="who">Anjo Nala</span> — ${linkTerms('Bind (Insight I, "Oath Bound"): at battle start she binds to an ally, changing her Max Moxie to 12 (Ultimate costs 8) and siphoning that ally\'s Moxie. This team isn\'t one of the confirmed Bind variants, so no specific target is assumed and the Bind is left out of the math below rather than guessed at.')}</div>`);
     }
+    const pre = PREROUND_ACTION[c.name];
+    if(pre) preRoundLines.push(`<div class="sb-action"><span class="who">${c.name}</span> — ${linkTerms(pre.note)}</div>`);
+  });
+  /* v0.11 REAL BUG FIX: this whole preRoundLines block only ever iterated teamArr (standard
+     characters). Conduit characters are always routed into conduitArr instead, so a
+     PREROUND_ACTION entry for a Conduit character (The Twins, just added above) would have been
+     silently invisible — checked-and-never-rendered, the exact "invisible by construction" failure
+     class §17/§18 exist to close. Same lookup, same rendering, just over the other array too. */
+  conduitArr.forEach(c => {
     const pre = PREROUND_ACTION[c.name];
     if(pre) preRoundLines.push(`<div class="sb-action"><span class="who">${c.name}</span> — ${linkTerms(pre.note)}</div>`);
   });

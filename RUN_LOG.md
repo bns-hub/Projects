@@ -2554,3 +2554,65 @@ Blades]`; Beryl's Emanation crystal; Tuning card interaction unmodeled; Matilda 
 rarity; The Twins' dual element; An-an Lee's portrait; Everecho has no `PORTRAY_DB` data.
 
 → Delivered as `2026-08-24_v0.10_RE1999TeamBuilder.html`
+
+## Session 31 (v0.11) — 2026-08-24 — "整合程序启动" resolved; a second Conduit-vs-teamArr rendering bug found
+
+**Trigger.** Benson, answering v0.10's open question about the screen he'd screenshotted: *"it puts
+the selected card into my hand. This only occurs at the start of the battle."*
+
+### What it is, and what it isn't
+A real, one-time battle-start pick: 6 cards offered, choose 1, guaranteed into the opening hand.
+This corroborates the WebSearch fact from v0.10 (The Twins have **10 total Energy Card types**; this
+tool models 6, and the other 4 are plausibly the Portray-upgraded copies rendering as visibly
+distinct cards) without fully confirming which specific 6 appear on this screen.
+
+Added as `PREROUND_ACTION["The Twins"]` — the table this project already built for exactly this
+category of thing (§4). **Deliberately NOT wired into the round-by-round Energy math.** The reason
+isn't caution, it's that there's genuinely nothing to wire it TO: this sim has never modelled a
+hand-size or draw-limit constraint for any Conduit character — every Energy card in the deck has
+always been freely pickable every round with no cap, via the manual override. A "guaranteed card in
+hand" grant only does something against a real draw limit, and none exists here. What it DOES
+establish: the "energy-deck copy counts and per-round draw" gap flagged since §25.1 is a real,
+confirmed mechanic in the actual game, not a hypothetical — this is evidence the gap is real, not
+new information about how big it is.
+
+### The second render-path bug this surfaced
+Wiring in the new `PREROUND_ACTION` entry required checking whether it would actually reach the
+screen — and it wouldn't have. `preRoundLines` (the "Battle-start setup" box) only ever iterated
+`teamArr`. Conduit characters are always routed through `conduitArr` instead, so **the entry would
+have been silently invisible**, exactly the failure class §17.0/§18.0 closed for buffs and Portrays,
+now recurring one table over for pre-round setup notes. Fixed by adding the identical
+`PREROUND_ACTION` lookup over `conduitArr`, inside the same `renderStateBlockPlan` function that
+already serves both the mixed-team and Conduit-only-team render paths — one fix, both paths covered,
+confirmed by testing both directly rather than assuming the shared function made it automatic.
+
+### Verification
+- **`node --check`: PASS.** Declaration diff **192 → 192, REMOVED = 0, ADDED = 0** — pure data +
+  rendering-path fix, no new surface.
+- **Playwright: zero non-network errors.**
+- **Rendering verified directly, not assumed**: DOM text extraction confirmed the box renders with
+  the correct note on both a MIXED team (Twins + Rhiannon + Coppélia + Enigma) and a CONDUIT-ONLY
+  team (Twins + Coppélia, no standard characters) — the two paths this exact bug class has bitten
+  before, checked separately rather than trusting the shared function.
+- **Screenshot check (§14.4) performed** on the rendered "Battle-start setup" box — correct CSS,
+  correct Chinese-text rendering, no layout break.
+
+### Open items
+1. **Which specific 6 cards the Integration Procedure offers, and on what basis** (Portray level,
+   fixed list, random) — still not sourced. The mechanic's existence is now confirmed; its exact
+   content is not.
+2. **The Twins' "AP +1"** — still needs him to settle (§24.4); displayed, not silently changed.
+3. **Conduit math untested against a real match** — the model is internally consistent and every
+   number now sourced; this is confirmation, not a data gap.
+4. Per-card AP costs unsourced (default 1); search-sourced numbers pending verbatim re-verification
+   (§19.0); `PORTRAY_SIMULATED` covers 6 levels across 5 characters; Cornerstone kit data retained
+   while `upcoming:true`.
+
+Unchanged from v0.10: 32 characters produce no stat effects; 51 effect instances dropped; effect
+layer is a bulk pass; Portray backlog spot-checking (16 of 126); `BUFF_STACK_MODE` unverified; damage
+model untested; `ULT_HOLD_OVERRIDE` unwired; `AP_SURPLUS_OVERRIDE` unused; Corvus monotonic counter;
+Ezio Synchronization underestimate; Kassandra card-injection thresholds; Cheng Heguang's ≥10
+`[Feathered Blades]`; Beryl's Emanation crystal; Tuning card interaction unmodeled; Matilda / Lady by
+the Lake rarity; The Twins' dual element; An-an Lee's portrait; Everecho has no `PORTRAY_DB` data.
+
+→ Delivered as `2026-08-24_v0.11_RE1999TeamBuilder.html`
