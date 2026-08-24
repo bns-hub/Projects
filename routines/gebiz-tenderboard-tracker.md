@@ -52,12 +52,24 @@ consultancy, and the hardware/licences procured as part of such a system.
 
 Exclusion is judged on the tender's PRIMARY subject, not on incidental mentions. A software system
 that merely has a security module, an AV feed, a switch in its BOM, or a train-the-trainer clause is
-still IN SCOPE — do not drop it. When a tender is genuinely half-and-half and you cannot call it,
-CAPTURE it and add a one-line note in Coverage & Method under "Borderline calls this run"; a false
-positive we can ignore costs far less than a missed opportunity.
+still IN SCOPE — do not drop it.
 
-Every exclusion must be logged (count + up to 5 example titles with the rule number that excluded
-them) in Coverage & Method — never drop items silently.
+**WHEN IN DOUBT, EXTRACT — leave no stone unturned.** This is the governing rule of the whole routine
+and it overrides every "REJECT" instruction below. Drop a tender ONLY when it is unambiguously
+irrelevant or unambiguously one of the five exclusions. If you are unsure for ANY reason — the title
+is cryptic or an acronym, the category label is odd, the listing is a stub, the scope could plausibly
+involve software/systems work, it straddles an exclusion, or you simply cannot tell — then CAPTURE IT:
+extract every field you can and put the row in the "Review (Unsure)" sheet (Step 6, Sheet 4) with a
+short "Why Unsure" note. Never discard a tender merely because information was thin or you ran out of
+certainty. A false positive costs Benson ten seconds of reading; a missed tender costs a bid.
+
+Where a cheap check would resolve the doubt — one fetch of the tender's own detail page — DO that
+fetch rather than guessing or dropping. Only fall back to "Review (Unsure)" when the doubt survives
+the detail page, or the page is unreachable.
+
+Every exclusion must be logged in Coverage & Method: the count, plus each excluded title with the
+rule number that caught it (list them all; if more than 25, list 25 and give the remaining count).
+Never drop items silently.
 
 ---
 
@@ -201,8 +213,9 @@ If files found (after the mimeType filter):
   → Read it with mcp__Google_Drive__read_file_content (NOT download_file_content with
     exportMimeType: text/csv — CSV export only captures one sheet; read_file_content returns all
     sheets as markdown tables in one call, which is what's needed here)
-  → Parse all data sheets present: "EPU/CMP/10", "EPU/SER/34", "Closed Tenders", and
-    "Awarded (Intel)" if it exists (it won't in files created before 24 Aug 2026 — start it empty)
+  → Parse all data sheets present: "EPU/CMP/10", "EPU/SER/34", "Closed Tenders", plus
+    "Review (Unsure)" and "Awarded (Intel)" if they exist (they won't in files created before
+    24 Aug 2026 — start those empty)
   → Extract all rows into in-memory lists, including each row's Link (read the cell's
     underlying hyperlink URL, not just its displayed text)
 
@@ -318,7 +331,10 @@ CATEGORY ROUTING (TenderBoard has no EPU codes — map by meaning):
   - Consultancy/advisory/professional services: management or process consultancy, feasibility studies,
     business analysis, PMO, professional services
       → EPU/SER/34 sheet, Procurement Category = "TenderBoard: <their label>"
-  - Everything else: REJECT.
+  - Everything else: reject ONLY if clearly unrelated to IT/systems/consultancy work (e.g. catering,
+    cleaning, uniforms, construction). Anything you cannot confidently place — vague titles, unfamiliar
+    acronyms, mixed-scope packages, missing category labels — goes to the "Review (Unsure)" sheet with
+    its details extracted, never to the bin.
 
 THEN apply the "Relevance Filter — What To Capture" section above to every routed item, exactly as it
 is applied to GeBIZ items. The five exclusions (cybersecurity, AV, network switches, training,
@@ -330,8 +346,10 @@ Missing fields:
   - Missing publish date → use the date the row was first seen, and suffix it "(first seen)".
   - Missing agency → "Not stated (TenderBoard)".
   - Missing scope description → write a one-line summary inferred from the title, prefixed "(from
-    title)". Do not fetch the detail page for every item just to fill this in; fetch a detail page only
-    when the title alone leaves the relevance call genuinely undecidable.
+    title)". Don't fetch the detail page for every item merely to prettify this field — but DO fetch it
+    whenever the title alone leaves the relevance or routing call undecidable, since resolving the
+    doubt is worth one fetch. If the doubt survives the fetch (or the page won't load), still capture
+    the item into "Review (Unsure)" with whatever was extracted.
 
 Set Source = "TenderBoard" on every row added here, then hand all candidates to Step 3c.
 ```
@@ -369,7 +387,7 @@ list one tender under two categories).
 ```
 Awarded tenders are captured for intel only: who is winning the work we chase, at what value. They are
 never bid candidates and never go in the active EPU sheets — they go in their own "Awarded (Intel)"
-sheet (Step 6, Sheet 4).
+sheet (Step 6, Sheet 5).
 
 Sources, in order of preference:
   - GeBIZ: check whether an award-notice RSS feed exists alongside the six CREATE_BO_FEED feeds (the
@@ -410,11 +428,16 @@ For each GeBIZ "new candidate" item:
        → Route to EPU/CMP/10 sheet
      - Services ⇒ Professional Services
        → Route to EPU/SER/34 sheet
-     - Otherwise: REJECT (not relevant)
+     - Otherwise: reject ONLY if the category is plainly unrelated to IT/systems/consultancy work.
+       If the tender reads as software/systems/consultancy work despite sitting under an unexpected
+       category, or the category is missing/ambiguous, capture it into "Review (Unsure)" instead of
+       rejecting it.
   
-  4. Apply the "Relevance Filter — What To Capture" section: drop anything whose PRIMARY subject is
-     cybersecurity, AV, network switches, training, or non-IT machines/hardware. Log every exclusion
-     (title + rule number) for Coverage & Method. Borderline → capture and note.
+  4. Apply the "Relevance Filter — What To Capture" section: drop an item only when its PRIMARY
+     subject is unambiguously cybersecurity, AV, network switches, training, or non-IT
+     machines/hardware. Log every exclusion (title + rule number) for Coverage & Method. Anything
+     borderline, mixed-scope or unclear → CAPTURE into "Review (Unsure)" with a "Why Unsure" note,
+     never drop.
   
   5. For each surviving (routed) tender:
      Add row to the correct sheet with:
@@ -448,13 +471,21 @@ For each row currently in EPU/CMP/10 and EPU/SER/34 (both sources):
     → Add row to "Closed Tenders" sheet, preserving its Source and Scope Summary, with added column:
       - Move Date: today's date in SGT
 
+Apply the same closing-date check to "Review (Unsure)" rows: when one closes, move it to "Closed
+Tenders" with its Source and Scope Summary preserved and "(was: Review)" appended to its Scope
+Summary. Unsure rows are never deleted — they either get promoted, or they close out on the record.
+
+If a "Review (Unsure)" row later becomes clearly relevant (e.g. a fuller listing appears on a later
+run), move it into the correct EPU sheet and note the promotion in Coverage & Method. It counts as new
+in Step 9 only if it was never counted before.
+
 Keep "Closed Tenders" sorted by Closing Date (oldest first)
-Sort EPU/CMP/10 and EPU/SER/34 by Publish Date (newest first)
+Sort EPU/CMP/10, EPU/SER/34 and Review (Unsure) by Publish Date (newest first)
 ```
 
 ### Step 6: Build Updated Workbook
 ```
-Create .xlsx file with five sheets:
+Create .xlsx file with six sheets:
 
 Sheet 1: "EPU/CMP/10"
   Columns: Tender/Ref No. | Title | Agency | Procurement Category | Source | Scope Summary | Publish Date/Time | Closing Date/Time | Status | Link
@@ -484,13 +515,24 @@ Sheet 3: "Closed Tenders"
   Same formatting as above, including the same real-hyperlink requirement for Link.
   Sorted by: Closing Date (oldest first)
 
-Sheet 4: "Awarded (Intel)"
+Sheet 4: "Review (Unsure)"
+  Columns: Tender/Ref No. | Title | Agency | Procurement Category | Source | Scope Summary | Why Unsure | Publish Date/Time | Closing Date/Time | Link
+  Same formatting conventions as the active sheets, including the real-hyperlink requirement for Link.
+  Sorted by: Publish Date (newest first)
+  This is the "leave no stone unturned" sheet: everything captured despite doubt lands here rather than
+  being discarded, so Benson can eyeball it in seconds. "Why Unsure" is one short line — e.g. "title is
+  an acronym, no scope given", "mixed software + AV package", "category missing on listing".
+  Never let this sheet be a dumping ground for items that are clearly irrelevant — clear rejects still
+  get rejected and logged. It is for genuine uncertainty only.
+  If empty, create the sheet with headers and a single row reading "Nothing uncertain this run."
+
+Sheet 5: "Awarded (Intel)"
   Columns: Tender/Ref No. | Title | Agency | Source | Awarded To | Award Value | Award Date | Link
   Same formatting conventions. Sorted by Award Date (newest first). Capped at 100 rows (Step 3d).
   If nothing was captured this run and none exists from before, still create the sheet with headers
   and a single row reading "No awarded-tender data captured yet — see Coverage & Method."
 
-Sheet 5: "Coverage & Method"
+Sheet 6: "Coverage & Method"
   Content (as text rows, no table):
   ─────────────────────────────
   Run Date: [today's date/time SGT]
@@ -512,9 +554,15 @@ Sheet 5: "Coverage & Method"
     - Total rows: [count]
     - Moved to Closed this run: [count]
   
+  Review (Unsure) Stats:
+    - Total rows: [count]
+    - Added this run: [count]
+    - Promoted to an EPU sheet this run: [count]
+  
   Excluded This Run: [count]
-    [up to 5 example titles, each with the exclusion rule number that caught it, e.g.
-     "• Supply of network switches for XYZ — rule 3"]
+    [EVERY excluded title, one line each, with the exclusion rule number that caught it, e.g.
+     "• Supply of network switches for XYZ — rule 3". If more than 25, list 25 and add
+     "…+N more excluded". This log is the audit trail proving nothing was dropped carelessly.]
   
   Borderline Calls This Run:
     [any tender captured despite being half-in-scope, one line each, with the reasoning — or "None"]
@@ -613,6 +661,7 @@ If new_tenders_count >= 1:
         • Closed: [closed count] tenders
         
         [If any tenders moved to Closed: "Also moved X tenders to Closed."]
+        [If any Review (Unsure) rows added: "Unsure/needs a look: X — see Review (Unsure) sheet."]
         [If any awarded intel captured: "Awarded intel: +X rows."]
         [If TenderBoard was skipped this run: "TenderBoard skipped this run (<short reason>)."]
         [If TenderBoard skipped 3+ consecutive runs: "TenderBoard unreachable N runs running — may need a look."]
@@ -632,6 +681,7 @@ If new_tenders_count == 0:
         • Closed: [closed count] tenders
         
         [If any tenders moved to Closed: "Also moved X tenders to Closed."]
+        [If any Review (Unsure) rows added: "Unsure/needs a look: X — see Review (Unsure) sheet."]
         [If TenderBoard was skipped this run: "TenderBoard skipped this run (<short reason>)."]
         [If TenderBoard skipped 3+ consecutive runs: "TenderBoard unreachable N runs running — may need a look."]
   → Log in Coverage & Method: "No new tenders this run"
@@ -677,10 +727,11 @@ Method, send no notification of their own, and continue the run to completion on
    - GeBIZ award notices may not be exposed via RSS at all; never fabricate a feed URL
    - Award Value and Awarded To are frequently withheld — "Not stated" is a normal outcome
 
-4. **Relevance filtering is a judgement call**
-   - The five exclusions are applied on a tender's PRIMARY subject; borderline items are captured
-     rather than dropped, and logged as borderline. Review the "Excluded This Run" log occasionally to
-     confirm the filter isn't cutting too deep
+4. **Relevance filtering is deliberately biased toward capture**
+   - The five exclusions are applied on a tender's PRIMARY subject, and only when unambiguous. Every
+     uncertain item is extracted into "Review (Unsure)" rather than dropped, so the tracker will
+     contain some noise by design — that is the intended trade. Review the "Excluded This Run" log
+     occasionally to confirm the filter isn't cutting too deep
 
 5. **No delete tool available**
    - Old files (both native Sheets and their raw .xlsx duplicates) stay in GeBiz Daily indefinitely —
@@ -716,6 +767,8 @@ Method, send no notification of their own, and continue the run to completion on
 ✅ **Validates and routes** to EPU/CMP/10 or EPU/SER/34 (GeBIZ codes, or mapped by meaning for TenderBoard)  
 ✅ **Applies the SI relevance filter** — excludes cybersecurity, AV, network switches, training, and
 non-IT machines/hardware, judged on primary subject, with every exclusion logged  
+✅ **Leaves no stone unturned** — anything uncertain is extracted into a "Review (Unsure)" sheet rather
+than dropped, after one detail-page fetch to try to resolve the doubt  
 ✅ **Captures a brief scope summary** per tender alongside ref no., agency and closing date  
 ✅ **Dedupes across sources** so a tender listed on both portals occupies one row, GeBIZ canonical  
 ✅ **Stamps every row with its Source** (GeBIZ / TenderBoard), backfilling older rows as GeBIZ  
@@ -738,4 +791,5 @@ createdTime metadata — never modifiedTime, never assumed API result order
 ❌ **Does not crawl historical tenders** (RSS only ~2 days; if routine was offline, older tenders are missed)  
 ❌ **Does not log in to TenderBoard** or use any paid supplier-portal feature — public page only  
 ❌ **Does not let a TenderBoard failure stop the GeBIZ run**  
-❌ **Does not capture** cybersecurity, AV, network-switch, training, or non-IT hardware tenders  
+❌ **Does not capture** tenders whose primary subject is unambiguously cybersecurity, AV, network
+switches, training, or non-IT hardware — but anything uncertain is captured, not dropped  
