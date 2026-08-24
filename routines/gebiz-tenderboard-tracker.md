@@ -2,6 +2,19 @@ IMPORTANT — token-saving rules for this routine:
 1) MUST convert any file to Markdown before reading it (do not read raw file formats directly).
 2) Prefer using scripts to read webpages instead of OCR/screenshots.
 
+WHY these two rules exist, so you can apply them with judgement rather than mechanically: everything
+that enters the context window is re-sent on every subsequent turn of this run, so a large blob read
+early is billed again and again. A script that fetches, parses and prints ONLY the fields needed puts
+~1k tokens in context where the raw source would have put 30k. Markdown conversion strips format
+packaging (zip/XML/HTML overhead) but NOT content — and the conversion only saves anything if a tool
+or script does it; reading the raw file yourself and then rewriting it as Markdown has already cost
+you the full amount.
+
+The corollary — do NOT over-apply: don't write a script to read something small, and don't spend three
+debug rounds scripting what one direct read would have answered. Script when the source is large and
+you need a slice of it, or when the same parse repeats every run. Both conditions hold for the RSS
+feeds, the TenderBoard listing and the detail pages below, which is where the real volume is.
+
 # GeBIZ + TenderBoard Tender Tracker — Reliable Daily Run
 
 ## Overview
@@ -212,7 +225,13 @@ If files found (after the mimeType filter):
     actual creation timestamp, unaffected by any later edits.
   → Read it with mcp__Google_Drive__read_file_content (NOT download_file_content with
     exportMimeType: text/csv — CSV export only captures one sheet; read_file_content returns all
-    sheets as markdown tables in one call, which is what's needed here)
+    sheets as markdown tables in one call, which is what's needed here). Markdown tables are already
+    the cheap representation — do not convert or re-read them further.
+  → Read this file EXACTLY ONCE per run and work from that copy in memory. It is the largest single
+    thing entering context and it grows every day, so a second read doubles the run's biggest cost for
+    nothing. If it ever gets large enough to dominate the run, the fix is trimming what the tracker
+    carries (the Known Gaps 8-entry cap and the 100-row awarded cap exist for this reason) — not
+    re-reading it in pieces.
   → Parse all data sheets present: "EPU/CMP/10", "EPU/SER/34", "Closed Tenders", plus
     "Review (Unsure)" and "Awarded (Intel)" if they exist (they won't in files created before
     24 Aug 2026 — start those empty)
@@ -267,7 +286,13 @@ Fetch these six GeBIZ RSS feeds:
   5. https://www.gebiz.gov.sg/rss/Servers-CREATE_BO_FEED.xml
   6. https://www.gebiz.gov.sg/rss/Professional_Services-CREATE_BO_FEED.xml
 
-Parse each XML feed. For each <item>:
+PARSE THESE WITH A SCRIPT, NOT BY READING THEM INTO CONTEXT. This is the single largest avoidable
+token cost in the run: six XML documents that are mostly markup you don't need. Write one short script
+that fetches all six, parses them (ElementTree/feedparser), and prints one compact line per item —
+ref, title, link, pubDate — then work from that printed list. Never WebFetch the six feeds one by one
+and read the raw XML.
+
+For each <item> in that parsed output:
   - Extract: title, link, pubDate, Tender/Ref No. (usually in title)
   - Check: Is this Tender/Ref No. already in ANY sheet? (use the identity/dedup rules in Step 3c —
     a tender already captured from TenderBoard on an earlier run counts as already tracked)
@@ -412,6 +437,11 @@ raises its own notification, and logs whatever it could or couldn't get.
 
 ### Step 4: Validate and Route New GeBIZ Candidates
 ```
+Batch this step with a script wherever there is more than one new candidate: fetch the detail pages in
+one script run, extract the fields below per tender, and print a compact record per tender rather than
+pulling each full page into context. Only read a page directly when a single candidate's extraction
+fails and you need to eyeball the markup to see why.
+
 For each GeBIZ "new candidate" item:
   1. Fetch its opportunityDetails.xhtml page (use the link from RSS)
   2. Extract:
