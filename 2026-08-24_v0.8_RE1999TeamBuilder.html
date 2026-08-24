@@ -8748,12 +8748,13 @@ function sbConduitEnergyDeck(name, portrayLevel){
   Object.keys(base).forEach(k => { deck[k] = Object.assign({}, base[k]); });
   const mods = CONDUIT_PORTRAY_DECK[name];
   if(!mods) return deck;
+  // Cumulative: a later level's `copies` supersedes an earlier one's for the same card.
   for(let lv = 1; lv <= (portrayLevel || 0); lv++){
     const m = mods[lv];
     if(!m) continue;
     Object.keys(m).forEach(card => {
-      if(card === 'note' || !deck[card]) return;
-      Object.assign(deck[card], m[card], { portrayFrom: lv });
+      if(!deck[card]) return;
+      deck[card].upgraded = Object.assign({}, m[card], { portrayFrom: lv });
     });
   }
   return deck;
@@ -8767,7 +8768,14 @@ function sbGetConduitEnergyOptions(c){
   Object.keys(deck).forEach(k => {
     const d = deck[k];
     const ap = d.apCost != null ? d.apCost : CONDUIT_ENERGY_AP_DEFAULT;
-    opts.push({ value:k, label:`${k} (${ap} AP → +${d.energy} ${d.energyType}${d.portrayFrom ? `, P${d.portrayFrom}` : ''})` });
+    /* An upgraded card is offered as its OWN option alongside the base one, because Portray
+       upgrades a NUMBER OF COPIES, not the card type — at P1 one Mineral I gives +2 while the
+       rest still give +1, and which copy you drew is not something this tool can know. Listing
+       both lets the real draw be entered instead of assuming. */
+    if(d.upgraded){
+      opts.push({ value:`${k}#up`, label:`${k} — upgraded copy (${ap} AP → +${d.upgraded.energy} ${d.energyType}, P${d.upgraded.portrayFrom}; ${d.upgraded.copies} ${d.upgraded.copies===1?'copy':'copies'} upgraded)` });
+    }
+    opts.push({ value:k, label:`${k}${d.upgraded ? ' — base copy' : ''} (${ap} AP → +${d.energy} ${d.energyType})` });
   });
   return opts;
 }
@@ -12256,14 +12264,27 @@ const CONDUIT_KIT = {
    This is a genuinely different kind of Portray effect from anything in PORTRAY_MECHANIC: it does
    not add a buff, it edits the deck's card values. Read straight from PORTRAY_DB["Coppélia"] text,
    which states each change explicitly. Applied cumulatively for every level ≤ the selected one. */
+/* CONDUIT_PORTRAY_DECK — Portray levels that upgrade INDIVIDUAL COPIES in the Energy deck.
+   Benson: "at higher portray levels, she CHANGES the energy cards read her portray to find out."
+
+   Read the exact wording of her PORTRAY_DB text, because it is per-COPY, not per-card-type:
+     P1: "**1** [Mineral I] in the Energy Deck will increase Mineral Energy by +2."
+     P2: "**2** [Mineral I] in the Energy Deck will increase Mineral Energy by +2."
+     P5: "**1** [Mineral II] ... +3. [Interval Skip] increases Mineral Energy by +3 ..."
+   So the deck holds SEVERAL COPIES of a card and each Portray level upgrades one more of them.
+   v0.7 modelled this as the card TYPE changing value, which over-credits P1 — it made every
+   Mineral I in the deck produce +2 when only one copy should. `copies` is the number of copies
+   upgraded AT that level (cumulative, so P2's 2 supersedes P1's 1).
+
+   NOT SOURCED, and deliberately not invented: how many copies of each card the deck holds in
+   total, and how many are drawn per round. Benson reports seeing 3 Energy cards in game at P2.
+   Because that is unresolved, the picker offers the upgraded and base copies as SEPARATE choices
+   rather than assuming which one you drew — see sbGetConduitEnergyOptions. */
 const CONDUIT_PORTRAY_DECK = {
   'Coppélia': {
-    1: { 'Mineral Energy I': { energy:2, copies:1 },
-         note:'P1: 1 [Mineral I] in the Energy Deck produces Mineral Energy +2 instead of +1.' },
-    2: { 'Mineral Energy I': { energy:2, copies:2 },
-         note:'P2: a SECOND [Mineral I] in the Energy Deck also produces +2.' },
-    5: { 'Mineral Energy II': { energy:3, copies:1 }, 'Skip Motion': { energy:3, intervalStep:20 },
-         note:'P5: 1 [Mineral II] produces Mineral Energy +3; [Skip Motion]/[Interval Skip] produces +3 and grants 20 stacks of [Interval Step]; max [Interval Step] rises to 50.' }
+    1: { 'Mineral Energy I': { energy:2, copies:1 } },
+    2: { 'Mineral Energy I': { energy:2, copies:2 } },
+    5: { 'Mineral Energy II': { energy:3, copies:1 }, 'Skip Motion': { energy:3, intervalStep:20, copies:1 } }
   }
 };
 const INTERVAL_STEP_CAP_BY_PORTRAY = { 0:30, 1:30, 2:30, 3:30, 4:30, 5:50 };
@@ -12367,7 +12388,10 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
       const portrayLv = teamPortray[name] || 0;
       const deck = sbConduitEnergyDeck(name, portrayLv);
       const kit = CONDUIT_KIT[name] || {};
-      const energyPicks = overrideArr.filter(v => v && v !== 'SKIP' && deck[v]);
+      /* A pick may name the UPGRADED copy of a card ("Mineral Energy I#up") or the base one.
+         sbConduitResolveCard collapses either to the concrete {energy, intervalStep} actually
+         produced, so the phase-1 loop below doesn't need to care which variant was chosen. */
+      const energyPicks = overrideArr.filter(v => v && v !== 'SKIP' && deck[v.replace(/#up$/,'')]);
       const defaultEnergy = name === 'The Twins' ? ['Mineral Energy II'] : ['Mineral Energy II'];
       const usedDefaultEnergy = energyPicks.length === 0;
       const energyKeys = usedDefaultEnergy ? defaultEnergy : energyPicks;
@@ -12383,9 +12407,13 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
         /* ---- PHASE 1: play Energy cards from the Energy deck ----
            These COST AP and draw on the same shared team pool as every standard teammate (§22.0),
            so they are capped by what is actually left. */
-        energyKeys.forEach(cardKey => {
-          const d = deck[cardKey];
-          if(!d) return;
+        energyKeys.forEach(pickKey => {
+          const isUp = /#up$/.test(pickKey);
+          const cardKey = pickKey.replace(/#up$/,'');
+          const raw = deck[cardKey];
+          if(!raw) return;
+          // Merge the upgraded copy's values over the base card when the upgraded copy was picked.
+          const d = (isUp && raw.upgraded) ? Object.assign({}, raw, raw.upgraded) : raw;
           const cost = d.apCost != null ? d.apCost : CONDUIT_ENERGY_AP_DEFAULT;
           if(cost > apLeft){
             roundActions.push({ name, note:`Energy card NOT played: ${escapeAttr(cardKey)}${assumedLabel} — it costs ${cost} AP and only ${apLeft} AP is left in the shared team pool. Energy cards are cast from hand like any other card, so they compete for AP with your standard teammates; the Arcane Skills they feed are what's free.` });
@@ -12397,7 +12425,7 @@ function simulateConduitPlan(conduitArr, totalRounds, sharedApPool){
             const cap = sbConduitIntervalStepCap(teamPortray['Coppélia'] || 0);
             intervalStep[name] = Math.min(cap, (intervalStep[name] || 0) + d.intervalStep);
           }
-          roundActions.push({ name, note:`Energy card played (${cost} AP): ${escapeAttr(cardKey)}${assumedLabel}${d.portrayFrom ? ` [upgraded by P${d.portrayFrom}]` : ''} — ${d.note} Pool is now ${pool[d.energyType]} ${d.energyType} Energy. ${apLeft} AP left in the shared pool.` });
+          roundActions.push({ name, note:`Energy card played (${cost} AP): ${escapeAttr(cardKey)}${assumedLabel}${isUp && d.portrayFrom ? ` [upgraded copy, P${d.portrayFrom}]` : ''} — ${d.note} Pool is now ${pool[d.energyType]} ${d.energyType} Energy. ${apLeft} AP left in the shared pool.` });
         });
         /* ---- PHASE 2: the chosen Skill Set casts ----
            Benson: "By selecting the sets, once I have the energy, it will cast the incantations."
@@ -12606,6 +12634,23 @@ function renderConduitPanel(conduitArr){
   }).join('');
   return `<div class="sb-round"><div class="rt">Conduit resource loop (${conduitArr.map(c=>c.name).join(', ')})</div>
     <div class="sb-action" style="opacity:.85"><b>⚠ Untested:</b> the Conduit Energy/Skill-Set math below (CONDUIT_KIT) uses real per-card numbers, not a flat default — but it still hasn't been run against an actual match. Treat the round-by-round output as a sourced first pass, not a verified simulation. Two things to know about where the numbers come from: the Energy figures came from kit text pasted directly and are the stronger half; The Twins' per-card <b>Harmonization</b> (+20/10/20/6) and Polymeric Ray's <b>3 Energy cost</b> were sourced from web search because the kit sites are unreachable from here, so they sit one notch lower in confidence — and the Harmonization figures may be a Portray-2 value rather than the P0 base. If your match numbers disagree, those are the ones to doubt first.</div>
+    ${conduitArr.map(c => {
+      /* v0.8 — Energy deck readout. Benson: "in game, i see that there are 3 energy cards? (my
+         characters are at p2 only.. i dont get it but ok". Showing the deck this tool believes in,
+         at his selected Portray level, is what lets that be checked instead of guessed at — and it
+         states plainly which parts are NOT sourced, so a mismatch points at the right gap. */
+      const deck = sbConduitEnergyDeck(c.name, teamPortray[c.name] || 0);
+      const names = Object.keys(deck);
+      if(!names.length) return '';
+      const rows = names.map(k => {
+        const d = deck[k];
+        return d.upgraded
+          ? `<li>${k} — base copy +${d.energy} ${d.energyType}; <b>${d.upgraded.copies} ${d.upgraded.copies===1?'copy':'copies'} upgraded to +${d.upgraded.energy}</b> by P${d.upgraded.portrayFrom}</li>`
+          : `<li>${k} — +${d.energy} ${d.energyType}</li>`;
+      }).join('');
+      return `<div class="sb-action" style="opacity:.85"><b>${c.name}'s Energy deck</b> at P${teamPortray[c.name] || 0} — <b>${names.length} card types</b>:<ul style="margin:4px 0 0 18px">${rows}</ul>
+        <i>Not sourced, so not modelled: how many COPIES of each card the deck holds in total, and how many are drawn per round. Her Portray text upgrades copies one at a time ("1 [Mineral I]" at P1, "2 [Mineral I]" at P2), which only makes sense if the deck holds several copies — so the picker lists the upgraded and base copies separately rather than assuming which one you drew. If the card count above doesn't match what the game shows you, that gap is why.</i></div>`;
+    }).join('')}
     <div class="sb-action" style="opacity:.85"><b>Now tracked as real numbers:</b> <b>[Interval Step]</b> (+1 per Energy an allied Conduit consumes, capped at 30 at P0; each stack is +1% Ultimate Might — the stack count is real, the Ultimate Might is not simulated because this tool models no Conduit damage) and <b>[Instrument Tuning I]</b> (3 stacks from Coppélia's Ultimate, each cutting a later Instrument's Energy cost by 1, persisting across rounds). Both used to be prose-only.</div>
     <div class="sb-actions">${rows}</div></div>`;
 }
@@ -12985,7 +13030,18 @@ function renderStateBlockPlan(teamArr, skipped, conduitArr){
     return `<div class="sb-round"><div class="rt"><span class="n">${rd.round}</span>Round ${rd.round}</div>
       <div class="sb-state">${stateText}</div>
       ${slotBarsHtml}
-      <div class="sb-note">AP used: ${rd.apUsed}/${rd.apPool}</div>
+      <div class="sb-note">${(() => {
+        /* v0.8 — this footer read "AP used: 3/3" while the header said the shared pool was 5.
+           Both numbers were right about different things and the pair was incoherent: rd.apUsed /
+           rd.apPool are the STANDARD characters' usage and their post-reservation share, so on a
+           team with Conduit members the footer silently described a smaller pool than the header.
+           It now totals the whole team, which is the only figure that matches what the game shows. */
+        const cSpent = (conduitRounds.find(x => x.round === rd.round) || {}).apUsedByConduit || 0;
+        const whole = rd.apPool + cSpent;
+        return cSpent
+          ? `AP used: ${rd.apUsed + cSpent}/${whole} for the whole team — ${rd.apUsed} by ${teamArr.map(c=>c.name).join(', ')}, ${cSpent} by Conduit Energy cards`
+          : `AP used: ${rd.apUsed}/${rd.apPool}`;
+      })()}</div>
     </div>`;
   }).join('');
   html += `<div class="loop-note">This is one plausible best-case sequence — 1 Free Merge happens automatically each round, team-wide, rotating to whoever still needs Moxie; a FORCED (deliberate) merge costs 1 AP and only happens with AP that's genuinely left over after every Ultimate/free-window/regular cast has already had its shot that round. Moxie generation: +1 automatically at the start of every round, +1 per accidental merge, +2 per forced merge, +1 per card actually cast (unless a verified Portray/Insight effect grants a different starting amount on entering combat) — casting the Ultimate consumes all 5 at once. A character's Ultimate becomes castable the moment their Moxie hits 5, which can happen mid-round (no artificial delay to "next round"), and then casts on cooldown by default once ready. AP-free windows are read from each character's real Skill Kit text; AP+1 windows and any other Portray-level mechanic only apply where Benson has verified and tagged that specific Portray level — untagged Portray levels are correctly left out rather than guessed at. Multiple simultaneous AP+1 sources don't stack. Adaptive skills always name which generated mode is cast. Actual draw order in a real match will vary; this shows the mechanics working correctly, not a guaranteed script.</div>`;

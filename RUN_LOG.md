@@ -2356,3 +2356,65 @@ Blades]`; Beryl's Emanation crystal; Tuning card interaction unmodeled; Matilda 
 rarity; The Twins' dual element; An-an Lee's portrait; Everecho has no `PORTRAY_DB` data.
 
 → Delivered as `2026-08-24_v0.7_RE1999TeamBuilder.html`
+
+## Session 28 (v0.8) — 2026-08-24 — per-copy Portray deck upgrades; AP footer contradicted the header
+
+**Trigger.** Benson: *"in game, i see that there are 3 energy cards? (my characters are at p2 only..
+i dont get it but ok.. also i still see 'AP used: 3/3'"*, and a check: *"the playbyplay only cast the
+'interval' skills once a turn max correct?"*
+
+### `[Interval]` — confirmed empirically, not asserted
+Ran it rather than answering from the code: with **8 Star Energy banked**, Extreme Overclocking
+(`[Interval]`) cast **once** and Balancé (no tag) cast **8×**. Correct. The cap matters most on
+exactly these skills because all three tagged ones are **0-cost** — with no Energy limit to divide
+by, they would otherwise fire unboundedly.
+
+### v0.7 was over-crediting Portray deck upgrades (§25.0)
+Her Portray text is per-**copy**: "**1** [Mineral I]" at P1, "**2** [Mineral I]" at P2. v0.7 changed
+the card TYPE's value, so **at P1 every Mineral I produced +2 when only one copy should**.
+`CONDUIT_PORTRAY_DECK` now carries `copies`, and the picker offers the **upgraded and base copies as
+separate options** — which copy you drew is not knowable here, so it is chosen, not assumed.
+
+### The 3-energy-cards question — answered as far as the sources allow (§25.1)
+The tool's deck has **3 card types** for Coppélia, matching what he sees. What is genuinely NOT
+sourced: **how many copies of each card the deck holds**, and **how many are drawn per round**. His
+Portray wording proves multiple copies exist (P2 upgrades a second Mineral I) without ever stating
+totals. Rather than guess, `renderConduitPanel` now prints the believed deck at the selected Portray
+level and names both gaps explicitly, so a mismatch points at the missing figure.
+
+### The AP footer contradicted the AP header (§25.2)
+`AP used: 3/3` sat directly under a header reading "shared pool is 5". Both were right about
+different things — the footer described the standard characters' usage over their post-reservation
+share (§22.1) — and the pair was incoherent. Now: *"AP used: 5/5 for the whole team — 3 by Rhiannon,
+Enigma, 2 by Conduit Energy cards."*
+**New standing rule (§25.2): every AP figure must name WHOSE pool it describes.** Two pools exist
+now, and an unlabelled one reads as a bug even when arithmetically right — second occurrence.
+
+### Verification
+- **`node --check`: PASS.** Declaration diff **190 → 190, REMOVED = 0, ADDED = 0** — this was a
+  behaviour and display change, no new surface.
+- **Playwright: zero non-network errors.** All 129 live characters simulate solo, 0 errors;
+  `applied` still **423**.
+- **`[Interval]` cap re-verified** after the changes: 1 vs 8 casts as above.
+- **Deck readout verified in the DOM** at P2: "3 card types — Mineral Energy I: base copy +1; 2
+  copies upgraded to +2 by P2".
+- **Screenshot check performed** on his exact team: header and footer now agree (pool 5, used 5/5).
+
+### Open items
+1. **Energy-deck copy counts and per-round draw** — the last structural gap. Benson's own game
+   screen is the source; if he reports deck size and draw count, it closes.
+2. **The Twins' "AP +1"** — still needs him to settle (§24.4); displayed, not silently changed.
+3. **Coppélia's Arcane Skill Energy costs** — `Clarity in Clefs` / `Tuning Technique` unsourced.
+4. **Conduit math untested against a real match.**
+5. Per-card AP costs unsourced (default 1); search-sourced numbers pending verbatim re-verification
+   (§19.0); `PORTRAY_SIMULATED` covers 6 levels across 5 characters; Cornerstone kit data retained
+   while `upcoming:true`.
+
+Unchanged from v0.7: 32 characters produce no stat effects; 51 effect instances dropped; effect layer
+is a bulk pass; Portray backlog spot-checking (16 of 126); `BUFF_STACK_MODE` unverified; damage model
+untested; `ULT_HOLD_OVERRIDE` unwired; `AP_SURPLUS_OVERRIDE` unused; Corvus monotonic counter; Ezio
+Synchronization underestimate; Kassandra card-injection thresholds; Cheng Heguang's ≥10 `[Feathered
+Blades]`; Beryl's Emanation crystal; Tuning card interaction unmodeled; Matilda / Lady by the Lake
+rarity; The Twins' dual element; An-an Lee's portrait; Everecho has no `PORTRAY_DB` data.
+
+→ Delivered as `2026-08-24_v0.8_RE1999TeamBuilder.html`

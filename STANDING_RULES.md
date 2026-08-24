@@ -1,6 +1,6 @@
 # RE1999 Team Builder — Standing Operating Rules  
   
-**Doc version: v0.7** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
+**Doc version: v0.8** (2026-08-24) — tracks this rules-doc pair's own revision count, independent of  
 the HTML tool file's version number. This pair of docs (`STANDING_RULES.md` + `RUN_LOG.md`) revises on  
 its own schedule rather than being re-versioned alongside the tool file. Bump the version (v0.1 → v0.2  
 → ...) any run that makes a REAL rule change here — a new/removed constraint, a corrected methodology, a  
@@ -8,8 +8,8 @@ changed source-of-truth priority. Do NOT bump it for a run that only reads this 
 without editing it. Record what changed and why in `RUN_LOG.md` under a "Doc vX.Y" heading each time it  
 bumps, same append-only pattern as everything else there.  
   
-**HTML tool version: v0.7 as of 2026-08-24** — the delivered file is now named  
-`<date>_v0.7_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
+**HTML tool version: v0.8 as of 2026-08-24** — the delivered file is now named  
+`<date>_v0.8_RE1999TeamBuilder.html`. This RESETS the old per-session build counter that ran v1→v80  
 through 2026-08-20 (that counter is retired, not renumbered — every historical "v58"/"v72"/"v79"/"v80"  
 mention elsewhere in this file and in `RUN_LOG.md` stays exactly as originally written; don't rewrite  
 history to match the new scheme). The 2026-08-20 file's actual content is unchanged by this reset — only  
@@ -1006,3 +1006,47 @@ Two separate things carry this, and **both are required** when a future Conduit 
 
 Setting only the glossary entry gives a correct tooltip over a wrong simulation; setting only the
 flag silently caps a skill the user was never told about. **Do both.**
+
+---
+
+## §25 Energy-deck copies and the AP footer (v0.8, 2026-08-24)
+
+### §25.0 Portray upgrades COPIES, not card types — §24.2 was over-crediting
+Re-read Coppélia's Portray wording closely; it is per-**copy**:
+> P1: "**1** [Mineral I] in the Energy Deck will increase Mineral Energy by +2."
+> P2: "**2** [Mineral I] in the Energy Deck will increase Mineral Energy by +2."
+
+v0.7 modelled this as the card TYPE changing value, so **at P1 every Mineral I in the deck produced
++2 when only one copy should** — a real over-credit. `CONDUIT_PORTRAY_DECK` now carries `copies`
+(cumulative: P2's 2 supersedes P1's 1), and `sbConduitEnergyDeck` attaches an `upgraded` sub-object
+rather than overwriting the base card.
+
+**The picker lists the upgraded and base copies as SEPARATE options** (`"Mineral Energy I — upgraded
+copy (+2, P1)"` / `"Mineral Energy I — base copy (+1)"`), and the sim resolves either via the `#up`
+suffix. This is the honest shape: which copy you actually drew is not something this tool can know,
+so it is chosen rather than assumed.
+
+### §25.1 What is NOT sourced about the deck — state it, don't infer it
+Benson: *"in game, i see that there are 3 energy cards? (my characters are at p2 only.. i dont get
+it but ok.."* The tool's deck has **3 card types** for Coppélia, which matches — but two things
+remain genuinely unknown and must not be invented:
+- **how many COPIES of each card the deck holds in total**, and
+- **how many cards are drawn per round.**
+
+The Portray wording proves the deck holds several copies of Mineral I (P2 upgrades a second one),
+but never states the totals. A `renderConduitPanel` readout now prints the believed deck at the
+selected Portray level and names both gaps, so a mismatch with the real game points straight at the
+missing figure instead of being mysterious. **If Benson supplies deck size / draw count, that closes
+the last structural gap in the Conduit model.**
+
+### §25.2 The AP footer contradicted the AP header
+`AP used: 3/3` sat under a header saying the shared pool was 5. Both numbers were right about
+different things — the footer reported the STANDARD characters' usage over their post-reservation
+share (§22.1) — and the pair was incoherent on any team with Conduit members. The footer now totals
+the whole team: *"AP used: 5/5 for the whole team — 3 by Rhiannon, Enigma, 2 by Conduit Energy
+cards."*
+
+**Standing rule: any AP figure shown anywhere must be labelled with WHOSE pool it describes.** Two
+pools now exist in this tool (the shared team pool and the standard characters' remainder after
+Conduit spending) and an unlabelled number will read as a bug even when it is arithmetically right —
+this is the second time that has happened (§24.4 was the first).
