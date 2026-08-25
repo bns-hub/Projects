@@ -1,5 +1,5 @@
 --- ops/tender-tracker/routine-prompt.previous.md	2026-08-25 00:32:43.725205271 +0000
-+++ ops/tender-tracker/routine-prompt.md	2026-08-25 07:21:31.799507229 +0000
++++ ops/tender-tracker/routine-prompt.md	2026-08-25 07:26:18.973595608 +0000
 @@ -1,19 +1,24 @@
 -IMPORTANT — token-saving rules for this routine:
 -1) MUST convert any file to Markdown before reading it (do not read raw file formats directly).
@@ -140,7 +140,7 @@
 +
 +FETCH — work the rungs in order, and stop at the first that yields tender rows:
 +
-+  Rung 1 — plain fetch of the listing page.
++  Rung 1 — plain WebFetch of the listing page.
 +    Primary: https://www.tenderboard.biz/singaporetenders
 +    If that URL 404s or has moved, try in order and use the first that returns tender content:
 +      - https://www.tenderboard.biz/vendor/tender-opportunities/
@@ -148,7 +148,7 @@
 +    If this returns server-rendered rows, you are done — go straight to extraction.
 +
 +  Rung 2 — embedded JSON in the HTML you already fetched. A JS-rendered listing very often ships its
-+    data inside the page anyway. Grep the response for __NEXT_DATA__, __NUXT__,
++    data inside the page anyway. Look in the response for __NEXT_DATA__, __NUXT__,
 +    window.__INITIAL_STATE__, <script type="application/json">, or any inline array of objects with
 +    tender-like keys (title / refNo / closingDate / agency). If found, parse that JSON directly — this
 +    is the cheapest win available and needs no browser.
@@ -245,7 +245,7 @@
  
  For each GeBIZ "new candidate" item:
    1. Fetch its opportunityDetails.xhtml page (use the link from RSS)
-@@ -513,9 +609,63 @@
+@@ -513,9 +609,62 @@
  Sort EPU/CMP/10, EPU/SER/34 and Review (Unsure) by Publish Date (newest first)
  ```
  
@@ -283,9 +283,8 @@
 +
 +  TenderBoard — the listing paginates back through publish dates, so older days ARE recoverable.
 +    - OLDEST_GAP = earliest open TenderBoard gap date.
-+    - Re-run tb_extract.py with a raised page cap: enough pages to reach publish dates at or before
-+      OLDEST_GAP, HARD-CAPPED AT 10 pages (normal runs stay at 3). This requires the recipe's
-+      post_data to carry the {page} token — see Step 3b — or pagination silently does nothing.
++    - Re-run the rung-4 call with a raised page cap: enough pages to reach publish dates at or before
++      OLDEST_GAP, HARD-CAPPED AT 10 pages (normal runs stay at 3).
 +    - Route and filter recovered items exactly like live ones (Step 3b/3c rules, same exclusions, same
 +      dedup). Most will already be tracked — that is fine and counts as nothing new.
 +    - Mark every gap date the walk covered as BACKFILLED (today) EVEN IF it yielded zero new tenders:
@@ -310,7 +309,7 @@
  
  Sheet 1: "EPU/CMP/10"
    Columns: Tender/Ref No. | Title | Agency | Procurement Category | Source | Scope Summary | Publish Date/Time | Closing Date/Time | Status | Link
-@@ -562,14 +712,27 @@
+@@ -562,14 +711,27 @@
    If nothing was captured this run and none exists from before, still create the sheet with headers
    and a single row reading "No awarded-tender data captured yet — see Coverage & Method."
  
@@ -340,7 +339,7 @@
    Awarded Intel: ✓ OK — [N] captured  (or "GeBIZ award feed: not available" / "SKIPPED — <reason>")
    
    EPU/CMP/10 Stats:
-@@ -599,6 +762,14 @@
+@@ -599,6 +761,14 @@
    
    Source Upgrades This Run: [count of TenderBoard rows upgraded to GeBIZ per Step 3c]
    
@@ -355,7 +354,7 @@
    Previous File: [native-Sheet fileId/link read in Step 2, or "None (first run)"]
    
    Known Gaps / Manual Patches:
-@@ -616,6 +787,10 @@
+@@ -616,6 +786,10 @@
      TenderBoard is scraped anonymously from its public notices page — its full alert feed is a paid
      supplier-portal feature this routine has no account for. Coverage from that source is therefore
      partial by design, and any run may skip it entirely without that being an error.
@@ -366,7 +365,7 @@
    ─────────────────────────────
  ```
  
-@@ -639,10 +814,8 @@
+@@ -639,10 +813,8 @@
  — no separate raw .xlsx sibling, no auto-conversion delay, no polling needed. Take the fileId straight
  from this call's response and treat it as canonical immediately.
  
@@ -379,7 +378,7 @@
  
  Fallback (should be rare): if the direct response's mimeType is somehow NOT
  'application/vnd.google-apps.spreadsheet', re-list GeBiz Daily once and look for a same-titled native
-@@ -693,8 +866,11 @@
+@@ -693,8 +865,11 @@
          [If any tenders moved to Closed: "Also moved X tenders to Closed."]
          [If any Review (Unsure) rows added: "Unsure/needs a look: X — see Review (Unsure) sheet."]
          [If any awarded intel captured: "Awarded intel: +X rows."]
@@ -393,7 +392,7 @@
          
          Tracker: https://docs.google.com/spreadsheets/d/[native-Sheet fileId from Step 7]/edit"
  
-@@ -712,8 +888,11 @@
+@@ -712,8 +887,11 @@
          
          [If any tenders moved to Closed: "Also moved X tenders to Closed."]
          [If any Review (Unsure) rows added: "Unsure/needs a look: X — see Review (Unsure) sheet."]
@@ -407,7 +406,7 @@
    → Log in Coverage & Method: "No new tenders this run"
  ```
  
-@@ -747,8 +926,21 @@
+@@ -747,8 +925,20 @@
     - Searched every run, but only the anonymously-visible public notices page is in scope; the full
       multi-site alert feed is a paid supplier-portal feature with no account configured
     - The page is a commercial site that may rate-limit, bot-check, restructure, or move behind a login
@@ -415,13 +414,12 @@
 -     notification only after 3 consecutive skips)
 +     without notice — any of which silently skips the source for that run (logged with its failure
 +     CLASS, and surfaced in the notification only after 3 consecutive skips)
-+   - ENVIRONMENT EGRESS IS A SEPARATE AND PRIOR QUESTION. Verified 25 Aug 2026: the "Default"
-+     environment (env_014XrxYBDmXYTFNGRFy9f1xf) has NO general web egress at all — every host,
-+     including example.com, is refused by the proxy with "CONNECT tunnel failed, response 403", and
-+     WebFetch returns EGRESS_BLOCKED. Scheduled runs of this routine DO reach gebiz.gov.sg
-+     successfully, so they execute somewhere with broader egress. If a run ever sees EGRESS_BLOCKED on
-+     gebiz.gov.sg, that is an environment network-policy problem and NOT something to fix in this
-+     prompt — say so plainly and stop, per the pre-flight gate
++   - ENVIRONMENT EGRESS IS A SEPARATE AND PRIOR QUESTION. Verified 25 Aug 2026: bash/Python scripts
++     have NO web egress here — the proxy refuses every host, including example.com — while the
++     WebFetch tool does reach the internet. That is why this routine fetches exclusively through
++     WebFetch. If WebFetch itself ever returns EGRESS_BLOCKED on gebiz.gov.sg, that is an environment
++     network-policy problem and NOT something to fix in this prompt — say so plainly and stop, per the
++     pre-flight gate
 +   - The listing is JavaScript-rendered, so a plain fetch alone returns no rows. That is NOT grounds
 +     to write the source off: the Step 3b ladder must also try embedded JSON, reading the JS bundle
 +     for the data endpoint, and calling that endpoint via WebFetch. A headless browser is NOT an
@@ -431,7 +429,7 @@
     - TenderBoard listings are aggregator summaries, so fields (especially closing time and the deep
       link to the original portal) can be thinner or less exact than GeBIZ's own detail pages. GeBIZ
       data always wins where both exist (Step 3c)
-@@ -790,36 +982,14 @@
+@@ -790,36 +980,16 @@
  
  ---
  
@@ -468,6 +466,8 @@
 +❌ **Does not read, search or parse any mailbox** (Gmail or otherwise) — email is not a data path for
 +this routine, and TenderBoard email alerts are explicitly ruled out  
  ❌ **Does not let a TenderBoard failure stop the GeBIZ run**  
++❌ **Does not fetch anything with a script** — scripts have no network egress here; WebFetch is the
++only network path  
  ❌ **Does not capture** tenders whose primary subject is unambiguously cybersecurity, AV, network
 -switches, training, or non-IT hardware — but anything uncertain is captured, not dropped  
 \ No newline at end of file

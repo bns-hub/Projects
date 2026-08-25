@@ -355,7 +355,7 @@ route the source through an inbox.
 
 FETCH — work the rungs in order, and stop at the first that yields tender rows:
 
-  Rung 1 — plain fetch of the listing page.
+  Rung 1 — plain WebFetch of the listing page.
     Primary: https://www.tenderboard.biz/singaporetenders
     If that URL 404s or has moved, try in order and use the first that returns tender content:
       - https://www.tenderboard.biz/vendor/tender-opportunities/
@@ -363,7 +363,7 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
     If this returns server-rendered rows, you are done — go straight to extraction.
 
   Rung 2 — embedded JSON in the HTML you already fetched. A JS-rendered listing very often ships its
-    data inside the page anyway. Grep the response for __NEXT_DATA__, __NUXT__,
+    data inside the page anyway. Look in the response for __NEXT_DATA__, __NUXT__,
     window.__INITIAL_STATE__, <script type="application/json">, or any inline array of objects with
     tender-like keys (title / refNo / closingDate / agency). If found, parse that JSON directly — this
     is the cheapest win available and needs no browser.
@@ -643,9 +643,8 @@ BACKFILLING — the recovery windows differ per source, so do not treat them ali
 
   TenderBoard — the listing paginates back through publish dates, so older days ARE recoverable.
     - OLDEST_GAP = earliest open TenderBoard gap date.
-    - Re-run tb_extract.py with a raised page cap: enough pages to reach publish dates at or before
-      OLDEST_GAP, HARD-CAPPED AT 10 pages (normal runs stay at 3). This requires the recipe's
-      post_data to carry the {page} token — see Step 3b — or pagination silently does nothing.
+    - Re-run the rung-4 call with a raised page cap: enough pages to reach publish dates at or before
+      OLDEST_GAP, HARD-CAPPED AT 10 pages (normal runs stay at 3).
     - Route and filter recovered items exactly like live ones (Step 3b/3c rules, same exclusions, same
       dedup). Most will already be tracked — that is fine and counts as nothing new.
     - Mark every gap date the walk covered as BACKFILLED (today) EVEN IF it yielded zero new tenders:
@@ -928,13 +927,12 @@ Method, send no notification of their own, and continue the run to completion on
    - The page is a commercial site that may rate-limit, bot-check, restructure, or move behind a login
      without notice — any of which silently skips the source for that run (logged with its failure
      CLASS, and surfaced in the notification only after 3 consecutive skips)
-   - ENVIRONMENT EGRESS IS A SEPARATE AND PRIOR QUESTION. Verified 25 Aug 2026: the "Default"
-     environment (env_014XrxYBDmXYTFNGRFy9f1xf) has NO general web egress at all — every host,
-     including example.com, is refused by the proxy with "CONNECT tunnel failed, response 403", and
-     WebFetch returns EGRESS_BLOCKED. Scheduled runs of this routine DO reach gebiz.gov.sg
-     successfully, so they execute somewhere with broader egress. If a run ever sees EGRESS_BLOCKED on
-     gebiz.gov.sg, that is an environment network-policy problem and NOT something to fix in this
-     prompt — say so plainly and stop, per the pre-flight gate
+   - ENVIRONMENT EGRESS IS A SEPARATE AND PRIOR QUESTION. Verified 25 Aug 2026: bash/Python scripts
+     have NO web egress here — the proxy refuses every host, including example.com — while the
+     WebFetch tool does reach the internet. That is why this routine fetches exclusively through
+     WebFetch. If WebFetch itself ever returns EGRESS_BLOCKED on gebiz.gov.sg, that is an environment
+     network-policy problem and NOT something to fix in this prompt — say so plainly and stop, per the
+     pre-flight gate
    - The listing is JavaScript-rendered, so a plain fetch alone returns no rows. That is NOT grounds
      to write the source off: the Step 3b ladder must also try embedded JSON, reading the JS bundle
      for the data endpoint, and calling that endpoint via WebFetch. A headless browser is NOT an
@@ -991,5 +989,7 @@ Method, send no notification of their own, and continue the run to completion on
 ❌ **Does not read, search or parse any mailbox** (Gmail or otherwise) — email is not a data path for
 this routine, and TenderBoard email alerts are explicitly ruled out  
 ❌ **Does not let a TenderBoard failure stop the GeBIZ run**  
+❌ **Does not fetch anything with a script** — scripts have no network egress here; WebFetch is the
+only network path  
 ❌ **Does not capture** tenders whose primary subject is unambiguously cybersecurity, AV, network
 switches, training, or non-IT hardware — but anything uncertain is captured, not dropped

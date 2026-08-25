@@ -166,3 +166,33 @@ Rule 4 (training/coaching) was applied literally this run, excluding 2 candidate
 shaped instructor/coaching rows captured on 19-21 Aug are still sitting in EPU/SER/34 under
 "category precedent". The filter is now inconsistent with its own history. A cleanup pass would
 need to be asked for; the routine has no re-audit step.
+
+## 25 Aug 2026, 07:25 UTC — routine is now WebFetch-native
+
+The script-fetch rule is gone. It was not merely unhelpful: Step 3 and Step 4 *mandated* scripts for
+fetching, and scripts have no egress here, so the routine's own instructions contradicted the only
+working path. The 14:38 run had to ignore them to get GeBIZ at all.
+
+Now in force on the live Routine:
+
+- **Preamble** states the real constraint — WebFetch reaches the network, scripts do not — and keeps
+  the token discipline by pointing at WebFetch's `prompt` argument, which extracts only the needed
+  fields (the same ~1k-vs-30k saving the old script rule was after).
+- **Step 3** fetches the six RSS feeds via WebFetch, one call each, prompt-extracted.
+- **Step 4** fetches each detail page via WebFetch with a field-only prompt.
+- **Rung 3** is the new discovery path: WebFetch the JS bundle *as text* and read out how
+  `fetchEntities` builds its request. This is the one discovery method that survives no-script-egress.
+- **Rung 4** calls that endpoint via WebFetch if it is GET-able, trying the bare path and the
+  query-param form before concluding POST-only.
+- **POST-only** is logged as needing an egress allowlist, and re-checked weekly rather than nightly.
+- **Step 5b** backfill re-runs the rung-4 call rather than the dormant script.
+
+`tb_discover.py` and `tb_extract.py` remain in the repo, explicitly marked dormant. They are the
+better tools *if* script egress is ever granted — they can POST and drive a real browser — but they
+cannot run today.
+
+Prompt now 62.5 kB, ~3 kB under the cap.
+
+**The one open question tonight's run answers:** is `fetchEntities` GET-able? If yes, TenderBoard
+starts working with no infrastructure change. If it is POST-only, WebFetch cannot issue it and
+script-level egress must be allowlisted for the environment.
