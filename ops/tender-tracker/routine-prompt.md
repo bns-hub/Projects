@@ -439,9 +439,9 @@ directly from a search result ("Live Tenders") and it began loading its rows cli
 LOGIN_WALL classification is almost certainly WRONG unless you actually see a sign-in redirect —
 the page is public and JavaScript-rendered, which is a rung 3/4 problem, not an access problem.
 TenderBoard's full multi-site ALERT feed remains a paid supplier-portal feature; this routine has no
-account and will not open one. Only what the public notices page serves anonymously is in scope. If the public page shows teasers without closing
-dates or without working deep links, capture what IS there rather than discarding the item — see
-"Missing fields" below.
+account and will not open one. Only what the public notices page serves anonymously is in scope. If the
+public page shows teasers without closing dates or without working deep links, capture what IS there
+rather than discarding the item — see "Missing fields" below.
 
 FOR EACH listing item, extract as much as the page gives:
   - Tender/Ref No. (TenderBoard often shows the originating buyer's own reference)
@@ -1006,6 +1006,8 @@ than dropped, after one detail-page fetch to try to resolve the doubt
 ✅ **Stamps every row with its Source** (GeBIZ / TenderBoard), backfilling older rows as GeBIZ  
 ✅ **Captures awarded tenders** in a separate intel sheet (best-effort)  
 ✅ **Checks for closed tenders** and moves them to Closed Tenders sheet  
+✅ **Keeps a Run Ledger** — one row per date, so a missed day is visible rather than silent, and
+retries the days it can still recover  
 ✅ **Uploads tracker** to GeBiz Daily as a native Sheet directly, filename prefixed with an SGT
 date/time stamp (single file, no polling)  
 ✅ **Picks up the previous run's data** from whichever matching file has the latest actual
