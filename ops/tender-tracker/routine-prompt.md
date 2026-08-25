@@ -234,7 +234,11 @@ If files found (after the mimeType filter):
     re-reading it in pieces.
   → Parse all data sheets present: "EPU/CMP/10", "EPU/SER/34", "Closed Tenders", plus
     "Review (Unsure)" and "Awarded (Intel)" if they exist (they won't in files created before
-    24 Aug 2026 — start those empty)
+    24 Aug 2026 — start those empty), plus "Run Ledger" (won't exist before 25 Aug 2026 — Step 5b
+    reconstructs it)
+  → Also read two single lines out of "Coverage & Method": the "TenderBoard Access Recipe" line
+    (feeds Step 3b — this is what lets the run skip discovery) and the Run Ledger rows (feed Step 5b).
+    These are cheap and must not be skipped; losing the recipe costs a full rediscovery every night.
   → Extract all rows into in-memory lists, including each row's Link (read the cell's
     underlying hyperlink URL, not just its displayed text)
 
@@ -361,33 +365,61 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
     tender-like keys (title / refNo / closingDate / agency). If found, parse that JSON directly — this
     is the cheapest win available and needs no browser.
 
-  Rung 3 — the data endpoint behind the page. The JS bundle has to call something. Look in the HTML and
-    in its referenced .js assets for API paths (/api/, /graphql, /wp-json/, /_next/data/, .json). Also
-    try, once each, the conventional discovery paths:
-      https://www.tenderboard.biz/sitemap.xml   https://www.tenderboard.biz/feed
-      https://www.tenderboard.biz/rss           https://www.tenderboard.biz/robots.txt
-    Do NOT invent endpoint URLs — use only paths you actually found referenced, plus those four. If one
-    returns JSON or XML listings, parse it and stop here.
+  Rung 3 — DISCOVER the feed by watching the browser's OWN network traffic. Do NOT guess API URLs
+    and do NOT brute-force conventional paths — the page has to call something, so just watch it.
+    The repo ships a discovery tool for exactly this:
 
-  Rung 4 — headless render. VERIFIED 25 Aug 2026 by direct test — read this carefully, because the
-    obvious approach fails:
-      - The Chromium BINARY ships with the image at /opt/pw-browsers/chromium
-        (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers). It is there and it works.
-      - The Playwright DRIVER LIBRARY is NOT installed. A bare `import playwright` raises
-        ModuleNotFoundError. Run `pip install playwright` FIRST. That install succeeds even under a
-        restrictive egress policy, because pypi.org and files.pythonhosted.org bypass the proxy.
-      - NEVER run `playwright install` or `playwright install chromium`. It fetches from the browser
-        CDN (which IS blocked) and is pointless anyway — the browser is already on disk.
-      - Launch with an explicit executable path and no sandbox:
-          p.chromium.launch(executable_path="/opt/pw-browsers/chromium", args=["--no-sandbox"])
-    Load the listing, wait for network idle, and print ONLY the extracted rows as compact JSON or TSV
-    to stdout — never dump page HTML into context, and never screenshot-and-OCR it.
-    Cap it hard: one page load, ~60s timeout, abandon the rung on timeout.
-    A working reference implementation is committed at ops/tender-tracker/tb_render.py — it was tested
-    end-to-end against a fixture whose rows are injected by JavaScript (static parse found nothing
-    usable; the render returned every row and field). Adapt its row/field selectors to the real markup.
-    If Chromium turns out to be genuinely unavailable, fold that into the JS_ONLY detail rather than
-    treating it as its own failure class.
+        pip install playwright        # driver library is NOT preinstalled -- see the note below
+        python3 ops/tender-tracker/tb_discover.py https://www.tenderboard.biz/singaporetenders
+
+    It loads the page in headless Chromium, records every JSON response, and prints a compact report:
+      verdict            "API" | "DOM" | "NOTHING"
+      api_candidates[]   endpoint, json_path, row_count, field_map, all_keys, 2 sample rows
+      dom_repeated_classes[]  most-repeated class names, as a DOM fallback
+
+    SANITY-CHECK the field_map against the samples before trusting it — in particular confirm that
+    "title" really is the tender title and not the buyer name, and that "ref" is the tender reference
+    rather than an internal numeric id. Fix the mapping by hand if the guess is off.
+
+    If the repo is not checked out in this run, write the equivalent yourself; the whole technique is:
+    launch Chromium with executable_path="/opt/pw-browsers/chromium", attach a page.on("response")
+    handler that keeps JSON responses containing an array of >=2 objects with tender-like keys,
+    goto(url, wait_until="networkidle"), then print the endpoint URL and its keys.
+
+    Turn the result into a RECIPE (this exact shape):
+      {"method":"api","url":"<listing page>","endpoint":"<discovered>","json_path":"$.data.records",
+       "field_map":{"ref":...,"title":...,"agency":...,"publish":...,"close":...,"link":...},
+       "page_param":"page"}
+    or, when there is no JSON feed:
+      {"method":"dom","url":"<listing page>","row_selector":".tender-card",
+       "field_selectors":{"ref":...,"title":...,"agency":...,"publish":...,"close":...},
+       "link_from":"title"}
+
+  Rung 4 — EXTRACT with that recipe:
+
+        python3 ops/tender-tracker/tb_extract.py recipe.json 3     # 3 = max pages
+
+    It prints ONLY a JSON array of normalised rows {ref,title,agency,publish,close,link}, resolving
+    relative links against the listing URL. Never dump page HTML into context; never screenshot-and-OCR.
+    Cap it hard: ~60s per page load, abandon on timeout.
+
+    RUNTIME NOTES, verified 25 Aug 2026 by direct test — the obvious approach fails without these:
+      - The Chromium BINARY ships with the image at /opt/pw-browsers/chromium. It works.
+      - The Playwright DRIVER LIBRARY is NOT installed; a bare `import playwright` raises
+        ModuleNotFoundError. Run `pip install playwright` FIRST. It succeeds even under a restrictive
+        egress policy, because pypi.org and files.pythonhosted.org bypass the proxy.
+      - NEVER run `playwright install` / `playwright install chromium` — it fetches from the browser
+        CDN (blocked) and is pointless, the browser is already on disk.
+      - Always launch with executable_path="/opt/pw-browsers/chromium" and args=["--no-sandbox"].
+
+  CACHE THE RECIPE. Once discovery succeeds, write the recipe JSON into Coverage & Method on one line:
+        TenderBoard Access Recipe: {"method":"api",...}
+    On EVERY later run, read that line from the previous file FIRST and go straight to rung 4 —
+    skipping rungs 1-3 entirely. Only re-run discovery when extraction returns 0 rows or errors
+    (which means the site changed). This keeps the normal nightly cost at one page load.
+    VERIFIED 25 Aug 2026: both tb_discover.py and tb_extract.py were tested end-to-end against a
+    fixture that renders its rows from an XHR — discovery found the endpoint and mapped all six
+    fields; extraction returned correct rows in both API and DOM mode.
 
   A WARNING ON RUNG 1 FALSE SIGNALS: do not conclude "no rows" from a naive substring or regex count
   over the HTML. A JS-rendered page often contains its row markup inside a <script> template literal,
@@ -401,9 +433,13 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
   older than the last successful run date recorded in the previous file's Coverage & Method (or older
   than 7 days if that date can't be determined) — there is no value in paging deeper.
 
-NOTE ON ACCESS (verified 24 Aug 2026, re-checked 25 Aug 2026): TenderBoard's full alert feed is a paid
-supplier-portal feature; this routine has no TenderBoard account and will not open one. Only what the
-public notices page renders anonymously is in scope. If the public page shows teasers without closing
+NOTE ON ACCESS (verified 24 Aug 2026; corrected 25 Aug 2026 by Benson checking in a browser):
+There is NO login wall on the public listing. Benson reached https://www.tenderboard.biz/singaporetenders
+directly from a search result ("Live Tenders") and it began loading its rows client-side. So a
+LOGIN_WALL classification is almost certainly WRONG unless you actually see a sign-in redirect —
+the page is public and JavaScript-rendered, which is a rung 3/4 problem, not an access problem.
+TenderBoard's full multi-site ALERT feed remains a paid supplier-portal feature; this routine has no
+account and will not open one. Only what the public notices page serves anonymously is in scope. If the public page shows teasers without closing
 dates or without working deep links, capture what IS there rather than discarding the item — see
 "Missing fields" below.
 
@@ -584,9 +620,62 @@ Keep "Closed Tenders" sorted by Closing Date (oldest first)
 Sort EPU/CMP/10, EPU/SER/34 and Review (Unsure) by Publish Date (newest first)
 ```
 
+### Step 5b: Coverage Ledger and Gap Backfill
+```
+PURPOSE: never lose a day silently. If a run fails, is skipped, or dies before finishing, that day's
+tenders would otherwise vanish — and GeBIZ RSS holds only ~2 days, so a missed day is a missed bid.
+This step records what each run actually captured, and retries the days that were missed.
+
+THE LEDGER lives in Sheet 6 "Run Ledger" (see Step 6). One row per calendar date (SGT) from the
+tracker start date (07 Aug 2026) to today:
+  Date (SGT) | GeBIZ | TenderBoard | New (GeBIZ) | New (TB) | Notes
+
+Status values, per source, exactly one of:
+  OK                        — fetched and parsed successfully that day
+  FAILED — <CLASS/reason>   — attempted and failed (use the Step 3b CLASS for TenderBoard)
+  NOT RUN                   — no run happened that day at all
+  BACKFILLED (DD Mon)       — was missed, later recovered by this step on the noted date
+  UNRECOVERABLE — <why>     — missed and provably beyond recovery; never retried again
+
+DETECTING GAPS (every run, before building the workbook):
+  1. Read the previous file's Run Ledger.
+  2. Build the full date sequence from 07 Aug 2026 to today (SGT).
+  3. Any date with NO row is a silent miss — insert it as "NOT RUN" for both sources. A crashed run
+     writes no row at all, so ABSENCE is the signal; never rely on a failed run to log its own death.
+  4. OPEN GAPS = every (date, source) whose status is not OK, BACKFILLED or UNRECOVERABLE.
+
+BACKFILLING — the recovery windows differ per source, so do not treat them alike:
+
+  GeBIZ — RSS exposes only ~2 days of publish history.
+    - Gap within the last ~2 days → this run's normal Step 3 fetch already covers it; if that day's
+      items are now present, mark BACKFILLED (today).
+    - Gap older than ~2 days → mark UNRECOVERABLE — "RSS window ~2 days; publish history no longer
+      exposed". Mark it ONCE and never retry: a permanently missed day must not cost a fetch nightly.
+
+  TenderBoard — the listing paginates back through publish dates, so older days ARE recoverable.
+    - OLDEST_GAP = earliest open TenderBoard gap date.
+    - Re-run tb_extract.py with a raised page cap: enough pages to reach publish dates at or before
+      OLDEST_GAP, HARD-CAPPED AT 10 pages (normal runs stay at 3).
+    - Route and filter recovered items exactly like live ones (Step 3b/3c rules, same exclusions, same
+      dedup). Most will already be tracked — that is fine and counts as nothing new.
+    - Mark every gap date the walk covered as BACKFILLED (today) EVEN IF it yielded zero new tenders:
+      "we looked and there was nothing" is a resolved day, not an open one.
+    - If the walk hits the 10-page cap before reaching OLDEST_GAP, leave the rest open and note
+      "backfill truncated at 10 pages" — the next run continues from there rather than restarting.
+
+  Backfill NEVER blocks the run. It is best-effort under exactly the Step 3b failure rule: if the
+  source is unreachable this run, leave the gaps open and carry on.
+
+COST GUARD: if open gaps exceed 14 days for a source, backfill only the most recent 14 and mark the
+rest UNRECOVERABLE — "gap too large to backfill economically". Note the trim in Coverage & Method.
+
+TODAY'S ROW: write it at the END of the run with the real outcome for both sources plus the new-row
+counts. That row is what tomorrow's run reads.
+```
+
 ### Step 6: Build Updated Workbook
 ```
-Create .xlsx file with six sheets:
+Create .xlsx file with seven sheets:
 
 Sheet 1: "EPU/CMP/10"
   Columns: Tender/Ref No. | Title | Agency | Procurement Category | Source | Scope Summary | Publish Date/Time | Closing Date/Time | Status | Link
@@ -633,7 +722,17 @@ Sheet 5: "Awarded (Intel)"
   If nothing was captured this run and none exists from before, still create the sheet with headers
   and a single row reading "No awarded-tender data captured yet — see Coverage & Method."
 
-Sheet 6: "Coverage & Method"
+Sheet 6: "Run Ledger"
+  Columns: Date (SGT) | GeBIZ | TenderBoard | New (GeBIZ) | New (TB) | Notes
+  Same formatting conventions. Sorted by Date (newest first).
+  One row per calendar date from 07 Aug 2026 to today — no date may be absent (Step 5b inserts
+  "NOT RUN" rows for dates that were never recorded). Colour the status cells: OK green,
+  BACKFILLED blue, FAILED amber, NOT RUN amber, UNRECOVERABLE red, so a gap is visible at a glance.
+  When a file created before 25 Aug 2026 has no Run Ledger, build it from scratch: mark every date
+  that already has tenders published against it as OK, and every date from 07 Aug 2026 with no
+  evidence either way as "NOT RUN — reconstructed, pre-ledger", then let Step 5b judge recoverability.
+
+Sheet 7: "Coverage & Method"
   Content (as text rows, no table):
   ─────────────────────────────
   Run Date: [today's date/time SGT]
@@ -672,6 +771,14 @@ Sheet 6: "Coverage & Method"
     [any tender captured despite being half-in-scope, one line each, with the reasoning — or "None"]
   
   Source Upgrades This Run: [count of TenderBoard rows upgraded to GeBIZ per Step 3c]
+  
+  TenderBoard Access Recipe: [the working recipe JSON on ONE line, or "not yet discovered".
+    Carry it forward verbatim every run so the next run skips discovery — see Step 3b "CACHE THE RECIPE".]
+  
+  Coverage Ledger Summary:
+    - Days tracked: [count]   OK: [n] | Backfilled this run: [n] | Still open: [n] | Unrecoverable: [n]
+    - Open gap dates: [list them, or "none"]
+    - [If backfill ran: "Backfilled TenderBoard pages walked: [n] (cap 10)"]
   
   Previous File: [native-Sheet fileId/link read in Step 2, or "None (first run)"]
   
@@ -770,6 +877,8 @@ If new_tenders_count >= 1:
         [If any tenders moved to Closed: "Also moved X tenders to Closed."]
         [If any Review (Unsure) rows added: "Unsure/needs a look: X — see Review (Unsure) sheet."]
         [If any awarded intel captured: "Awarded intel: +X rows."]
+        [If any days were backfilled: "Backfilled X missed day(s): <dates> (+Y tenders recovered)."]
+        [If any gaps remain open: "X day(s) still unrecovered — see Run Ledger."]
         [If TenderBoard was skipped this run: "TenderBoard skipped this run (<CLASS>)."]
         [If TenderBoard skipped 3+ consecutive runs: "TenderBoard unreachable N runs running (<CLASS>) — may need a look."]
         [If TenderBoard dormant 10+ runs, at most once a week: "TenderBoard dormant N runs (<CLASS>) — decide: fix egress, drop the source, or replace with direct portal feeds."]
