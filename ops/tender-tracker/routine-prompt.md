@@ -386,10 +386,29 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
     handler that keeps JSON responses containing an array of >=2 objects with tender-like keys,
     goto(url, wait_until="networkidle"), then print the endpoint URL and its keys.
 
+    WHAT THE FEED ACTUALLY LOOKS LIKE — observed by Benson in browser DevTools, 25 Aug 2026. Use this
+    to aim, but always confirm against what discovery actually returns; do not hardcode blindly:
+      - The listing calls **fetchEntities** from main.bundle.<hash>.js — 24.3 kB, ~1.3 s. That is the
+        tender payload. It is a `fetch`, and an action-style name with no query string is typically a
+        POST carrying filters and a page number in a JSON body.
+      - **fetchOptions** (~16.6 kB) is the filter dropdowns (categories/agencies), NOT tenders.
+        tb_discover.py already rejects it — a payload with no date field scores 0.
+      - Ignore entirely: gen_204?csp_test= (Google telemetry), envelope/?sentry_key= (Sentry crash
+        reporting), en.json (widget i18n, disk-cached), and small <digits>.json?randomId= payloads.
+      - No auth header was present on these calls. The page is public; expect no token.
+
+    PAGINATION FOR A POST FEED: the discovered post_data carries a literal page number, e.g.
+    {"page":1,"size":20,"status":"live"}. In the recipe, replace that literal with the token {page}:
+        "post_data": "{\"page\":{page},\"size\":20,\"status\":\"live\"}"
+    tb_extract.py substitutes the real page number per request and stops when a page returns no rows.
+    WITHOUT that token it fetches page 1 only — and backfill (Step 5b) silently cannot page back.
+
     Turn the result into a RECIPE (this exact shape):
-      {"method":"api","url":"<listing page>","endpoint":"<discovered>","json_path":"$.data.records",
-       "field_map":{"ref":...,"title":...,"agency":...,"publish":...,"close":...,"link":...},
-       "page_param":"page"}
+      {"method":"api","url":"<listing page>","endpoint":"<discovered>","json_path":"$.result.entities",
+       "http_method":"POST","headers":{"content-type":"application/json"},
+       "post_data":"{\"page\":{page},...}",
+       "field_map":{"ref":...,"title":...,"agency":...,"publish":...,"close":...,"link":...}}
+    For a plain GET feed, drop http_method/post_data/headers and use "page_param":"page" instead.
     or, when there is no JSON feed:
       {"method":"dom","url":"<listing page>","row_selector":".tender-card",
        "field_selectors":{"ref":...,"title":...,"agency":...,"publish":...,"close":...},

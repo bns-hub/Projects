@@ -79,7 +79,23 @@ def main():
                     sep = "&" if "?" in ep else "?"
                     ep = f"{ep}{sep}{recipe['page_param']}={page_no}"
                 try:
-                    body = pg.request.get(ep, timeout=45000).json()
+                    verb = (recipe.get("http_method") or "GET").upper()
+                    opts = {"timeout": 45000}
+                    if recipe.get("headers"):
+                        opts["headers"] = recipe["headers"]
+                    if verb == "POST":
+                        # Replay the body the page itself sent, substituting the page number
+                        # wherever the recipe marked it with {page}.
+                        raw = recipe.get("post_data") or ""
+                        if isinstance(raw, str):
+                            raw = raw.replace("{page}", str(page_no))
+                        else:
+                            raw = json.dumps(raw).replace("{page}", str(page_no))
+                        opts["data"] = raw
+                        resp = pg.request.post(ep, **opts)
+                    else:
+                        resp = pg.request.get(ep, **opts)
+                    body = resp.json()
                     recs = walk(body, recipe.get("json_path", "$"))
                 except Exception as e:
                     print(f"page {page_no} failed: {type(e).__name__}", file=sys.stderr)
@@ -92,7 +108,7 @@ def main():
                     if key and key not in seen:
                         seen.add(key)
                         rows.append(row)
-                if not recipe.get("page_param"):
+                if not recipe.get("page_param") and "{page}" not in str(recipe.get("post_data") or ""):
                     break
         else:  # dom
             fs = recipe["field_selectors"]

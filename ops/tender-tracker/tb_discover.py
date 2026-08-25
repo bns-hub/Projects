@@ -67,7 +67,17 @@ def find_record_arrays(obj, path="$", depth=0):
 
 
 def score(fields):
-    """A payload is interesting when it looks like tenders, not like nav menus."""
+    """A payload is interesting when it looks like tenders, not like nav menus.
+
+    A tender always has a date; a filter-options list (categories, agencies) never
+    does. Requiring one kills the commonest false positive -- e.g. TenderBoard's
+    own fetchOptions payload, which is a fat array of {id, name} pairs that would
+    otherwise look plausible.
+    """
+    if not ("close" in fields or "publish" in fields):
+        return 0
+    if len(fields) < 3:
+        return 0
     s = len(fields) * 10
     if "ref" in fields: s += 25
     if "close" in fields: s += 25
@@ -96,8 +106,25 @@ def main():
             keys = sorted({k for r in recs[:5] for k in r.keys()})
             fields = guess_fields(keys)
             if score(fields) >= 50:
+                req = resp.request
+                post_data = None
+                try:
+                    post_data = req.post_data
+                except Exception:
+                    pass
+                hdrs = {}
+                try:
+                    for h, v in (req.headers or {}).items():
+                        if h.lower() in ("content-type", "accept", "x-requested-with",
+                                         "authorization", "x-api-key"):
+                            hdrs[h] = v
+                except Exception:
+                    pass
                 captured.append({
                     "endpoint": resp.url,
+                    "http_method": req.method,
+                    "post_data": post_data,
+                    "headers": hdrs,
                     "status": resp.status,
                     "json_path": path,
                     "row_count": len(recs),
@@ -143,7 +170,7 @@ def main():
         "dom_repeated_classes": dom_guess,
         "verdict": "API" if captured else ("DOM" if dom_guess else "NOTHING"),
     }
-    print(json.dumps(report, indent=1)[:6000])
+    print(json.dumps(report, indent=1)[:9000])
     return 0 if (captured or dom_guess) else 2
 
 
