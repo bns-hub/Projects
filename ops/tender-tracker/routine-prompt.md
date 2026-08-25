@@ -1,19 +1,24 @@
-IMPORTANT — token-saving rules for this routine:
-1) MUST convert any file to Markdown before reading it (do not read raw file formats directly).
-2) Prefer using scripts to read webpages instead of OCR/screenshots.
+IMPORTANT — how fetching works in THIS environment, and the token rule that follows from it.
+Read both before writing any code.
 
-WHY these two rules exist, so you can apply them with judgement rather than mechanically: everything
-that enters the context window is re-sent on every subsequent turn of this run, so a large blob read
-early is billed again and again. A script that fetches, parses and prints ONLY the fields needed puts
-~1k tokens in context where the raw source would have put 30k. Markdown conversion strips format
-packaging (zip/XML/HTML overhead) but NOT content — and the conversion only saves anything if a tool
-or script does it; reading the raw file yourself and then rewriting it as Markdown has already cost
-you the full amount.
+1) NETWORK ACCESS. The **WebFetch tool CAN reach the internet. bash/Python scripts CANNOT** — this
+   sandbox's egress proxy answers CONNECT 403 for every host (verified 25 Aug 2026 against
+   gebiz.gov.sg, tenderboard.biz and example.com alike). So: never write a script that fetches a URL,
+   never try to route around the proxy, and never disable TLS verification. EVERY network read in
+   this routine goes through WebFetch. Scripts remain the right tool for everything LOCAL — building
+   the .xlsx, parsing text you already hold, date arithmetic.
+   This supersedes an older rule that told this routine to prefer scripts for fetching. That rule
+   predates the egress restriction and, if followed, silently breaks the run.
 
-The corollary — do NOT over-apply: don't write a script to read something small, and don't spend three
-debug rounds scripting what one direct read would have answered. Script when the source is large and
-you need a slice of it, or when the same parse repeats every run. Both conditions hold for the RSS
-feeds, the TenderBoard listing and the detail pages below, which is where the real volume is.
+2) KEEP CONTEXT SMALL. Everything entering the context window is re-sent on every later turn, so a
+   raw blob read early is billed again and again. WebFetch takes a `prompt` argument — use it to
+   return ONLY the fields you need, so a feed costs ~1k tokens instead of 30k. Never ask WebFetch for
+   a page verbatim, never screenshot-and-OCR, and convert any file to Markdown rather than reading
+   raw file formats.
+
+The corollary — do not over-apply: don't spend three rounds of prompt-tuning on what one direct read
+would answer. Be surgical where the volume actually is: the six RSS feeds, the TenderBoard listing,
+and the tender detail pages.
 
 # GeBIZ + TenderBoard Tender Tracker — Reliable Daily Run
 
@@ -288,11 +293,11 @@ Fetch these six GeBIZ RSS feeds:
   5. https://www.gebiz.gov.sg/rss/Servers-CREATE_BO_FEED.xml
   6. https://www.gebiz.gov.sg/rss/Professional_Services-CREATE_BO_FEED.xml
 
-PARSE THESE WITH A SCRIPT, NOT BY READING THEM INTO CONTEXT. This is the single largest avoidable
-token cost in the run: six XML documents that are mostly markup you don't need. Write one short script
-that fetches all six, parses them (ElementTree/feedparser), and prints one compact line per item —
-ref, title, link, pubDate — then work from that printed list. Never WebFetch the six feeds one by one
-and read the raw XML.
+FETCH THESE WITH WebFetch — one call per feed — and use each call's `prompt` to return ONLY a compact
+list: for every <item>, its Tender/Ref No., title, link and pubDate, one line each. Do NOT ask for the
+raw XML: six feeds of mostly-markup is the single largest avoidable token cost in the run. A script
+CANNOT fetch these (no script egress — see the top of this prompt); ElementTree/feedparser is only an
+option for XML you already hold as text.
 
 For each <item> in that parsed output:
   - Extract: title, link, pubDate, Tender/Ref No. (usually in title)
@@ -321,8 +326,8 @@ CLASSIFY the failure precisely and log the class verbatim in Coverage & Method. 
     HTTP_<code>      — the host answered 403 / 429 / 5xx (bot-check, rate limit, outage).
     LOGIN_WALL       — the listing redirected to sign-in, or shows a paywall/supplier-portal gate.
     JS_ONLY          — HTML fetched fine but carries no server-rendered tender rows, AND every rung of
-                       the FETCH ladder (embedded JSON, data endpoint, headless render) also produced
-                       nothing.
+                       the FETCH ladder (embedded JSON, JS-bundle inspection, calling the discovered
+                       endpoint via WebFetch) also produced nothing.
     PARSE_FAIL       — rows are present but the layout changed and nothing extracts.
 Never log a bare "SKIPPED — no rows". The class is what tells us whether this is fixable, and by whom.
 
@@ -363,83 +368,48 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
     tender-like keys (title / refNo / closingDate / agency). If found, parse that JSON directly — this
     is the cheapest win available and needs no browser.
 
-  Rung 3 — DISCOVER the feed by watching the browser's OWN network traffic. Do NOT guess API URLs
-    and do NOT brute-force conventional paths — the page has to call something, so just watch it.
-    The repo ships a discovery tool for exactly this:
+  Rung 3 — READ THE JS BUNDLE to find the data call. WebFetch can fetch JavaScript as text, and this
+    is the one discovery avenue that survives the no-script-egress constraint (a headless browser
+    cannot run here — it would need to open its own sockets).
+      a. From rung 1's HTML, get the bundle URL. Observed 25 Aug 2026: main.bundle.<hash>.js
+      b. WebFetch that bundle with a prompt like: "Find where fetchEntities is defined or called.
+         Report the full request URL or path it builds, the HTTP method, and the shape of any request
+         body or query parameters. Quote the relevant lines."
+      c. Build the absolute endpoint URL from what it reports. Do NOT invent one.
 
-        pip install playwright        # driver library is NOT preinstalled -- see the note below
-        python3 ops/tender-tracker/tb_discover.py https://www.tenderboard.biz/singaporetenders
+    KNOWN, from Benson's own DevTools capture (25 Aug 2026) — aim with this, but confirm against what
+    the bundle actually says:
+      - **fetchEntities** (24.3 kB, from main.bundle.<hash>.js) is the tender payload.
+      - **fetchOptions** (~16.6 kB) is the filter dropdowns — categories/agencies, NOT tenders.
+      - Ignore: gen_204?csp_test= (Google telemetry), envelope/?sentry_key= (Sentry),
+        en.json (widget i18n), and small <digits>.json?randomId= payloads.
+      - No auth header was present on any of them. The page is public; expect no token.
 
-    It loads the page in headless Chromium, records every JSON response, and prints a compact report:
-      verdict            "API" | "DOM" | "NOTHING"
-      api_candidates[]   endpoint, http_method, post_data, headers, json_path, row_count,
-                         field_map, all_keys, 2 sample rows
-      dom_repeated_classes[]  most-repeated class names, as a DOM fallback
+  Rung 4 — CALL the endpoint with WebFetch.
+      - If it is GET-able, WebFetch it directly with a prompt returning one compact line per tender:
+        ref no., title, buyer/agency, publish date, closing date/time, detail link. That is the entire
+        extraction — no browser, no script.
+      - Before giving up, try the obvious GET forms ONCE each: the bare path, and the path with the
+        body's fields as query params (e.g. ?page=1&size=20&status=live). Many such endpoints accept
+        either verb.
+      - Paginate by incrementing the page parameter, stopping when a page returns no rows. Normal runs
+        walk at most 3 pages; Step 5b backfill may walk up to 10.
+      - If it is genuinely POST-only, WebFetch cannot issue it. Log exactly:
+        "TenderBoard: SKIPPED — EGRESS_BLOCKED — fetchEntities is POST-only; WebFetch cannot POST and
+        script egress is blocked. Needs script-level egress allowlisted for this environment."
+        Then stop spending the full ladder nightly: re-check rung 3 at most once a week.
 
-    SANITY-CHECK the field_map against the samples before trusting it — in particular confirm that
-    "title" really is the tender title and not the buyer name, and that "ref" is the tender reference
-    rather than an internal numeric id. Fix the mapping by hand if the guess is off.
+  CACHE THE RECIPE. Once a rung-4 call works, write it into Coverage & Method on ONE line:
+        TenderBoard Access Recipe: {"via":"webfetch","url":"<full GET url with {page}>",
+          "fields":"<how each row maps>"}
+    On EVERY later run read that line FIRST and go straight to rung 4, skipping rungs 1-3. Re-discover
+    only when a call returns 0 rows or errors — that means the site changed.
 
-    If the repo is not checked out in this run, write the equivalent yourself; the whole technique is:
-    launch Chromium with executable_path="/opt/pw-browsers/chromium", attach a page.on("response")
-    handler that keeps JSON responses containing an array of >=2 objects with tender-like keys,
-    goto(url, wait_until="networkidle"), then print the endpoint URL, its request method and body,
-    and its keys.
-
-    WHAT THE FEED ACTUALLY LOOKS LIKE — observed by Benson in browser DevTools, 25 Aug 2026. Use this
-    to aim, but always confirm against what discovery actually returns; do not hardcode blindly:
-      - The listing calls **fetchEntities** from main.bundle.<hash>.js — 24.3 kB, ~1.3 s. That is the
-        tender payload. It is a `fetch`, and an action-style name with no query string is typically a
-        POST carrying filters and a page number in a JSON body.
-      - **fetchOptions** (~16.6 kB) is the filter dropdowns (categories/agencies), NOT tenders.
-        tb_discover.py already rejects it — a payload with no date field scores 0.
-      - Ignore entirely: gen_204?csp_test= (Google telemetry), envelope/?sentry_key= (Sentry crash
-        reporting), en.json (widget i18n, disk-cached), and small <digits>.json?randomId= payloads.
-      - No auth header was present on these calls. The page is public; expect no token.
-
-    PAGINATION FOR A POST FEED: the discovered post_data carries a literal page number, e.g.
-    {"page":1,"size":20,"status":"live"}. In the recipe, replace that literal with the token {page}:
-        "post_data": "{\"page\":{page},\"size\":20,\"status\":\"live\"}"
-    tb_extract.py substitutes the real page number per request and stops when a page returns no rows.
-    WITHOUT that token it fetches page 1 only — and backfill (Step 5b) silently cannot page back.
-
-    Turn the result into a RECIPE (this exact shape):
-      {"method":"api","url":"<listing page>","endpoint":"<discovered>","json_path":"$.result.entities",
-       "http_method":"POST","headers":{"content-type":"application/json"},
-       "post_data":"{\"page\":{page},...}",
-       "field_map":{"ref":...,"title":...,"agency":...,"publish":...,"close":...,"link":...}}
-    For a plain GET feed, drop http_method/post_data/headers and use "page_param":"page" instead.
-    Or, when there is no JSON feed at all:
-      {"method":"dom","url":"<listing page>","row_selector":".tender-card",
-       "field_selectors":{"ref":...,"title":...,"agency":...,"publish":...,"close":...},
-       "link_from":"title"}
-
-  Rung 4 — EXTRACT with that recipe:
-
-        python3 ops/tender-tracker/tb_extract.py recipe.json 3     # 3 = max pages
-
-    It prints ONLY a JSON array of normalised rows {ref,title,agency,publish,close,link}, resolving
-    relative links against the listing URL. Never dump page HTML into context; never screenshot-and-OCR.
-    Cap it hard: ~60s per page load, abandon on timeout.
-
-    RUNTIME NOTES, verified 25 Aug 2026 by direct test — the obvious approach fails without these:
-      - The Chromium BINARY ships with the image at /opt/pw-browsers/chromium. It works.
-      - The Playwright DRIVER LIBRARY is NOT installed; a bare `import playwright` raises
-        ModuleNotFoundError. Run `pip install playwright` FIRST. It succeeds even under a restrictive
-        egress policy, because pypi.org and files.pythonhosted.org bypass the proxy.
-      - NEVER run `playwright install` / `playwright install chromium` — it fetches from the browser
-        CDN (blocked) and is pointless, the browser is already on disk.
-      - Always launch with executable_path="/opt/pw-browsers/chromium" and args=["--no-sandbox"].
-
-  CACHE THE RECIPE. Once discovery succeeds, write the recipe JSON into Coverage & Method on one line:
-        TenderBoard Access Recipe: {"method":"api",...}
-    On EVERY later run, read that line from the previous file FIRST and go straight to rung 4 —
-    skipping rungs 1-3 entirely. Only re-run discovery when extraction returns 0 rows or errors
-    (which means the site changed). This keeps the normal nightly cost at one page load.
-    VERIFIED 25 Aug 2026: both tb_discover.py and tb_extract.py were tested end-to-end against
-    fixtures that render rows from an XHR and from a POST feed — discovery found the endpoint, its
-    method, body and headers, and mapped all six fields; extraction returned correct rows in API
-    (GET and POST, with pagination) and DOM mode.
+    NOTE ON THE REPO SCRIPTS: ops/tender-tracker/tb_discover.py and tb_extract.py implement this
+    discovery and extraction properly (network-capture discovery, GET+POST replay, pagination, DOM
+    fallback) and are tested — but they need script-level egress and therefore CANNOT run in this
+    environment today. Leave them dormant. If script egress is ever allowlisted, prefer them over the
+    WebFetch path above, because they can POST and can drive a real browser.
 
   A WARNING ON RUNG 1 FALSE SIGNALS: do not conclude "no rows" from a naive substring or regex count
   over the HTML. A JS-rendered page often contains its row markup inside a <script> template literal,
@@ -564,10 +534,9 @@ raises its own notification, and logs whatever it could or couldn't get.
 
 ### Step 4: Validate and Route New GeBIZ Candidates
 ```
-Batch this step with a script wherever there is more than one new candidate: fetch the detail pages in
-one script run, extract the fields below per tender, and print a compact record per tender rather than
-pulling each full page into context. Only read a page directly when a single candidate's extraction
-fails and you need to eyeball the markup to see why.
+Use one WebFetch per candidate detail page, each with a `prompt` that returns just the fields below as
+a compact record — never the whole page. (A script cannot fetch these; see the top of this prompt.)
+Only pull more of a page when a single candidate's extraction fails and you need to see the markup.
 
 For each GeBIZ "new candidate" item:
   1. Fetch its opportunityDetails.xhtml page (use the link from RSS)
@@ -818,9 +787,10 @@ Sheet 7: "Coverage & Method"
     TenderBoard is scraped anonymously from its public notices page — its full alert feed is a paid
     supplier-portal feature this routine has no account for. Coverage from that source is therefore
     partial by design, and any run may skip it entirely without that being an error.
-    Its listing is JavaScript-rendered, so Step 3b works a 4-rung ladder (plain fetch → embedded JSON
-    → data endpoint → headless Chromium) before logging JS_ONLY. Email alerts are NOT a workaround:
-    no mailbox is read or parsed by this routine (Benson, 25 Aug 2026).
+    Its listing is JavaScript-rendered, so Step 3b works a ladder (fetch → embedded JSON → read the JS
+    bundle for the data endpoint → call that endpoint via WebFetch) before logging a verdict. Headless
+    browsing is NOT available: scripts have no network egress here. Email alerts are NOT a workaround
+    either — no mailbox is read or parsed by this routine (Benson, 25 Aug 2026).
   ─────────────────────────────
 ```
 
@@ -966,9 +936,9 @@ Method, send no notification of their own, and continue the run to completion on
      gebiz.gov.sg, that is an environment network-policy problem and NOT something to fix in this
      prompt — say so plainly and stop, per the pre-flight gate
    - The listing is JavaScript-rendered, so a plain fetch alone returns no rows. That is NOT grounds
-     to write the source off: the Step 3b ladder must also try embedded JSON, a discovered data
-     endpoint, and a headless render before logging JS_ONLY. The 25 Aug run called it a "standing
-     limitation" after a plain fetch alone — premature, and superseded by the ladder
+     to write the source off: the Step 3b ladder must also try embedded JSON, reading the JS bundle
+     for the data endpoint, and calling that endpoint via WebFetch. A headless browser is NOT an
+     option here — scripts have no network egress (25 Aug 2026)
    - Email alerts are NOT an available workaround: Benson ruled out any mailbox-based data path on
      25 Aug 2026, so a TenderBoard account/alert subscription is off the table regardless of cost
    - TenderBoard listings are aggregator summaries, so fields (especially closing time and the deep
