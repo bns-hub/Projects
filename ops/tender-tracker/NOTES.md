@@ -128,3 +128,41 @@ Tonight's run is the first real contact.
 The Routine prompt is capped at 65,536 bytes and now sits at ~64.6 kB — about 900 bytes of headroom.
 The Quick Reference section was dropped to fit. Any further addition needs a matching cut; the next
 things worth cutting are the historical narration in Known Limitations #2 and #6.
+
+---
+
+## 25 Aug 2026, 14:38 SGT — root cause found
+
+The run completed (29 min) and produced `2026-08-25_1438_GeBIZ_Open_Tenders`. GeBIZ healthy:
+**5 new tenders** (1 CMP/10, 4 SER/34), 1 closed, 3 excluded with rule numbers, Run Ledger built
+from scratch. All the new instrumentation worked — classified failure, recipe line, ledger summary.
+
+**The real blocker, finally identified: there are TWO egress paths, with different policies.**
+
+| Path | Reaches the internet? |
+|---|---|
+| `WebFetch` tool | **Yes** — reached both gebiz.gov.sg and tenderboard.biz |
+| bash / Python scripts | **No** — CONNECT 403 to every host, incl. example.com |
+
+That resolves the contradiction I couldn't explain all session: GeBIZ worked in scheduled runs while
+my own bash probes were refused. The runs were using WebFetch; my probe used curl. Both observations
+were correct; I wrongly assumed one path.
+
+**Consequence for the ladder I built:** rungs 3 and 4 both need a script to open its own sockets —
+headless Chromium and direct endpoint calls alike. Neither can ever run here. The design assumed
+script-level egress that this environment does not grant. Correctly logged as EGRESS_BLOCKED
+(environment policy) rather than JS_ONLY (site behaviour).
+
+### The two ways out
+
+1. **Allowlist bash/script egress** for the environment — infrastructure change, makes rungs 3-4 live.
+2. **If `fetchEntities` accepts GET**, WebFetch can call it directly and this works today with no
+   infra change. Unknown until someone checks the request method in DevTools. If it is POST,
+   WebFetch cannot help and option 1 is the only path.
+
+### Also flagged by the run, for Benson
+
+Rule 4 (training/coaching) was applied literally this run, excluding 2 candidates — but similarly
+shaped instructor/coaching rows captured on 19-21 Aug are still sitting in EPU/SER/34 under
+"category precedent". The filter is now inconsistent with its own history. A cleanup pass would
+need to be asked for; the routine has no re-audit step.
