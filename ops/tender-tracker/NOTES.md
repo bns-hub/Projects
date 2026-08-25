@@ -48,3 +48,51 @@ source, or replace the aggregator with direct feeds from the underlying non-GeBI
 (statutory boards, healthcare clusters, universities, town councils). The routine now
 self-surfaces this once TenderBoard has been dormant 10+ runs, rather than silently retrying
 forever.
+
+---
+
+## Live test — manual run fired 25 Aug 2026, 01:15 UTC
+
+Fired `trig_01VbyDU9cjgeLSUzbZzwoV5B` via `fire_trigger` with extra instructions to work all four
+rungs and log what each returned.
+
+**Result after 30 minutes: no new file in GeBiz Daily.** The folder still holds only
+`2026-08-25_0216_GeBIZ_Open_Tenders` (created 24 Aug 19:28 UTC) and `2026-08-24_0210_...`.
+
+### What that most likely means
+
+The routine is explicitly written to **write no file** when pre-flight fails:
+
+> Step 2: Test One RSS Feed … If fails: → Send PushNotification … → Do NOT proceed (don't create
+> empty tracker file)
+
+So "no file" is the expected signature of a **pre-flight stop on GeBIZ RSS being unreachable** —
+i.e. the same `EGRESS_BLOCKED` condition the probe found in the Default environment. If so, the
+egress block is not confined to interactive sessions, and **tonight's 18:10 UTC run will fail the
+same way.**
+
+### What is NOT established
+
+Trigger-fired sessions are excluded from `list_sessions`, so the run's own log is not readable from
+here. "No file" is also consistent with a container that never started, or a run still going at
+30 min. The run's PushNotification went to Benson's phone — **that notification is the decisive
+evidence**, and it distinguishes the cases:
+
+| Push says | Meaning |
+|---|---|
+| "GeBIZ Tracker: RSS feeds unreachable…" | Pre-flight stop — egress blocked, confirmed |
+| "GeBIZ/TB: NO New Tenders" or a tender list | Run completed; the missing file is an upload problem instead |
+| nothing at all | Run never started |
+
+### The actual fix, if it is egress
+
+Not a prompt change. The environment's **network policy** governs this, and it is chosen when the
+environment is created — see https://code.claude.com/docs/en/claude-code-on-the-web
+
+The hosts that need to be reachable:
+
+    www.gebiz.gov.sg        # required — the tracker's primary source
+    www.tenderboard.biz     # optional — the aggregator this whole thread is about
+
+Until `gebiz.gov.sg` is reachable from the Routine's runs, TenderBoard is moot: the tracker has no
+primary source either. That reordering is the main thing this live test established.
