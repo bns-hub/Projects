@@ -892,4 +892,4 @@ createdTime metadata — never modifiedTime, never assumed API result order
 this routine, and TenderBoard email alerts are explicitly ruled out  
 ❌ **Does not let a TenderBoard failure stop the GeBIZ run**  
 ❌ **Does not capture** tenders whose primary subject is unambiguously cybersecurity, AV, network
-switches, training, or non-IT hardware — but anything uncertain is captured, not dropped  
+switches, training, or non-IT hardware — but anything uncertain is captured, not dropped
