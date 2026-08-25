@@ -369,13 +369,31 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
     Do NOT invent endpoint URLs — use only paths you actually found referenced, plus those four. If one
     returns JSON or XML listings, parse it and stop here.
 
-  Rung 4 — headless render. Chromium is pre-installed in this environment and Playwright is already
-    pointed at it (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers; never run "playwright install"). Write a
-    short script that loads the listing, waits for network idle, and prints ONLY the extracted rows as
-    compact JSON or TSV to stdout — never dump page HTML into context, and never screenshot-and-OCR it.
-    Cap it hard: one page load, ~60s timeout, abandon the rung on timeout. If Playwright or Chromium
-    turns out to be unavailable in the run environment, fold that into the JS_ONLY detail rather than
+  Rung 4 — headless render. VERIFIED 25 Aug 2026 by direct test — read this carefully, because the
+    obvious approach fails:
+      - The Chromium BINARY ships with the image at /opt/pw-browsers/chromium
+        (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers). It is there and it works.
+      - The Playwright DRIVER LIBRARY is NOT installed. A bare `import playwright` raises
+        ModuleNotFoundError. Run `pip install playwright` FIRST. That install succeeds even under a
+        restrictive egress policy, because pypi.org and files.pythonhosted.org bypass the proxy.
+      - NEVER run `playwright install` or `playwright install chromium`. It fetches from the browser
+        CDN (which IS blocked) and is pointless anyway — the browser is already on disk.
+      - Launch with an explicit executable path and no sandbox:
+          p.chromium.launch(executable_path="/opt/pw-browsers/chromium", args=["--no-sandbox"])
+    Load the listing, wait for network idle, and print ONLY the extracted rows as compact JSON or TSV
+    to stdout — never dump page HTML into context, and never screenshot-and-OCR it.
+    Cap it hard: one page load, ~60s timeout, abandon the rung on timeout.
+    A working reference implementation is committed at ops/tender-tracker/tb_render.py — it was tested
+    end-to-end against a fixture whose rows are injected by JavaScript (static parse found nothing
+    usable; the render returned every row and field). Adapt its row/field selectors to the real markup.
+    If Chromium turns out to be genuinely unavailable, fold that into the JS_ONLY detail rather than
     treating it as its own failure class.
+
+  A WARNING ON RUNG 1 FALSE SIGNALS: do not conclude "no rows" from a naive substring or regex count
+  over the HTML. A JS-rendered page often contains its row markup inside a <script> template literal,
+  so a crude grep reports matches that are not real rows — and conversely a page can carry real data
+  in JSON while showing no <tr> at all. Judge rung 1 on whether you can extract actual field VALUES,
+  not on whether some pattern appears.
 
   Only after all four rungs come up empty may this step be logged JS_ONLY.
 
@@ -810,6 +828,13 @@ Method, send no notification of their own, and continue the run to completion on
    - The page is a commercial site that may rate-limit, bot-check, restructure, or move behind a login
      without notice — any of which silently skips the source for that run (logged with its failure
      CLASS, and surfaced in the notification only after 3 consecutive skips)
+   - ENVIRONMENT EGRESS IS A SEPARATE AND PRIOR QUESTION. Verified 25 Aug 2026: the "Default"
+     environment (env_014XrxYBDmXYTFNGRFy9f1xf) has NO general web egress at all — every host,
+     including example.com, is refused by the proxy with "CONNECT tunnel failed, response 403", and
+     WebFetch returns EGRESS_BLOCKED. Scheduled runs of this routine have historically reached
+     gebiz.gov.sg successfully, so they execute somewhere with broader egress. If a run ever sees
+     EGRESS_BLOCKED on gebiz.gov.sg, that is an environment network-policy problem and NOT something
+     to fix in this prompt — say so plainly and stop, per the pre-flight gate
    - As of 25 Aug 2026 the listing is JavaScript-rendered, so a plain fetch alone returns no rows. That
      is NOT by itself grounds to write the source off: Step 3b's ladder must also try embedded JSON, a
      discovered data endpoint, and a headless Chromium render before logging JS_ONLY. The 25 Aug run
