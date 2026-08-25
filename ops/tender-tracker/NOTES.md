@@ -96,3 +96,35 @@ The hosts that need to be reachable:
 
 Until `gebiz.gov.sg` is reachable from the Routine's runs, TenderBoard is moot: the tracker has no
 primary source either. That reordering is the main thing this live test established.
+
+---
+
+## 25 Aug 2026 — the feed, found in a browser
+
+Benson opened DevTools on the live page. The listing is driven by **`fetchEntities`** from
+`main.bundle.<hash>.js` — 24.3 kB, ~1.3 s, a `fetch` with no query string (so almost certainly a
+POST with filters + page in a JSON body). Siblings on that page, all noise:
+
+| Request | What it is |
+|---|---|
+| `fetchOptions` (16.6 kB) | filter dropdowns — categories/agencies, NOT tenders |
+| `gen_204?csp_test=` | Google telemetry (`AIza…` Maps key initiator) |
+| `envelope/?sentry_key=` | Sentry crash reporting |
+| `en.json` | widget i18n, disk-cached |
+| `<digits>.json?randomId=` | 1.2 kB, too small to be a listing |
+
+No auth header on any of them — the page is public, as Benson confirmed ("there is no login at all").
+
+That killed the earlier LOGIN_WALL theory outright, and forced two code changes: the extractor only
+did GET (would have failed on the real feed), and the candidate scorer would have accepted
+`fetchOptions` as a plausible tender payload. Both fixed; the scorer now requires a date field, which
+no filter-options list has.
+
+**Still not verified against the live site.** The fixtures are ones I wrote to imitate this shape.
+Tonight's run is the first real contact.
+
+## Prompt size ceiling
+
+The Routine prompt is capped at 65,536 bytes and now sits at ~64.6 kB — about 900 bytes of headroom.
+The Quick Reference section was dropped to fit. Any further addition needs a matching cut; the next
+things worth cutting are the historical narration in Known Limitations #2 and #6.

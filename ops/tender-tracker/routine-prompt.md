@@ -115,11 +115,9 @@ https://docs.google.com/spreadsheets/d/11SjaVYtuZRbD0DQOe3a_UKn8r7jLqPDuKe4hQnVA
 - **Implication:** "Updating" the tracker means: read the latest file, build the updated data in memory,
   and upload a new file — Drive has no way to edit an existing file's cells directly. Just read, then
   upload the updated info as the new latest file. Don't add any archiving/copying step on top of this.
-- **Resolved quirk — dual file objects on upload:** an earlier version of this routine uploaded with
-  `disableConversionToGoogleType: true`, which reliably produced TWO Drive files (a raw .xlsx plus a
-  separate Drive-auto-converted native Sheet sibling that could take 30-60s to appear, sometimes never).
-  VERIFIED 12 Aug 2026: leaving `disableConversionToGoogleType: false` avoids this entirely — the
-  direct `create_file` response is already the native Google Sheet, one file, no waiting. See Step 7.
+- **Resolved quirk — dual file objects on upload:** uploading with `disableConversionToGoogleType:
+  true` produced TWO Drive files (raw .xlsx + a slow auto-converted sibling). VERIFIED 12 Aug 2026:
+  leaving it `false` returns the native Google Sheet directly — one file, no waiting. See Step 7.
 - **No Sheets-API-style in-place editing is available at all in this session** — only Drive's
   file-level tools. A genuinely stable, unchanging spreadsheet link/fileId that gets edited in place
   each day is NOT achievable with what's connected right now; it would need an Apps Script web app or
@@ -374,7 +372,8 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
 
     It loads the page in headless Chromium, records every JSON response, and prints a compact report:
       verdict            "API" | "DOM" | "NOTHING"
-      api_candidates[]   endpoint, json_path, row_count, field_map, all_keys, 2 sample rows
+      api_candidates[]   endpoint, http_method, post_data, headers, json_path, row_count,
+                         field_map, all_keys, 2 sample rows
       dom_repeated_classes[]  most-repeated class names, as a DOM fallback
 
     SANITY-CHECK the field_map against the samples before trusting it — in particular confirm that
@@ -384,7 +383,8 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
     If the repo is not checked out in this run, write the equivalent yourself; the whole technique is:
     launch Chromium with executable_path="/opt/pw-browsers/chromium", attach a page.on("response")
     handler that keeps JSON responses containing an array of >=2 objects with tender-like keys,
-    goto(url, wait_until="networkidle"), then print the endpoint URL and its keys.
+    goto(url, wait_until="networkidle"), then print the endpoint URL, its request method and body,
+    and its keys.
 
     WHAT THE FEED ACTUALLY LOOKS LIKE — observed by Benson in browser DevTools, 25 Aug 2026. Use this
     to aim, but always confirm against what discovery actually returns; do not hardcode blindly:
@@ -409,7 +409,7 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
        "post_data":"{\"page\":{page},...}",
        "field_map":{"ref":...,"title":...,"agency":...,"publish":...,"close":...,"link":...}}
     For a plain GET feed, drop http_method/post_data/headers and use "page_param":"page" instead.
-    or, when there is no JSON feed:
+    Or, when there is no JSON feed at all:
       {"method":"dom","url":"<listing page>","row_selector":".tender-card",
        "field_selectors":{"ref":...,"title":...,"agency":...,"publish":...,"close":...},
        "link_from":"title"}
@@ -436,9 +436,10 @@ FETCH — work the rungs in order, and stop at the first that yields tender rows
     On EVERY later run, read that line from the previous file FIRST and go straight to rung 4 —
     skipping rungs 1-3 entirely. Only re-run discovery when extraction returns 0 rows or errors
     (which means the site changed). This keeps the normal nightly cost at one page load.
-    VERIFIED 25 Aug 2026: both tb_discover.py and tb_extract.py were tested end-to-end against a
-    fixture that renders its rows from an XHR — discovery found the endpoint and mapped all six
-    fields; extraction returned correct rows in both API and DOM mode.
+    VERIFIED 25 Aug 2026: both tb_discover.py and tb_extract.py were tested end-to-end against
+    fixtures that render rows from an XHR and from a POST feed — discovery found the endpoint, its
+    method, body and headers, and mapped all six fields; extraction returned correct rows in API
+    (GET and POST, with pagination) and DOM mode.
 
   A WARNING ON RUNG 1 FALSE SIGNALS: do not conclude "no rows" from a naive substring or regex count
   over the HTML. A JS-rendered page often contains its row markup inside a <script> template literal,
@@ -674,7 +675,8 @@ BACKFILLING — the recovery windows differ per source, so do not treat them ali
   TenderBoard — the listing paginates back through publish dates, so older days ARE recoverable.
     - OLDEST_GAP = earliest open TenderBoard gap date.
     - Re-run tb_extract.py with a raised page cap: enough pages to reach publish dates at or before
-      OLDEST_GAP, HARD-CAPPED AT 10 pages (normal runs stay at 3).
+      OLDEST_GAP, HARD-CAPPED AT 10 pages (normal runs stay at 3). This requires the recipe's
+      post_data to carry the {page} token — see Step 3b — or pagination silently does nothing.
     - Route and filter recovered items exactly like live ones (Step 3b/3c rules, same exclusions, same
       dedup). Most will already be tracked — that is fine and counts as nothing new.
     - Mark every gap date the walk covered as BACKFILLED (today) EVEN IF it yielded zero new tenders:
@@ -842,10 +844,8 @@ DIRECT response is already the native Google Sheet (mimeType 'application/vnd.go
 — no separate raw .xlsx sibling, no auto-conversion delay, no polling needed. Take the fileId straight
 from this call's response and treat it as canonical immediately.
 
-This replaces an earlier approach (uploading with disableConversionToGoogleType: true, then sleeping
-and re-listing the folder waiting for an auto-converted sibling to appear). That pattern reliably
-wasted 3+ extra tool calls and re-sent a full duplicate base64 payload every single run for no benefit
-— do not do that anymore.
+This supersedes an earlier approach (upload with the flag true, then poll for an auto-converted
+sibling) that wasted 3+ tool calls and a duplicate base64 payload every run. Do not reinstate it.
 
 Fallback (should be rare): if the direct response's mimeType is somehow NOT
 'application/vnd.google-apps.spreadsheet', re-list GeBiz Daily once and look for a same-titled native
@@ -918,6 +918,8 @@ If new_tenders_count == 0:
         
         [If any tenders moved to Closed: "Also moved X tenders to Closed."]
         [If any Review (Unsure) rows added: "Unsure/needs a look: X — see Review (Unsure) sheet."]
+        [If any days were backfilled: "Backfilled X missed day(s): <dates> (+Y tenders recovered)."]
+        [If any gaps remain open: "X day(s) still unrecovered — see Run Ledger."]
         [If TenderBoard was skipped this run: "TenderBoard skipped this run (<CLASS>)."]
         [If TenderBoard skipped 3+ consecutive runs: "TenderBoard unreachable N runs running (<CLASS>) — may need a look."]
         [If TenderBoard dormant 10+ runs, at most once a week: "TenderBoard dormant N runs (<CLASS>) — decide: fix egress, drop the source, or replace with direct portal feeds."]
@@ -959,15 +961,14 @@ Method, send no notification of their own, and continue the run to completion on
    - ENVIRONMENT EGRESS IS A SEPARATE AND PRIOR QUESTION. Verified 25 Aug 2026: the "Default"
      environment (env_014XrxYBDmXYTFNGRFy9f1xf) has NO general web egress at all — every host,
      including example.com, is refused by the proxy with "CONNECT tunnel failed, response 403", and
-     WebFetch returns EGRESS_BLOCKED. Scheduled runs of this routine have historically reached
-     gebiz.gov.sg successfully, so they execute somewhere with broader egress. If a run ever sees
-     EGRESS_BLOCKED on gebiz.gov.sg, that is an environment network-policy problem and NOT something
-     to fix in this prompt — say so plainly and stop, per the pre-flight gate
-   - As of 25 Aug 2026 the listing is JavaScript-rendered, so a plain fetch alone returns no rows. That
-     is NOT by itself grounds to write the source off: Step 3b's ladder must also try embedded JSON, a
-     discovered data endpoint, and a headless Chromium render before logging JS_ONLY. The 25 Aug run
-     concluded "standing limitation" after trying a plain fetch only — that conclusion was premature
-     and has been superseded by the ladder
+     WebFetch returns EGRESS_BLOCKED. Scheduled runs of this routine DO reach gebiz.gov.sg
+     successfully, so they execute somewhere with broader egress. If a run ever sees EGRESS_BLOCKED on
+     gebiz.gov.sg, that is an environment network-policy problem and NOT something to fix in this
+     prompt — say so plainly and stop, per the pre-flight gate
+   - The listing is JavaScript-rendered, so a plain fetch alone returns no rows. That is NOT grounds
+     to write the source off: the Step 3b ladder must also try embedded JSON, a discovered data
+     endpoint, and a headless render before logging JS_ONLY. The 25 Aug run called it a "standing
+     limitation" after a plain fetch alone — premature, and superseded by the ladder
    - Email alerts are NOT an available workaround: Benson ruled out any mailbox-based data path on
      25 Aug 2026, so a TenderBoard account/alert subscription is off the table regardless of cost
    - TenderBoard listings are aggregator summaries, so fields (especially closing time and the deep
@@ -1008,32 +1009,6 @@ Method, send no notification of their own, and continue the run to completion on
 8. **Unattended run limitations**
    - SendUserFile tool requires active session; may be skipped silently (file is in Drive, so non-critical)
    - If any verification step fails at startup, routine stops with PushNotification to Benson
-
----
-
-## Quick Reference: What This Does
-
-✅ **Searches GeBIZ every run** via 6 category RSS feeds  
-✅ **Searches TenderBoard every run** via its public Singapore notices page, catching non-GeBIZ buyers  
-✅ **Validates and routes** to EPU/CMP/10 or EPU/SER/34 (GeBIZ codes, or mapped by meaning for TenderBoard)  
-✅ **Applies the SI relevance filter** — excludes cybersecurity, AV, network switches, training, and
-non-IT machines/hardware, judged on primary subject, with every exclusion logged  
-✅ **Leaves no stone unturned** — anything uncertain is extracted into a "Review (Unsure)" sheet rather
-than dropped, after one detail-page fetch to try to resolve the doubt  
-✅ **Captures a brief scope summary** per tender alongside ref no., agency and closing date  
-✅ **Dedupes across sources** so a tender listed on both portals occupies one row, GeBIZ canonical  
-✅ **Stamps every row with its Source** (GeBIZ / TenderBoard), backfilling older rows as GeBIZ  
-✅ **Captures awarded tenders** in a separate intel sheet (best-effort)  
-✅ **Checks for closed tenders** and moves them to Closed Tenders sheet  
-✅ **Keeps a Run Ledger** — one row per date, so a missed day is visible rather than silent, and
-retries the days it can still recover  
-✅ **Uploads tracker** to GeBiz Daily as a native Sheet directly, filename prefixed with an SGT
-date/time stamp (single file, no polling)  
-✅ **Picks up the previous run's data** from whichever matching file has the latest actual
-createdTime metadata — never modifiedTime, never assumed API result order  
-✅ **Notifies Benson** with title, ref, agency, scope, closing date and source tag per new tender  
-✅ **Logs all errors** and stops gracefully (doesn't fail silently)  
-✅ **Tracks run stats** in Coverage & Method sheet, split by source  
 
 ---
 
