@@ -1,0 +1,138 @@
+--- ops/tender-tracker/routine-prompt.previous.md	2026-08-25 00:32:43.725205271 +0000
++++ ops/tender-tracker/routine-prompt.md	2026-08-25 00:32:43.721783384 +0000
+@@ -307,34 +307,87 @@
+ TenderBoard aggregates. This step runs on every scheduled execution; it is not optional or occasional.
+ 
+ FAILURE RULE — the fetch is best-effort, because TenderBoard is a third-party commercial site we hold
+-no account on. Wrap the entire step in error handling. If the SOURCE is unreachable — network egress
+-blocked, HTTP 403 / 429 / 5xx, Cloudflare or bot-check interstitial, login wall, the listing turns out
+-to be JavaScript-only with no server-rendered rows, the page layout changed and nothing parses, or the
+-step is taking unreasonably long — then:
+-    → Retry at most twice.
++no account on. Wrap the entire step in error handling. Before declaring the source unusable you MUST
++work through the full FETCH ladder below — a page that "looks empty" is usually a JS-rendered page,
++not a dead source, and that distinction was mis-logged on 25 Aug 2026.
++
++CLASSIFY the failure precisely and log the class verbatim in Coverage & Method. Use exactly one of:
++    EGRESS_BLOCKED   — the fetch tool or proxy refused the host outright (e.g. "blocked by the network
++                       egress proxy", or CONNECT 403 from the agent proxy). This is OUR network policy,
++                       not TenderBoard's doing. Do not retry, do not work the other rungs, and say so
++                       plainly — the remedy is an egress-allowlist change and nothing else.
++    HTTP_<code>      — the host answered 403 / 429 / 5xx (bot-check, rate limit, outage).
++    LOGIN_WALL       — the listing redirected to sign-in, or shows a paywall/supplier-portal gate.
++    JS_ONLY          — HTML fetched fine but carries no server-rendered tender rows, AND every rung of
++                       the FETCH ladder (embedded JSON, data endpoint, headless render) also produced
++                       nothing.
++    PARSE_FAIL       — rows are present but the layout changed and nothing extracts.
++Never log a bare "SKIPPED — no rows". The class is what tells us whether this is fixable, and by whom.
++
++    → Retry at most twice (skip retries entirely for EGRESS_BLOCKED and LOGIN_WALL — a retry cannot
++      change either).
+     → Do NOT send a PushNotification about it. A TenderBoard outage is not a tracker failure.
+     → Do NOT abort the run, and do NOT skip Steps 4-9.
+-    → Record the exact reason in Coverage & Method under "TenderBoard: SKIPPED — <reason>" and carry on
+-      with GeBIZ-only data. Keeping the tracker current on GeBIZ always outranks TenderBoard coverage.
++    → Record "TenderBoard: SKIPPED — <CLASS> — <one-line detail, including which ladder rungs were
++      tried and what each returned>" in Coverage & Method and carry on with GeBIZ-only data. Keeping
++      the tracker current on GeBIZ always outranks TenderBoard coverage.
+     → If TenderBoard has been skipped on 3 or more consecutive runs, THEN add one line to the run's
+-      normal Step 9 notification: "TenderBoard unreachable N runs running — may need a look." Do not
+-      raise a separate alert for it.
++      normal Step 9 notification: "TenderBoard unreachable N runs running (<CLASS>) — may need a look."
++      Do not raise a separate alert for it.
++    → If TenderBoard has been skipped on 10 or more consecutive runs with the SAME class, stop paying
++      for the full ladder every night: attempt rung 1 only, log "TenderBoard: DORMANT — <CLASS>
++      unchanged for N runs", and add to the Step 9 notification at most once a week: "TenderBoard
++      dormant N runs (<CLASS>) — decide: fix egress, drop the source, or replace it with direct portal
++      feeds." Resume the full ladder the moment rung 1 returns anything other than the dormant class.
++
++CONSTRAINT — NO EMAIL ROUTE (standing instruction from Benson, 25 Aug 2026): do NOT solve TenderBoard
++coverage by registering for TenderBoard email alerts, and do NOT read, search or parse any mailbox
++(Gmail or otherwise) as part of this routine. Email is off the table as a data path here. If the ladder
++below cannot reach the public listing, the correct outcome is to log the class and carry on — never to
++route the source through an inbox.
++
++FETCH — work the rungs in order, and stop at the first that yields tender rows:
++
++  Rung 1 — plain fetch of the listing page.
++    Primary: https://www.tenderboard.biz/singaporetenders
++    If that URL 404s or has moved, try in order and use the first that returns tender content:
++      - https://www.tenderboard.biz/vendor/tender-opportunities/
++      - pagination URLs discovered from page 1 (e.g. ?page=2)
++    If this returns server-rendered rows, you are done — go straight to extraction.
++
++  Rung 2 — embedded JSON in the HTML you already fetched. A JS-rendered listing very often ships its
++    data inside the page anyway. Grep the response for __NEXT_DATA__, __NUXT__,
++    window.__INITIAL_STATE__, <script type="application/json">, or any inline array of objects with
++    tender-like keys (title / refNo / closingDate / agency). If found, parse that JSON directly — this
++    is the cheapest win available and needs no browser.
++
++  Rung 3 — the data endpoint behind the page. The JS bundle has to call something. Look in the HTML and
++    in its referenced .js assets for API paths (/api/, /graphql, /wp-json/, /_next/data/, .json). Also
++    try, once each, the conventional discovery paths:
++      https://www.tenderboard.biz/sitemap.xml   https://www.tenderboard.biz/feed
++      https://www.tenderboard.biz/rss           https://www.tenderboard.biz/robots.txt
++    Do NOT invent endpoint URLs — use only paths you actually found referenced, plus those four. If one
++    returns JSON or XML listings, parse it and stop here.
++
++  Rung 4 — headless render. Chromium is pre-installed in this environment and Playwright is already
++    pointed at it (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers; never run "playwright install"). Write a
++    short script that loads the listing, waits for network idle, and prints ONLY the extracted rows as
++    compact JSON or TSV to stdout — never dump page HTML into context, and never screenshot-and-OCR it.
++    Cap it hard: one page load, ~60s timeout, abandon the rung on timeout. If Playwright or Chromium
++    turns out to be unavailable in the run environment, fold that into the JS_ONLY detail rather than
++    treating it as its own failure class.
++
++  Only after all four rungs come up empty may this step be logged JS_ONLY.
+ 
+-FETCH:
+-  Primary listing page: https://www.tenderboard.biz/singaporetenders
+-  If that URL 404s or has moved, try in order and use the first that returns server-rendered listings:
+-    - https://www.tenderboard.biz/vendor/tender-opportunities/
+-    - pagination URLs discovered from page 1 (e.g. ?page=2)
+-  Use a script-based fetch (WebFetch or a headless-browser text extraction) per the token-saving rules
+-  at the top — never screenshot-and-OCR this listing.
+   Walk at most 3 pages of results, newest first. Stop early once you reach items whose publish date is
+   older than the last successful run date recorded in the previous file's Coverage & Method (or older
+   than 7 days if that date can't be determined) — there is no value in paging deeper.
+ 
+-NOTE ON ACCESS (verified 24 Aug 2026): TenderBoard's full alert feed is a paid supplier-portal feature,
+-and this routine has no TenderBoard account. Only whatever the public notices page renders anonymously
+-is in scope. If the public page shows teasers without closing dates or without working deep links,
+-capture what IS there rather than discarding the item — see "Missing fields" below.
++NOTE ON ACCESS (verified 24 Aug 2026, re-checked 25 Aug 2026): TenderBoard's full alert feed is a paid
++supplier-portal feature; this routine has no TenderBoard account and will not open one. Only what the
++public notices page renders anonymously is in scope. If the public page shows teasers without closing
++dates or without working deep links, capture what IS there rather than discarding the item — see
++"Missing fields" below.
+ 
+ FOR EACH listing item, extract as much as the page gives:
+   - Tender/Ref No. (TenderBoard often shows the originating buyer's own reference)
+@@ -747,8 +800,15 @@
+    - Searched every run, but only the anonymously-visible public notices page is in scope; the full
+      multi-site alert feed is a paid supplier-portal feature with no account configured
+    - The page is a commercial site that may rate-limit, bot-check, restructure, or move behind a login
+-     without notice — any of which silently skips the source for that run (logged, and surfaced in the
+-     notification only after 3 consecutive skips)
++     without notice — any of which silently skips the source for that run (logged with its failure
++     CLASS, and surfaced in the notification only after 3 consecutive skips)
++   - As of 25 Aug 2026 the listing is JavaScript-rendered, so a plain fetch alone returns no rows. That
++     is NOT by itself grounds to write the source off: Step 3b's ladder must also try embedded JSON, a
++     discovered data endpoint, and a headless Chromium render before logging JS_ONLY. The 25 Aug run
++     concluded "standing limitation" after trying a plain fetch only — that conclusion was premature
++     and has been superseded by the ladder
++   - Email alerts are NOT an available workaround: Benson ruled out any mailbox-based data path on
++     25 Aug 2026, so a TenderBoard account/alert subscription is off the table regardless of cost
+    - TenderBoard listings are aggregator summaries, so fields (especially closing time and the deep
+      link to the original portal) can be thinner or less exact than GeBIZ's own detail pages. GeBIZ
+      data always wins where both exist (Step 3c)
+@@ -820,6 +880,8 @@
+ ❌ **Does not move tenders** if a new one supersedes an old one (GeBIZ doesn't support this; treats as new tender)  
+ ❌ **Does not crawl historical tenders** (RSS only ~2 days; if routine was offline, older tenders are missed)  
+ ❌ **Does not log in to TenderBoard** or use any paid supplier-portal feature — public page only  
++❌ **Does not read, search or parse any mailbox** (Gmail or otherwise) — email is not a data path for
++this routine, and TenderBoard email alerts are explicitly ruled out  
+ ❌ **Does not let a TenderBoard failure stop the GeBIZ run**  
+ ❌ **Does not capture** tenders whose primary subject is unambiguously cybersecurity, AV, network
+ switches, training, or non-IT hardware — but anything uncertain is captured, not dropped  
+\ No newline at end of file
