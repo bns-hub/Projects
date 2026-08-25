@@ -622,7 +622,10 @@ Sheet 6: "Coverage & Method"
   Auth Status: ✓ PASS (or FAIL + reason)
   GeBIZ RSS Feeds: ✓ PASS (or FAIL + which feed)
   TenderBoard: ✓ OK — [N] items scanned, [N] relevant, [N] duplicates of GeBIZ suppressed
-               (or "SKIPPED — <exact reason>" [+ consecutive-skip count], or "PARTIAL — <what was missing>")
+               (or "SKIPPED — <CLASS> — <detail: which ladder rungs were tried and what each returned>"
+                [+ consecutive-skip count], or "DORMANT — <CLASS> unchanged for N runs",
+                or "PARTIAL — <what was missing>"). CLASS is one of EGRESS_BLOCKED / HTTP_<code> /
+                LOGIN_WALL / JS_ONLY / PARSE_FAIL — see Step 3b. Never write a bare "SKIPPED — no rows".
   Awarded Intel: ✓ OK — [N] captured  (or "GeBIZ award feed: not available" / "SKIPPED — <reason>")
   
   EPU/CMP/10 Stats:
@@ -669,6 +672,9 @@ Sheet 6: "Coverage & Method"
     TenderBoard is scraped anonymously from its public notices page — its full alert feed is a paid
     supplier-portal feature this routine has no account for. Coverage from that source is therefore
     partial by design, and any run may skip it entirely without that being an error.
+    Its listing is JavaScript-rendered, so Step 3b works a 4-rung ladder (plain fetch → embedded JSON
+    → data endpoint → headless Chromium) before logging JS_ONLY. Email alerts are NOT a workaround:
+    no mailbox is read or parsed by this routine (Benson, 25 Aug 2026).
   ─────────────────────────────
 ```
 
@@ -746,8 +752,9 @@ If new_tenders_count >= 1:
         [If any tenders moved to Closed: "Also moved X tenders to Closed."]
         [If any Review (Unsure) rows added: "Unsure/needs a look: X — see Review (Unsure) sheet."]
         [If any awarded intel captured: "Awarded intel: +X rows."]
-        [If TenderBoard was skipped this run: "TenderBoard skipped this run (<short reason>)."]
-        [If TenderBoard skipped 3+ consecutive runs: "TenderBoard unreachable N runs running — may need a look."]
+        [If TenderBoard was skipped this run: "TenderBoard skipped this run (<CLASS>)."]
+        [If TenderBoard skipped 3+ consecutive runs: "TenderBoard unreachable N runs running (<CLASS>) — may need a look."]
+        [If TenderBoard dormant 10+ runs, at most once a week: "TenderBoard dormant N runs (<CLASS>) — decide: fix egress, drop the source, or replace with direct portal feeds."]
         
         Tracker: https://docs.google.com/spreadsheets/d/[native-Sheet fileId from Step 7]/edit"
 
@@ -765,8 +772,9 @@ If new_tenders_count == 0:
         
         [If any tenders moved to Closed: "Also moved X tenders to Closed."]
         [If any Review (Unsure) rows added: "Unsure/needs a look: X — see Review (Unsure) sheet."]
-        [If TenderBoard was skipped this run: "TenderBoard skipped this run (<short reason>)."]
-        [If TenderBoard skipped 3+ consecutive runs: "TenderBoard unreachable N runs running — may need a look."]
+        [If TenderBoard was skipped this run: "TenderBoard skipped this run (<CLASS>)."]
+        [If TenderBoard skipped 3+ consecutive runs: "TenderBoard unreachable N runs running (<CLASS>) — may need a look."]
+        [If TenderBoard dormant 10+ runs, at most once a week: "TenderBoard dormant N runs (<CLASS>) — decide: fix egress, drop the source, or replace with direct portal feeds."]
   → Log in Coverage & Method: "No new tenders this run"
 ```
 
