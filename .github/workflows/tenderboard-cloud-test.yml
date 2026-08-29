@@ -1,0 +1,63 @@
+name: TenderBoard daily cloud crawl
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+      timezone: "Asia/Singapore"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tenderboard-cloud-crawl
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+        working-directory: tenderboard-actions-test
+      - run: npx playwright install --with-deps chromium
+        working-directory: tenderboard-actions-test
+      - run: npm run crawl
+        working-directory: tenderboard-actions-test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tenderboard-raw
+          path: |
+            tenderboard-actions-test/TenderBoard_Raw_latest.csv
+            tenderboard-actions-test/TenderBoard_Raw_status.json
+          if-no-files-found: error
+          retention-days: 1
+      - name: Publish latest CSV on tenderboard-data branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp tenderboard-actions-test/TenderBoard_Raw_latest.csv "$RUNNER_TEMP/TenderBoard_Raw_latest.csv"
+          cp tenderboard-actions-test/TenderBoard_Raw_status.json "$RUNNER_TEMP/TenderBoard_Raw_status.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code origin refs/heads/tenderboard-data >/dev/null 2>&1; then
+            git fetch origin tenderboard-data
+            git switch -C tenderboard-data FETCH_HEAD
+          else
+            git switch --orphan tenderboard-data
+            git rm -rf . 2>/dev/null || true
+          fi
+          mkdir -p data
+          cp "$RUNNER_TEMP/TenderBoard_Raw_latest.csv" data/TenderBoard_Raw_latest.csv
+          cp "$RUNNER_TEMP/TenderBoard_Raw_status.json" data/TenderBoard_Raw_status.json
+          git add data
+          if git diff --cached --quiet; then
+            echo "Published data is unchanged."
+          else
+            git commit -m "Update TenderBoard raw data"
+            git push origin HEAD:tenderboard-data
+          fi
