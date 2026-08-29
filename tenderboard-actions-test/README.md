@@ -12,3 +12,6 @@ Published files:
 
 The workflow does not write to Google Drive and does not alter the existing
 Claude tasks.
+
+Claude Task 1 should consume these files using the migration override in
+[`CLAUDE_TASK1_UPDATE.md`](CLAUDE_TASK1_UPDATE.md).
