@@ -1,0 +1,31 @@
+name: TenderBoard cloud crawl test
+
+on:
+  push:
+    branches:
+      - codex/tenderboard-actions-test
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tenderboard-actions-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: npm run crawl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tenderboard-raw-test
+          path: tenderboard-actions-test/TenderBoard_Raw_test.csv
+          if-no-files-found: error

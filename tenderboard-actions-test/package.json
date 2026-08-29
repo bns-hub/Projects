@@ -1,0 +1,11 @@
+{
+  "name": "tenderboard-actions-test",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "crawl": "node scrape.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.55.0"
+  }
+}
