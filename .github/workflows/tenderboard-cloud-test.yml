@@ -52,7 +52,7 @@ jobs:
             git switch -C tenderboard-data FETCH_HEAD
           else
             git switch --orphan tenderboard-data
-            git rm -rf .
+            git rm -rf . 2>/dev/null || true
           fi
           mkdir -p data
           cp "$RUNNER_TEMP/TenderBoard_Raw_latest.csv" data/TenderBoard_Raw_latest.csv
