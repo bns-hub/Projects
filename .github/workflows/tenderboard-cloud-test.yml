@@ -1,9 +1,6 @@
-name: TenderBoard cloud crawl test
+name: TenderBoard daily cloud crawl
 
 on:
-  push:
-    branches:
-      - codex/tenderboard-actions-test
   schedule:
     - cron: "0 10 * * *"
       timezone: "Asia/Singapore"
@@ -33,7 +30,7 @@ jobs:
         working-directory: tenderboard-actions-test
       - uses: actions/upload-artifact@v4
         with:
-          name: tenderboard-raw-test
+          name: tenderboard-raw
           path: |
             tenderboard-actions-test/TenderBoard_Raw_latest.csv
             tenderboard-actions-test/TenderBoard_Raw_status.json
