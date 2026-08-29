@@ -55,6 +55,33 @@ For this tracker, `all awarded tenders` means every awarded tender captured from
 - Missing award value or supplier is `Not stated`, not a reason to discard an otherwise relevant award.
 - TenderBoard awards remain unavailable unless Task 2 later adds a verified award source; do not infer awards from tenders disappearing from the live list.
 
+### IMPORTANT OVERRIDE — TOPPAN Ecquaria recommendation tag
+
+Add a column named `TECQ Recommendation` immediately before `Link` on `EPU/CMP/10`, `EPU/SER/34`, `Review (Unsure)` and `Closed Tenders`. Use the exact value `Advise to look at` for every open tender that Benson should inspect as a plausible TOPPAN Ecquaria opportunity. Apply the same standard to GeBIZ and TenderBoard.
+
+Tag `Advise to look at` when the primary or material scope plausibly includes one or more of:
+
+- bespoke public-sector application development, modernisation or system integration;
+- workflow, case management, registry, licensing, permitting, grants, submissions, approvals or audit trails;
+- citizen/business portals, mobile or field-operation applications, digital identity or Singpass-related integration;
+- application maintenance/support, legacy modernisation, cloud/GCC migration, DevSecOps or managed application services;
+- data platforms, reporting, dashboards, analytics, document/content management or cross-agency information exchange;
+- APIs, enterprise integration, microservices, Java/Spring/React solutions, container platforms or government common-service integration;
+- AI-enabled applications, agentic delivery, RAG, process automation, low-code/pro-code platforms or related advisory work;
+- digital-government consultancy, enterprise architecture, transformation roadmaps, PMO or implementation advisory;
+- hardware, licences or hosting purchased as a material part of an otherwise relevant system solution.
+
+Rules:
+
+- Capture bias governs: if the available title/category/scope suggests a plausible TECQ fit, tag it. Do not withhold the tag merely because the domain is new, a partner may be needed, or the tender is cryptic.
+- Every row routed into either EPU sheet as relevant must have `Advise to look at`; the column must never be blank on a relevant open row.
+- A `Review (Unsure)` row also gets `Advise to look at` when the uncertainty is about missing detail, category or delivery approach but the available information still suggests a plausible digital-system opportunity.
+- Do not tag an item whose primary scope is unambiguously one of the existing exclusions: cybersecurity-only, AV, pure network hardware/switches, training/e-learning-only, or unrelated/non-IT machinery and supplies.
+- This tag is an attention flag, not a bid/no-bid or pricing decision. Do not claim TECQ can meet an unevidenced domain or product requirement.
+- On the first run after this migration, classify all existing open EPU and Review rows from their stored title, category and scope only. Do not spend tokens re-fetching old detail pages solely to populate the tag. Preserve the tag when rows move to `Closed Tenders`.
+- Format tagged cells with a light-green fill and wrapped text. Add a Coverage & Method line: `TECQ Recommendation: N open tenders tagged Advise to look at (GeBIZ N | TB N)`.
+- `Awarded (Intel)` does not use this column; awards remain competitor intelligence rather than live opportunities.
+
 ### Consequential wording changes
 
 - Step 0 cadence skip: stop before fetching the GitHub status/CSV.
