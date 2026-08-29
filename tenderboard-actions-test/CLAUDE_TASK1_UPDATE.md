@@ -16,6 +16,9 @@ TenderBoard CSV (canonical handoff):
 Task 2 status:
 `https://raw.githubusercontent.com/bns-hub/Projects/tenderboard-data/data/TenderBoard_Raw_status.json`
 
+Google Drive archive folder:
+`1TPg44swiYi14FD3rciZx-WNCsFE8Qyve`
+
 ### Replacement for Step 3b — TenderBoard via GitHub CSV
 
 1. Fetch the status JSON first using WebFetch, returning only its run timestamp, success/failure state, row count, pages scanned and error message. Then fetch the canonical CSV using WebFetch. Never fetch `tenderboard.biz` directly from this Task 1.
@@ -26,6 +29,18 @@ Task 2 status:
 6. Keep the existing TenderBoard field fallbacks: missing closing date = `Unknown`; missing publish date = first-seen date plus `(first seen)`; missing agency = `Not stated (TenderBoard)`; missing scope = blank; missing link = plain text plus Known Gaps note.
 7. Keep all existing GeBIZ-wins and cross-source dedup behavior. Existing TenderBoard rows may be upgraded when GeBIZ later finds the same tender.
 
+### Daily Google Drive archive
+
+After a current CSV has been fetched and parsed successfully, save an archival copy in the Google Drive folder above using `create_file`:
+
+- Title: `TenderBoard_Raw_<YYYY-MM-DD_HHMM>.csv`, using the GitHub status timestamp in SGT.
+- `contentMimeType`: `text/csv`
+- `disableConversionToGoogleType`: `true`
+- `parentId`: `1TPg44swiYi14FD3rciZx-WNCsFE8Qyve`
+- Content: the exact raw CSV fetched from the canonical GitHub URL, without filtering or rewriting.
+
+Before creating it, search that archive folder for the exact title. If it already exists, reuse it and do not create a duplicate. Record the archive fileId/link in Coverage & Method. Archive failure is non-fatal: log it, notify Benson once, and continue building the consolidated tracker. Do not archive a stale, malformed or failed crawl.
+
 ### Consequential wording changes
 
 - Step 0 cadence skip: stop before fetching the GitHub status/CSV.
@@ -33,12 +48,12 @@ Task 2 status:
 - Coverage & Method TenderBoard line: use `OK — N scanned, N relevant, N dupes suppressed, GitHub crawl from <timestamp>` or the NOT RUN/FAILED wording above.
 - Run Ledger: TenderBoard `OK` means a current, valid GitHub CSV was processed. There is still no TenderBoard backfill beyond what the current CSV contains.
 - Known limitation: TenderBoard coverage depends on the 10:00 AM SGT GitHub Actions crawl, not Benson's PC or a local task.
-- Task 1 must not upload or copy the raw TenderBoard CSV to Google Drive. Its canonical handoff remains the fixed GitHub URL; Google Drive remains the destination for the consolidated Task 1 tracker and its history.
+- The fixed GitHub CSV remains the canonical live handoff. The dated Google Drive copy is archival only and must never be used as Task 1's input or substituted for the GitHub freshness check.
 - Do not notify for an ordinary cadence skip. Do notify for a reported/malformed GitHub crawl, and for five or more consecutive TenderBoard NOT RUN days.
 
 ### Token rule for this handoff
 
-Fetch the tiny status JSON first. Fetch the CSV only on a full-run day. Do not reread either file in the same run, do not fetch GitHub repository pages, and do not fetch TenderBoard pages. Parse the one CSV response in memory and reuse it.
+Fetch the tiny status JSON first. Fetch the CSV only on a full-run day. Do not reread either file in the same run, do not fetch GitHub repository pages, and do not fetch TenderBoard pages. Parse the one CSV response in memory and reuse the same raw content for both processing and the Drive archive upload.
 
 ---
 
