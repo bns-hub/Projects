@@ -1,0 +1,20 @@
+name: Cloud Task 1 tests
+
+on:
+  pull_request:
+    paths:
+      - "cloud-task1/**"
+      - ".github/workflows/cloud-task1-tests.yml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node cloud-task1/test-core.js
+      - run: node cloud-task1/build-bundle.mjs
+      - run: node -e "const fs=require('fs'); new Function(fs.readFileSync('cloud-task1/dist/Code.gs','utf8')); console.log('Bundle syntax OK')"
