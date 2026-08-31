@@ -358,4 +358,88 @@ console.log('\n11. Tender tabs carry a filter for sorting');
   });
 }
 
+console.log('\n12. The main folder is kept to the tracker and the archive');
+{
+  const env = createEnvironment({ properties: { trackerFileId: 'tidy-tracker' } });
+  const main = env.__state.trackerFolder;
+  const archive = env.__state.archiveFolder;
+  env.SpreadsheetApp.openById('tidy-tracker');
+  const tracker = env.DriveApp.getFileById('tidy-tracker');
+  main._files.push(tracker);
+  main.createFile('2026-08-30_1234_GeBIZ_Open_Tenders', 'old');
+  main.createFile('TenderBoard_Raw_2026-08-30_1006.csv', 'old');
+  main.createFile('TECQ_REVIEWS_2026-09-02.csv', 'superseded');
+  main.createFile('TECQ_REVIEWS_2026-09-04.csv', 'newest');
+  main.createFile('MANUAL_TENDERS', 'keep me');
+
+  const run = { notes: [] };
+  env.tidyMainFolder(main, 'tidy-tracker', run);
+  const left = main._files.map(f => f.getName()).sort();
+  const archived = archive._files.map(f => f.getName()).sort();
+
+  check('dated trackers and raw CSVs are moved to the archive', () => {
+    assert.ok(archived.includes('2026-08-30_1234_GeBIZ_Open_Tenders'), archived.join(','));
+    assert.ok(archived.includes('TenderBoard_Raw_2026-08-30_1006.csv'), archived.join(','));
+  });
+  check('a superseded review drop is archived, the newest is not', () => {
+    assert.ok(archived.includes('TECQ_REVIEWS_2026-09-02.csv'), archived.join(','));
+    assert.ok(left.includes('TECQ_REVIEWS_2026-09-04.csv'), left.join(','));
+  });
+  check('the tracker itself is never moved', () => assert.ok(left.includes('tidy-tracker')));
+  check('nothing is deleted — every file still exists somewhere', () => {
+    assert.equal(left.length + archived.length, 6);
+  });
+  check('it reports what it archived', () => assert.ok(/Archived 3 file/.test(run.notes.join(' ')), run.notes.join(' ')));
+}
+
+console.log('\n13. Working files are found in the archive folder');
+{
+  const env = createEnvironment();
+  const header = ['Tender/Ref No.', 'Title', 'Agency', 'Closing Date/Time', 'TECQ Review', 'Why', 'Reviewed On'];
+  // Everything moved out of the main folder, as the user wants it.
+  env.__state.archiveFolder.createSheetFile('TECQ_REVIEWS_2026-09-04.csv', [header,
+    ['ABC000ETT26000001', 'Provision of a licensing system', 'Some Agency', '21/09/2026 16:00:00',
+     'Look at', 'Licensing system build.', '2026-09-04 12:05']]);
+  env.__state.archiveFolder.createSheetFile('MANUAL_TENDERS',
+    [['Tender/Ref No.', 'Title', 'Agency', 'Procurement Category', 'Source'],
+     ['NEA000ETT26000085', 'Mobile data plan tender', 'NEA', 'IT&Telecommunication ⇒ Others', 'GeBIZ']]);
+  env.__state.archiveFolder.createFile('RUN_CADENCE', 'paused');
+
+  const run = { reviewFileStatus: '', manualStatus: '', errors: [] };
+  check('TECQ_REVIEWS is found in the archive', () => {
+    const index = env.fetchExternalReviews(run, env.__state.trackerFolder);
+    assert.ok(/OK — 1 verdict/.test(run.reviewFileStatus), run.reviewFileStatus);
+    const rows = [openRow({})];
+    assert.equal(env.applyExternalReviews(index, rows), 1);
+  });
+  check('MANUAL_TENDERS is found in the archive', () => {
+    assert.equal(env.fetchManual(run, env.__state.trackerFolder).length, 1);
+  });
+  check('RUN_CADENCE is read from the archive and still gates the run', () => {
+    assert.equal(env.readCadence(env.__state.trackerFolder, new Date(), null).run, false);
+  });
+  check('a missing RUN_CADENCE is created in the archive, not the main folder', () => {
+    const fresh = createEnvironment();
+    fresh.readCadence(fresh.__state.trackerFolder, new Date(), null);
+    assert.equal(fresh.__state.trackerFolder._files.length, 0);
+    assert.equal(fresh.__state.archiveFolder._files.map(f => f.getName())[0], 'RUN_CADENCE');
+  });
+}
+
+console.log('\n14. The tracker name carries its last-updated stamp');
+{
+  const env = createEnvironment();
+  env.SpreadsheetApp.openById('stamp-tracker');
+  const file = env.DriveApp.getFileById('stamp-tracker');
+  const name = env.stampTrackerName(file, new Date('2026-08-31T12:40:00Z'));
+  check('the name shows date and time', () => {
+    assert.ok(/^GeBIZ Tender Tracker — Current \(\d{2}\/\d{2}\/\d{2}, .+\)$/.test(name), name);
+  });
+  check('the file is actually renamed', () => assert.equal(file.getName(), name));
+  check('a stamped tracker is still found by prefix, so the id survives a rename', () => {
+    env.__state.trackerFolder._files.push(file);
+    assert.equal(env.findNewestByPrefix(env.__state.trackerFolder, 'GeBIZ Tender Tracker — Current').getId(), 'stamp-tracker');
+  });
+}
+
 console.log(`\nAll ${checks} pipeline checks passed`);

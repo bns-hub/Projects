@@ -9,7 +9,29 @@ Two cloud jobs against **one permanent spreadsheet**:
 - **Collector** (daily, ~11:00 and ~23:00 SGT) — fetches GeBIZ RSS, the TenderBoard handoff and `MANUAL_TENDERS`, and updates the tracker in place. It owns tender facts, closures, awards, the ledger and coverage. It filters nothing.
 - **Reviewer** (Wednesday and Friday, ~12:00 SGT) — sends the open tenders to Claude and records a verdict per row. It owns the review columns and nothing else.
 
-The tracker is `GeBIZ Tender Tracker — Current` in the GeBiz Daily folder. Its Drive id is remembered in a script property, so it is never forked into a second file. Dated copies are no longer made after every collection; one snapshot is taken each Friday into a `History` subfolder and never pruned.
+## Folder layout
+
+The main GeBiz Daily folder holds exactly two things:
+
+```
+GeBiz Daily/
+  GeBIZ Tender Tracker — Current (31/08/26, 8:40 PM)   the tracker
+  Archived/                                            everything else
+    RUN_CADENCE            cadence gate
+    MANUAL_TENDERS         backfill and corrections
+    TECQ_REVIEWS_*.csv     review drops, newest wins
+    TenderBoard_Raw_*.csv  daily raw crawl archive
+    *_GeBIZ_Open_Tenders   legacy dated trackers
+    History/               Friday snapshots
+```
+
+The tracker's **name carries its last-updated stamp**, so the folder listing shows when it was refreshed without opening it. It is found by its remembered Drive id first and by name prefix second, so the stamp changes freely without ever forking the file.
+
+Working files are looked for in the main folder **first**, then in `Archived` — so a file dropped at the top level is still picked up immediately, and one filed away keeps working. `RUN_CADENCE` is created in `Archived` when missing.
+
+Each run moves superseded files out of the main folder: legacy dated trackers, raw TenderBoard CSVs, and review drops older than the newest. **Nothing is ever deleted**, only moved, and Coverage & Method reports what was archived. Set `CONFIG.tidyMainFolder` to `false` to turn that off.
+
+The tracker's Drive id is remembered in a script property, so it is never forked into a second file. Dated copies are no longer made after every collection; one snapshot is taken each Friday into `Archived/History` and never pruned.
 
 ## One-time setup
 

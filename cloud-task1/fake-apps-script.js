@@ -82,6 +82,7 @@ function createEnvironment(options) {
   const mails = [];
 
   let fileClock = 0;
+  const allFolders = {};
   const makeFile = (id, name, spreadsheet, mimeType) => {
     const created = new Date(Date.parse('2026-08-31T00:00:00Z') + (fileClock += 1000));
     const file = {
@@ -90,6 +91,14 @@ function createEnvironment(options) {
       isTrashed: () => false, getDateCreated: () => created,
       getBlob: () => ({ getDataAsString: () => (opts.textFiles || {})[name] || '' }),
       setContent: () => file,
+      setName: newName => { name = newName; return file; },
+      moveTo: destination => {
+        Object.keys(allFolders).forEach(key => {
+          allFolders[key]._files = allFolders[key]._files.filter(f => f !== file);
+        });
+        destination._files.push(file);
+        return file;
+      },
       makeCopy: (newName, folder) => {
         const copyId = `${id}-copy-${Object.keys(files).length}`;
         const copy = new FakeSpreadsheet(copyId);
@@ -110,7 +119,7 @@ function createEnvironment(options) {
   };
 
   const makeFolder = (id, name) => {
-    const folder = {
+    const folder = allFolders[id] = {
       _files: [], _folders: [], getId: () => id, getName: () => name,
       getFilesByName(wanted) { return iterator(this._files.filter(f => f.getName() === wanted)); },
       getFilesByType() { return iterator(this._files); },
@@ -142,7 +151,8 @@ function createEnvironment(options) {
   const iterator = list => { let i = 0; return { hasNext: () => i < list.length, next: () => list[i++] }; };
 
   const trackerFolder = makeFolder('tracker-folder', 'GeBiz Daily');
-  const archiveFolder = makeFolder('archive-folder', 'Archive');
+  const archiveFolder = makeFolder('archive-folder', 'Archived');
+  trackerFolder._folders.push(archiveFolder);
 
   const context = {
     console, Date, JSON, Math, Number, String, Object, Array, isNaN, RegExp, Error,
@@ -188,6 +198,12 @@ function createEnvironment(options) {
         if (format === 'yyyy-MM-dd HH:mm') return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
         if (format === 'dd MMM yyyy') return `${pad(d.getUTCDate())} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
         if (format === 'u') return String(d.getUTCDay() === 0 ? 7 : d.getUTCDay());
+        if (format === 'dd/MM/yy, h:mm a') {
+          let hour = d.getUTCHours();
+          const meridiem = hour >= 12 ? 'PM' : 'AM';
+          hour = hour % 12 || 12;
+          return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${String(d.getUTCFullYear()).slice(2)}, ${hour}:${pad(d.getUTCMinutes())} ${meridiem}`;
+        }
         return d.toISOString();
       },
       parseCsv: text => text.trim().split(/\r?\n/).map(line => {

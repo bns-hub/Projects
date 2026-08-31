@@ -122,9 +122,16 @@ const CONFIG = Object.freeze({
   manualFileAliases: ['MANUAL_TENDERS', 'MANUAL_TENDERS.csv'],
   // One permanent tracker, updated in place. Its Drive id is remembered in a
   // script property so a rename can never fork it into two files.
-  trackerName: 'GeBIZ Tender Tracker — Current',
+  // The tracker's name carries its last-updated stamp, so the folder listing
+  // shows when it was refreshed without opening it. Matching is by the prefix,
+  // and by the remembered file id first, so the stamp can change freely.
+  trackerNamePrefix: 'GeBIZ Tender Tracker — Current',
+  trackerNameStamp: 'dd/MM/yy, h:mm a',
   trackerIdProperty: 'trackerFileId',
+  // Everything that is not the tracker lives in this folder, so the main
+  // folder holds only the tracker and the archive itself.
   historyFolderName: 'History',
+  tidyMainFolder: true,
   // Reviewer: Wednesday and Friday at about noon SGT, after the 11:00 collection.
   reviewHour: 12,
   reviewDays: ['WEDNESDAY', 'FRIDAY'],
@@ -390,7 +397,7 @@ function isSnapshotDay(now) {
 // One dated copy a week, kept forever. History is never pruned here.
 function writeSnapshot(trackerFolder, trackerFile, now) {
   const name = `${Utilities.formatDate(now, CONFIG.timezone, 'yyyy-MM-dd')}_GeBIZ_Tender_Tracker`;
-  const history = historyFolder(trackerFolder);
+  const history = historyFolder();
   const existing = history.getFilesByName(name);
   if (existing.hasNext()) {
     const url = existing.next().getUrl();
@@ -478,6 +485,9 @@ function runDailyTracker(forceRun) {
     SpreadsheetApp.flush();
     verifyTracker(output, state);
 
+    run.trackerName = stampTrackerName(tracker.file, now);
+    tidyMainFolder(trackerFolder, tracker.file.getId(), run);
+
     const summary = buildSummary(tracker.file, state, run);
     const newTotal = run.newGebiz + run.newTb + run.newManual;
     MailApp.sendEmail(CONFIG.notifyEmail, `GeBIZ/TB: ${newTotal ? newTotal + ' New Tenders' : 'NO New Tenders'}`, summary);
@@ -505,21 +515,81 @@ function resolveTracker(folder) {
       // Remembered id no longer resolves; fall through and re-establish it.
     }
   }
-  const named = folder.getFilesByName(CONFIG.trackerName);
-  if (named.hasNext()) {
-    const file = named.next();
-    properties.setProperty(CONFIG.trackerIdProperty, file.getId());
-    return { file: file, created: false };
+  const named = findNewestByPrefix(folder, CONFIG.trackerNamePrefix);
+  if (named) {
+    properties.setProperty(CONFIG.trackerIdProperty, named.getId());
+    return { file: named, created: false };
   }
   const seedFrom = findLatestTracker(folder) || DriveApp.getFileById(CONFIG.seedId);
-  const file = seedFrom.makeCopy(CONFIG.trackerName, folder);
+  const file = seedFrom.makeCopy(CONFIG.trackerNamePrefix, folder);
   properties.setProperty(CONFIG.trackerIdProperty, file.getId());
   return { file: file, created: true, seededFrom: seedFrom.getName() };
 }
 
-function historyFolder(folder) {
-  const existing = folder.getFoldersByName(CONFIG.historyFolderName);
-  return existing.hasNext() ? existing.next() : folder.createFolder(CONFIG.historyFolderName);
+// Show the last refresh in the file name: "… — Current (31/08/26, 8:40 PM)".
+function stampTrackerName(file, now) {
+  const name = `${CONFIG.trackerNamePrefix} (${Utilities.formatDate(now, CONFIG.timezone, CONFIG.trackerNameStamp)})`;
+  if (file.getName() !== name) file.setName(name);
+  return name;
+}
+
+function archiveFolder() {
+  return DriveApp.getFolderById(CONFIG.archiveFolderId);
+}
+
+function historyFolder() {
+  const parent = archiveFolder();
+  const existing = parent.getFoldersByName(CONFIG.historyFolderName);
+  return existing.hasNext() ? existing.next() : parent.createFolder(CONFIG.historyFolderName);
+}
+
+// Control and data files may sit in the main folder or in the archive, so the
+// main folder can be kept to just the tracker and the archive. Main wins, so a
+// file dropped at the top level is still picked up straight away.
+function dataFolders(trackerFolder) {
+  const folders = [trackerFolder];
+  try {
+    const archive = archiveFolder();
+    if (archive.getId() !== trackerFolder.getId()) folders.push(archive);
+  } catch (_) {
+    // No archive folder configured or reachable; the main folder alone will do.
+  }
+  return folders;
+}
+
+// Move everything that is not the tracker into the archive: superseded dated
+// trackers, and review drops older than the newest. Nothing is ever deleted.
+function tidyMainFolder(trackerFolder, trackerId, run) {
+  if (!CONFIG.tidyMainFolder) return;
+  let archive;
+  try {
+    archive = archiveFolder();
+  } catch (_) {
+    return;
+  }
+  if (archive.getId() === trackerFolder.getId()) return;
+  const newestReview = findNewestByPrefix(trackerFolder, CONFIG.reviewFile);
+  const newestReviewId = newestReview ? newestReview.getId() : '';
+  const moved = [];
+  const files = trackerFolder.getFiles();
+  while (files.hasNext()) {
+    const file = files.next();
+    const name = file.getName();
+    if (file.getId() === trackerId) continue;
+    // A review drop is left in place until a newer one supersedes it, so the
+    // collector always has the current verdicts within reach.
+    const supersededReview = name.indexOf(CONFIG.reviewFile) === 0 && file.getId() !== newestReviewId;
+    const datedTracker = name.indexOf('GeBIZ_Open_Tenders') >= 0
+      || name.indexOf('TenderBoard_Raw_') === 0;
+    if (!supersededReview && !datedTracker) continue;
+    try {
+      file.moveTo(archive);
+      moved.push(name);
+    } catch (error) {
+      run.notes.push(`Could not archive ${name}: ${briefError(error)}`);
+    }
+  }
+  if (moved.length) run.notes.push(`Archived ${moved.length} file(s): ${moved.slice(0, 6).join('; ')}${moved.length > 6 ? ' …' : ''}`);
 }
 
 function findLatestTracker(folder) {
@@ -527,7 +597,7 @@ function findLatestTracker(folder) {
   let latest = null;
   while (files.hasNext()) {
     const file = files.next();
-    if (file.getName() === CONFIG.trackerName) continue;
+    if (file.getName().indexOf(CONFIG.trackerNamePrefix) === 0) continue;
     if (!file.getName().includes('GeBIZ_Open_Tenders')) continue;
     if (!latest || file.getDateCreated() > latest.getDateCreated()) latest = file;
   }
@@ -535,10 +605,10 @@ function findLatestTracker(folder) {
 }
 
 function readCadence(folder, now, latestDate) {
-  const files = folder.getFilesByName('RUN_CADENCE');
-  let file;
-  if (files.hasNext()) file = files.next();
-  else file = folder.createFile('RUN_CADENCE', 'daily', MimeType.PLAIN_TEXT);
+  const folders = dataFolders(folder);
+  let file = findByAnyName(folders, ['RUN_CADENCE', 'RUN_CADENCE.txt']);
+  // Create it where the other working files live, not in the main folder.
+  if (!file) file = folders[folders.length - 1].createFile('RUN_CADENCE', 'daily', MimeType.PLAIN_TEXT);
   return parseCadence(file.getBlob().getDataAsString(), now, latestDate);
 }
 
@@ -667,7 +737,7 @@ function fetchTenderBoard(run, archiveFolder, now) {
 // is otherwise unrecoverable. Rows are deduplicated like any other candidate,
 // so a manual row is harmless once the real feed catches up with it.
 function fetchManual(run, folder) {
-  const file = findByAnyName(folder, CONFIG.manualFileAliases);
+  const file = findByAnyName(dataFolders(folder), CONFIG.manualFileAliases);
   if (!file) return [];
   try {
     const rows = readTabularRows(file).map(source => {
@@ -714,10 +784,12 @@ function readTabularRows(file) {
 // Read verdicts left in the folder by the external reviewer. Columns:
 // Tender/Ref No., Title, Agency, Closing Date/Time, TECQ Review, Why, Reviewed On.
 // Only Title and TECQ Review are strictly required; the rest improve matching.
-function findByAnyName(folder, names) {
-  for (let index = 0; index < names.length; index += 1) {
-    const files = folder.getFilesByName(names[index]);
-    if (files.hasNext()) return files.next();
+function findByAnyName(folders, names) {
+  for (let f = 0; f < folders.length; f += 1) {
+    for (let index = 0; index < names.length; index += 1) {
+      const files = folders[f].getFilesByName(names[index]);
+      if (files.hasNext()) return files.next();
+    }
   }
   return null;
 }
@@ -725,6 +797,15 @@ function findByAnyName(folder, names) {
 // Newest file whose name starts with the prefix. Lets each review run drop a
 // dated file rather than replacing one, so nothing is ever deleted and the
 // review history stays in the folder.
+function findNewestByPrefixIn(folders, prefix) {
+  let newest = null;
+  folders.forEach(folder => {
+    const found = findNewestByPrefix(folder, prefix);
+    if (found && (!newest || found.getDateCreated() > newest.getDateCreated())) newest = found;
+  });
+  return newest;
+}
+
 function findNewestByPrefix(folder, prefix) {
   const files = folder.getFiles();
   let newest = null;
@@ -737,7 +818,7 @@ function findNewestByPrefix(folder, prefix) {
 }
 
 function fetchExternalReviews(run, folder) {
-  const file = findNewestByPrefix(folder, CONFIG.reviewFile);
+  const file = findNewestByPrefixIn(dataFolders(folder), CONFIG.reviewFile);
   if (!file) { run.reviewFileStatus = `No ${CONFIG.reviewFile}* file in the folder.`; return {}; }
   try {
     const rows = readTabularRows(file)
@@ -939,6 +1020,7 @@ function writeTracker(ss, state, run, cadence) {
     `Source Upgrades This Run: ${run.upgrades}`,
     `Notes: ${run.notes.join(' | ') || 'none'}`,
     `Tracker (permanent): ${ss.getUrl()}`,
+    `Main folder holds the tracker and the archive only; working files live in the archive folder.`,
     `Last collection: ${scriptProperty('lastCollectionAt') || 'never'} | Last review: ${scriptProperty('lastReviewAt') || 'never'}`,
     `Review: ${scriptProperty('lastReviewStatus') || 'handled outside Apps Script'}`,
     `External verdicts (${CONFIG.reviewFile}): ${run.reviewFileStatus} | applied to ${run.reviewsApplied} row(s) this run`,
