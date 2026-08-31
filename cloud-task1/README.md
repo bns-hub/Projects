@@ -17,9 +17,23 @@ The tracker is `GeBIZ Tender Tracker — Current` in the GeBiz Daily folder. Its
 2. Replace the default editor contents with the complete contents of [`dist/Code.gs`](dist/Code.gs).
 3. Save. Select `setupCloudTask` in the function menu and click **Run**. Approve access to Google Drive, Google Sheets, external web requests, triggers and email.
 4. **Add the Anthropic API key** — see *Reviewer credentials* below. Without it the reviewer will not run.
-5. Select `runTestNow` and click **Run** once, then `runReviewNow`.
+5. Select **`runNow`** and click **Run**. It is the first function in the file, so it is what the picker offers by default.
 
 `setupCloudTask` installs four triggers, all in Google's cloud — collection daily at ~11:00 and ~23:00 SGT, review on Wednesday and Friday at ~12:00 SGT. This PC does not need to be on. GitHub Task 2 publishes TenderBoard at 10:00 AM SGT.
+
+## Running it by hand
+
+Select **`runNow`** and click **Run**. One click does everything the schedule does: capture GeBIZ + TenderBoard + `MANUAL_TENDERS`, update `GeBIZ Tender Tracker — Current` in place, review the open tenders, rebuild the shortlist. Takes 30-60 seconds, longer on the first review. The execution log shows both stages.
+
+| Function | Does |
+|---|---|
+| **`runNow`** | capture, then review. The manual button |
+| `runTestNow` | capture only — checking a feed or a backfill change |
+| `runReviewNow` | review only — re-judging without re-fetching |
+| `setupCloudTask` | (re)install the four triggers |
+| `discoverFeedNames` | diagnostic; writes `GEBIZ_FEED_INDEX.txt` |
+
+If capture fails, `runNow` stops and does not review — there would be nothing new to review. If review fails or has no key, capture still stands and the log says so.
 
 ## Reviewer credentials — human-owned, never committed
 

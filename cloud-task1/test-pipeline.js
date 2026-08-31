@@ -201,4 +201,40 @@ console.log('\n7. The reviewer stops cleanly when the API key is absent');
   });
 }
 
+console.log('\n8. runNow chains capture and review in one click');
+{
+  // Capture reaches the network; stub every source so the chain is deterministic.
+  const env = createEnvironment({
+    properties: { trackerFileId: 'chain-tracker' },
+    fetch: url => {
+      if (url.indexOf('TenderBoard_Raw_status.json') >= 0) return { code: 500, body: '' };
+      return { code: 404, body: '<!DOCTYPE html><html><body><img src="x"></body></html>' };
+    },
+  });
+  const ss = env.SpreadsheetApp.openById('chain-tracker');
+  env.writeTable(ss, 'EPU/CMP/10', env.openHeaders(), [openRow({ 'Tender/Ref No.': 'Z1', Title: 'Awaiting judgment' })]);
+  env.writeTable(ss, 'EPU/SER/34', env.openHeaders(), []);
+
+  const summary = env.runNow();
+
+  check('it reports both stages', () => {
+    assert.ok(/\[1\/2\] Capture/.test(summary), summary);
+    assert.ok(/\[2\/2\] Review/.test(summary), summary);
+  });
+  check('the capture stage ran and updated the permanent tracker', () => {
+    assert.ok(/new tenders|NO New Tenders/.test(summary), summary);
+    assert.equal(env.__state.properties.lastCollectionAt !== undefined, true);
+  });
+  check('the review stage ran and reported the missing key honestly', () => {
+    assert.ok(/NOT RUN/.test(summary), summary);
+    assert.ok(/ANTHROPIC_API_KEY/.test(summary), summary);
+  });
+  check('a failing source does not stop the chain', () => {
+    assert.ok(/Done in \d+s/.test(summary), summary);
+  });
+  check('the shortlist tab exists after a manual run', () => {
+    assert.notEqual(ss.getSheetByName('TECQ Shortlist'), null);
+  });
+}
+
 console.log(`\nAll ${checks} pipeline checks passed`);

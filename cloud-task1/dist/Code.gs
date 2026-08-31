@@ -1,6 +1,48 @@
-// Run this one by hand to do a full fetch/merge/publish cycle now.
-// It is deliberately first in the file: the Apps Script editor preselects the
-// first function in the picker, and running a helper by accident is a no-op.
+// ===========================================================================
+// runNow — the manual button. Click Run with this selected and it does
+// everything the schedule does: capture GeBIZ + TenderBoard + MANUAL_TENDERS,
+// update "GeBIZ Tender Tracker — Current" in place, then review the open
+// tenders and rebuild the shortlist.
+//
+// It is deliberately the first function in the file, because the Apps Script
+// editor preselects the first function in its run picker — so the default
+// selection is the one worth running, not a helper that silently does nothing.
+// ===========================================================================
+function runNow() {
+  const started = new Date();
+  const lines = ['MANUAL RUN — capture then review', ''];
+
+  lines.push('[1/2] Capture');
+  let collection;
+  try {
+    collection = runDailyTracker(true);
+  } catch (error) {
+    lines.push(`  FAILED — ${briefError(error)}`);
+    lines.push('', 'Stopped: nothing was reviewed, because there is nothing new to review.');
+    console.log(lines.join('\n'));
+    throw error;
+  }
+  lines.push(collection.split('\n').map(line => `  ${line}`).join('\n'));
+
+  // A capture that was gated by RUN_CADENCE has not refreshed anything, but the
+  // reviewer still runs — there may be rows outstanding from an earlier day.
+  lines.push('', '[2/2] Review');
+  let review;
+  try {
+    review = runWeeklyReview(true);
+  } catch (error) {
+    review = `FAILED — ${briefError(error)}`;
+  }
+  lines.push(`  ${review}`);
+
+  const seconds = Math.round((new Date() - started) / 1000);
+  lines.push('', `Done in ${seconds}s. Open the TECQ Shortlist tab.`);
+  const summary = lines.join('\n');
+  console.log(summary);
+  return summary;
+}
+
+// Capture only — no review. Useful when checking a feed or a backfill change.
 function runTestNow() {
   return runDailyTracker(true);
 }
@@ -370,6 +412,7 @@ function setupCloudTask() {
     `Collection: daily at approximately ${CONFIG.runHours.join(':00 and ')}:00 SGT.`,
     `Review: ${CONFIG.reviewDays.join(' and ')} at approximately ${CONFIG.reviewHour}:00 SGT.`,
     `Everything runs in Google's cloud; this PC does not need to be on.`,
+    `To run both by hand at any time, select runNow and click Run.`,
   ].join(' ');
 }
 
