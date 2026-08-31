@@ -172,3 +172,228 @@ function csvToObjects(csvText, parser) {
     return object;
   });
 }
+
+// ---------------------------------------------------------------------------
+// Reviewer-owned state
+//
+// The collector owns tender facts. These four columns belong to the reviewer
+// and must survive every collector refresh — see preserveReview/applyReviewIndex.
+// ---------------------------------------------------------------------------
+
+const REVIEW_FIELDS = ['TECQ Review', 'Why', 'Reviewed On', 'Review Fingerprint'];
+const REVIEW_LOOK = 'Look at';
+const REVIEW_POSSIBLE = 'Possible';
+const REVIEW_NOT = 'Not relevant';
+const REVIEW_VALUES = [REVIEW_LOOK, REVIEW_POSSIBLE, REVIEW_NOT];
+
+// Accepts the model's wording loosely, but only ever stores one of the three
+// canonical values. Anything unrecognised is treated as unreviewed.
+function normalizeReviewVerdict(value) {
+  const text = cleanText(value).toLowerCase();
+  if (!text) return '';
+  if (/^look/.test(text)) return REVIEW_LOOK;
+  if (/^possible|^maybe|^unsure/.test(text)) return REVIEW_POSSIBLE;
+  if (/^not relevant|^not_relevant|^no\b|^irrelevant/.test(text)) return REVIEW_NOT;
+  return '';
+}
+
+// Stable non-cryptographic hash. Only needs to change when the facts change.
+function stableHash(text) {
+  let hash = 5381;
+  const string = String(text);
+  for (let index = 0; index < string.length; index += 1) {
+    hash = ((hash * 33) ^ string.charCodeAt(index)) >>> 0;
+  }
+  return hash.toString(36);
+}
+
+// The facts a reviewer's judgment actually depends on. If none of these change,
+// the row does not need re-reviewing; if any changes, the old verdict is stale.
+function reviewFingerprint(row) {
+  return stableHash([
+    normalizeRef(row['Tender/Ref No.']),
+    normalizeTitle(row.Title),
+    cleanText(row.Agency).toUpperCase(),
+    cleanText(row['Procurement Category']).toUpperCase(),
+    cleanText(row['Category Group']).toUpperCase(),
+    cleanText(row.Source).toUpperCase(),
+    normalizeTitle(row['Scope Summary']),
+    cleanText(row['Closing Date/Time']).toUpperCase(),
+  ].join('|'));
+}
+
+// Keys a review can be carried across on: the normalized reference first, then
+// normalized title paired with agency or closing date when no reference exists.
+function reviewKeys(row) {
+  const keys = [];
+  const ref = normalizeRef(row['Tender/Ref No.']);
+  if (ref) keys.push(`ref:${ref}`);
+  const title = normalizeTitle(row.Title);
+  if (title) {
+    const agency = cleanText(row.Agency).toUpperCase();
+    const closing = cleanText(row['Closing Date/Time']).toUpperCase();
+    if (agency) keys.push(`ta:${title}|${agency}`);
+    if (closing) keys.push(`tc:${title}|${closing}`);
+  }
+  return keys;
+}
+
+function hasReview(row) {
+  return REVIEW_VALUES.indexOf(cleanText(row['TECQ Review'])) >= 0;
+}
+
+// Index every stored review so a refreshed or re-created row inherits it.
+function buildReviewIndex(rows) {
+  const index = {};
+  (rows || []).forEach(row => {
+    if (!hasReview(row)) return;
+    const review = {};
+    REVIEW_FIELDS.forEach(field => review[field] = cleanText(row[field]));
+    reviewKeys(row).forEach(key => { if (!index[key]) index[key] = review; });
+  });
+  return index;
+}
+
+function applyReviewIndex(index, rows) {
+  let restored = 0;
+  (rows || []).forEach(row => {
+    if (hasReview(row)) return;
+    const key = reviewKeys(row).find(candidate => index[candidate]);
+    if (!key) return;
+    REVIEW_FIELDS.forEach(field => row[field] = index[key][field]);
+    restored += 1;
+  });
+  return restored;
+}
+
+// Copy reviewer-owned fields onto a row the collector is about to overwrite.
+function preserveReview(target, source) {
+  REVIEW_FIELDS.forEach(field => {
+    const value = cleanText(source[field]);
+    if (value) target[field] = value;
+  });
+  return target;
+}
+
+// A row needs review when it has never been reviewed, or when the facts behind
+// the stored verdict have since changed.
+function needsReview(row) {
+  if (!hasReview(row)) return true;
+  return cleanText(row['Review Fingerprint']) !== reviewFingerprint(row);
+}
+
+// The shortlist is a view over the open rows, never a second source of truth.
+function buildShortlist(rows) {
+  return (rows || [])
+    .filter(row => {
+      const verdict = cleanText(row['TECQ Review']);
+      return verdict === REVIEW_LOOK || verdict === REVIEW_POSSIBLE;
+    })
+    .sort((a, b) => {
+      const rank = row => cleanText(row['TECQ Review']) === REVIEW_LOOK ? 0 : 1;
+      if (rank(a) !== rank(b)) return rank(a) - rank(b);
+      const ad = parseFlexibleDate(a['Closing Date/Time']);
+      const bd = parseFlexibleDate(b['Closing Date/Time']);
+      if (ad && bd && ad.getTime() !== bd.getTime()) return ad - bd;
+      if (ad && !bd) return -1;
+      if (!ad && bd) return 1;
+      return cleanText(a.Title).localeCompare(cleanText(b.Title));
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Semantic review
+//
+// The verdict is a judgment about what is actually being bought, so it is made
+// by a model, not by keyword matching here. These helpers build the request and
+// parse the reply; the HTTP call lives in Code.gs.
+// ---------------------------------------------------------------------------
+
+const REVIEW_SYSTEM_PROMPT = [
+  'You screen Singapore public-sector tender listings for TOPPAN Ecquaria (TECQ), a Singapore',
+  'digital-government systems integrator, and decide which ones a sales lead should spend time on.',
+  '',
+  'TECQ delivers: custom application and portal development, legacy modernisation, system',
+  'integration and APIs, workflow / case management / registry / licensing systems, application',
+  'maintenance and support (AMS), GCC and cloud migration, data reporting and analytics, document',
+  'management, mobile and field apps, Singpass and digital identity integration, AI / GenAI /',
+  'agentic / RAG / process automation, and digital-government consultancy or implementation PMO.',
+  'Their stack is the KAIZEN low-code platform, Java/Spring, ReactJS, microservices, containers,',
+  'on GCC/AWS/Azure. Their record is Singapore government: courts, licensing, registries, customs,',
+  'healthcare licensing, environment.',
+  '',
+  'Known gaps, which should pull a verdict down rather than up: no proven OT/SCADA or industrial',
+  'plant integration; no established workplace-safety or permit-to-work delivery record; heavily',
+  'domain-specific work may need a partner.',
+  '',
+  'Assign exactly one verdict per tender:',
+  '- "Look at": strong fit for the capabilities listed above.',
+  '- "Possible": plausible adjacent ICT work, or the listing has too little detail to judge, or the',
+  '  scope is partner-dependent, or it is generic digital/AI consultancy, or it is managed',
+  '  infrastructure that may carry application scope.',
+  '- "Not relevant": construction or facilities work, industrial machinery, electrical or plant,',
+  '  AV and PA systems, catering, cleaning, events, training-only, non-ICT consultancy, parking or',
+  '  property leases, or pure hardware supply with no integration or software scope.',
+  '',
+  'Judge the primary deliverable being purchased. The presence of a word such as "system",',
+  '"development", "licence", "platform", "maintenance", "digital" or "automation" is never on its',
+  'own sufficient — a race timing system, a card access system and an air-conditioning system are',
+  'all "Not relevant". Equally, a thin listing for something plainly ICT is "Possible", not',
+  '"Not relevant": absence of detail is uncertainty, not disqualification.',
+  '',
+  'TenderBoard listings often carry only a title, agency and category. When the evidence is that',
+  'thin, use "Possible" rather than guessing.',
+  '',
+  'For "why", give one sentence naming the concrete evidence you used — the deliverable, the',
+  'category, or the specific missing information. Never restate the verdict as its own reason.',
+  '',
+  'Reply with a JSON array and nothing else. One object per tender, in the order given, each with',
+  'exactly the keys "id" (the integer given), "verdict" (one of Look at, Possible, Not relevant),',
+  'and "why" (one sentence, at most 200 characters).',
+].join('\n');
+
+// Accessor so the prompt can be asserted on from tests without duplicating it.
+function reviewSystemPrompt() {
+  return REVIEW_SYSTEM_PROMPT;
+}
+
+function buildReviewPrompt(rows) {
+  const lines = ['Review these tenders:', ''];
+  rows.forEach((row, index) => {
+    lines.push(`[${index + 1}]`);
+    lines.push(`Title: ${cleanText(row.Title) || '(none)'}`);
+    lines.push(`Agency: ${cleanText(row.Agency) || '(not stated)'}`);
+    lines.push(`Procurement Category: ${cleanText(row['Procurement Category']) || '(not stated)'}`);
+    lines.push(`Category Group: ${cleanText(row['Category Group']) || '(not stated)'}`);
+    lines.push(`Source: ${cleanText(row.Source) || '(unknown)'}`);
+    lines.push(`Reference: ${cleanText(row['Tender/Ref No.']) || '(none)'}`);
+    lines.push(`Closing: ${cleanText(row['Closing Date/Time']) || 'Unknown'}`);
+    const scope = cleanText(row['Scope Summary']);
+    lines.push(`Scope: ${scope ? scope.slice(0, 1200) : '(no scope text available — listing data only)'}`);
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+// The model is asked for a bare JSON array; tolerate it being wrapped in prose
+// or a fenced block, but never invent a verdict that was not returned.
+function parseReviewResponse(text, expectedCount) {
+  const raw = String(text == null ? '' : text);
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const body = fenced ? fenced[1] : raw;
+  const start = body.indexOf('[');
+  const end = body.lastIndexOf(']');
+  if (start < 0 || end <= start) throw new Error('no JSON array in model response');
+  const parsed = JSON.parse(body.slice(start, end + 1));
+  if (!Array.isArray(parsed)) throw new Error('model response was not an array');
+  const results = {};
+  parsed.forEach(entry => {
+    if (!entry || typeof entry !== 'object') return;
+    const id = Number(entry.id);
+    if (!(id >= 1 && id <= expectedCount)) return;
+    const verdict = normalizeReviewVerdict(entry.verdict);
+    if (!verdict) return;
+    results[id] = { verdict, why: cleanText(entry.why).slice(0, 300) };
+  });
+  return results;
+}

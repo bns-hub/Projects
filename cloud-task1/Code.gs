@@ -65,6 +65,25 @@ const CONFIG = Object.freeze({
   // single failed run can no longer drop a whole day of tenders on the floor.
   runHours: [11, 23],
   manualFile: 'MANUAL_TENDERS',
+  // One permanent tracker, updated in place. Its Drive id is remembered in a
+  // script property so a rename can never fork it into two files.
+  trackerName: 'GeBIZ Tender Tracker — Current',
+  trackerIdProperty: 'trackerFileId',
+  historyFolderName: 'History',
+  // Reviewer: Wednesday and Friday at about noon SGT, after the 11:00 collection.
+  reviewHour: 12,
+  reviewDays: ['WEDNESDAY', 'FRIDAY'],
+  snapshotDay: 'FRIDAY',
+  // Claude reads the tender facts and returns a verdict. The key is human-owned
+  // and lives in Script Properties; it is never stored in this file.
+  anthropicKeyProperty: 'ANTHROPIC_API_KEY',
+  anthropicUrl: 'https://api.anthropic.com/v1/messages',
+  anthropicVersion: '2023-06-01',
+  anthropicBeta: 'server-side-fallback-2026-07-01',
+  reviewModel: 'claude-opus-5',
+  reviewBatchSize: 12,
+  reviewMaxTokens: 16000,
+  reviewDetailFetches: 25,
   // GeBIZ publishes one RSS feed per procurement category and names the files
   // itself, so a category can only be fetched if its exact filename is known.
   // Rather than guess, scrape the pages that link to those feeds and adopt
@@ -127,25 +146,239 @@ const CONFIG = Object.freeze({
   ],
 });
 
-const OPEN_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Publish Date/Time','Closing Date/Time','Status','Link'];
-const CLOSED_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Closing Date/Time','Move Date','Link'];
+const OPEN_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Publish Date/Time','Closing Date/Time','Status','TECQ Review','Why','Reviewed On','Review Fingerprint','Link'];
+const SHORTLIST_HEADERS = ['TECQ Review','Closing Date/Time','Title','Agency','Procurement Category','Category Group','Source','Why','Tender/Ref No.','EPU Tab','Link'];
+const CLOSED_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Closing Date/Time','Move Date','TECQ Review','Why','Link'];
 const AWARD_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Awarded To','Award Value','Award Date','Link'];
 const LEDGER_HEADERS = ['Date','GeBIZ','TenderBoard','New (GeBIZ)','New (TB)','Notes'];
-const TAB_NAMES = ['EPU/CMP/10','EPU/SER/34','Closed Tenders','Awarded (Intel)','Run Ledger','Coverage & Method'];
+const TAB_NAMES = ['TECQ Shortlist','EPU/CMP/10','EPU/SER/34','Closed Tenders','Awarded (Intel)','Run Ledger','Coverage & Method'];
+
+
+// ---------------------------------------------------------------------------
+// Weekly reviewer — Wednesday and Friday, headless
+//
+// This is genuine semantic review: the tender facts are sent to Claude and the
+// verdict comes back from the model. There is deliberately no keyword fallback,
+// because a keyword rule dressed up as a review is worse than no review — it
+// looks authoritative and is not. With no API key the reviewer records that it
+// did not run and changes nothing.
+// ---------------------------------------------------------------------------
+
+function runReviewNow() {
+  return runWeeklyReview(true);
+}
+
+function runWeeklyReview(forceRun) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(1000)) return 'Skipped: another run is active.';
+  const properties = PropertiesService.getScriptProperties();
+  const run = { reviewed: 0, failures: [], batches: 0, details: 0, skipped: 0 };
+  try {
+    const now = new Date();
+    const apiKey = properties.getProperty(CONFIG.anthropicKeyProperty);
+    if (!apiKey) {
+      const message = `NOT RUN — ${CONFIG.anthropicKeyProperty} is not set in Script Properties`;
+      properties.setProperty('lastReviewStatus', message);
+      MailApp.sendEmail(CONFIG.notifyEmail, 'GeBIZ review NOT RUN — API key missing', [
+        message,
+        '',
+        'The Wednesday/Friday reviewer needs an Anthropic API key to make a real judgment.',
+        'Apps Script editor > Project Settings > Script Properties > Add script property:',
+        `  Property: ${CONFIG.anthropicKeyProperty}`,
+        '  Value:    your key from https://console.anthropic.com/settings/keys',
+        '',
+        'Nothing in the tracker was changed.',
+      ].join('\n'));
+      return message;
+    }
+
+    const trackerFolder = DriveApp.getFolderById(CONFIG.trackerFolderId);
+    const tracker = resolveTracker(trackerFolder);
+    const ss = SpreadsheetApp.openById(tracker.file.getId());
+
+    const buckets = ['EPU/CMP/10', 'EPU/SER/34'];
+    const rowsByTab = {};
+    let pending = [];
+    buckets.forEach(name => {
+      rowsByTab[name] = readObjects(ss, name);
+      rowsByTab[name].forEach(row => { row._bucket = name; });
+      pending = pending.concat(rowsByTab[name].filter(needsReview));
+    });
+    if (!pending.length) {
+      const message = `OK — nothing to review at ${Utilities.formatDate(now, CONFIG.timezone, 'dd MMM yyyy, h:mm a')} SGT`;
+      properties.setProperty('lastReviewAt', now.toISOString());
+      properties.setProperty('lastReviewStatus', message);
+      return message;
+    }
+
+    enrichScopes(pending, run);
+
+    for (let offset = 0; offset < pending.length; offset += CONFIG.reviewBatchSize) {
+      const batch = pending.slice(offset, offset + CONFIG.reviewBatchSize);
+      run.batches += 1;
+      let verdicts;
+      try {
+        verdicts = reviewBatch(batch, apiKey);
+      } catch (error) {
+        run.failures.push(`batch ${run.batches}: ${briefError(error)}`);
+        continue;
+      }
+      const stamp = Utilities.formatDate(new Date(), CONFIG.timezone, 'yyyy-MM-dd HH:mm');
+      batch.forEach((row, index) => {
+        const verdict = verdicts[index + 1];
+        if (!verdict) { run.skipped += 1; return; }
+        row['TECQ Review'] = verdict.verdict;
+        row.Why = verdict.why;
+        row['Reviewed On'] = stamp;
+        row['Review Fingerprint'] = reviewFingerprint(row);
+        run.reviewed += 1;
+      });
+    }
+
+    buckets.forEach(name => {
+      writeTable(ss, name, OPEN_HEADERS, rowsByTab[name].sort(sortPublishDesc));
+    });
+    const shortlist = buildShortlist(rowsByTab['EPU/CMP/10'].concat(rowsByTab['EPU/SER/34']))
+      .map(row => Object.assign({}, row, { 'EPU Tab': row._bucket }));
+    writeTable(ss, 'TECQ Shortlist', SHORTLIST_HEADERS, shortlist,
+      'Nothing shortlisted. Rows appear here once the Wednesday/Friday review marks them Look at or Possible.');
+    SpreadsheetApp.flush();
+
+    const status = `${run.failures.length ? 'PARTIAL' : 'OK'} — ${run.reviewed} reviewed, ${run.skipped} returned no verdict, ${run.batches} batch(es), ${run.details} detail page(s) fetched${run.failures.length ? '; ' + run.failures.join('; ') : ''}`;
+    properties.setProperty('lastReviewAt', now.toISOString());
+    properties.setProperty('lastReviewStatus', status);
+
+    let snapshot = '';
+    if (isSnapshotDay(now) || forceRun === 'snapshot') snapshot = writeSnapshot(trackerFolder, tracker.file, now);
+
+    MailApp.sendEmail(CONFIG.notifyEmail,
+      `GeBIZ review: ${shortlist.filter(r => r['TECQ Review'] === REVIEW_LOOK).length} to look at`, [
+        status,
+        `Shortlist: ${shortlist.length} open (${shortlist.filter(r => r['TECQ Review'] === REVIEW_LOOK).length} ${REVIEW_LOOK}, ${shortlist.filter(r => r['TECQ Review'] === REVIEW_POSSIBLE).length} ${REVIEW_POSSIBLE})`,
+        snapshot ? `Snapshot: ${snapshot}` : 'Snapshot: not a snapshot day',
+        `Tracker: ${tracker.file.getUrl()}`,
+        '',
+      ].concat(shortlist.filter(r => r['TECQ Review'] === REVIEW_LOOK).slice(0, 10)
+        .map(r => `• ${r.Title} — ${r.Agency} [closes ${r['Closing Date/Time']}]\n  ${r.Why}`)).join('\n'));
+    return status;
+  } catch (error) {
+    const message = `Weekly review failed: ${error && error.stack ? error.stack : error}`;
+    properties.setProperty('lastReviewStatus', `FAILED — ${briefError(error)}`);
+    try { MailApp.sendEmail(CONFIG.notifyEmail, 'GeBIZ review FAILED', message); } catch (_) {}
+    throw error;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Give the model real scope text where GeBIZ publishes one. TenderBoard rows
+// have no detail page we are allowed to fetch, so they stay listing-only.
+function enrichScopes(rows, run) {
+  const targets = rows.filter(row => cleanText(row.Source) === 'GeBIZ' && cleanText(row.Link)
+    && !cleanText(row['Scope Summary'])).slice(0, CONFIG.reviewDetailFetches);
+  if (!targets.length) return;
+  const responses = UrlFetchApp.fetchAll(targets.map(row => ({ url: row.Link, muteHttpExceptions: true })));
+  responses.forEach((response, index) => {
+    if (response.getResponseCode() !== 200) return;
+    const scope = extractScope(response.getContentText());
+    if (!scope) return;
+    targets[index]['Scope Summary'] = scope;
+    run.details += 1;
+  });
+}
+
+// Strip a GeBIZ detail page down to readable text for the model to judge.
+function extractScope(html) {
+  const body = String(html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  return cleanText(body).slice(0, 1500);
+}
+
+function reviewBatch(rows, apiKey) {
+  const payload = {
+    model: CONFIG.reviewModel,
+    max_tokens: CONFIG.reviewMaxTokens,
+    system: REVIEW_SYSTEM_PROMPT,
+    fallbacks: 'default',
+    messages: [{ role: 'user', content: buildReviewPrompt(rows) }],
+  };
+  const response = UrlFetchApp.fetch(CONFIG.anthropicUrl, {
+    method: 'post',
+    contentType: 'application/json',
+    muteHttpExceptions: true,
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': CONFIG.anthropicVersion,
+      'anthropic-beta': CONFIG.anthropicBeta,
+    },
+    payload: JSON.stringify(payload),
+  });
+  const code = response.getResponseCode();
+  if (code !== 200) throw new Error(`Anthropic HTTP ${code}: ${cleanText(response.getContentText()).slice(0, 200)}`);
+  const body = JSON.parse(response.getContentText());
+  // A policy decline arrives as HTTP 200 — check before reading the content.
+  if (body.stop_reason === 'refusal') throw new Error('model declined this batch');
+  const text = (body.content || []).filter(block => block.type === 'text').map(block => block.text).join('');
+  return parseReviewResponse(text, rows.length);
+}
+
+function isSnapshotDay(now) {
+  const day = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'][
+    Number(Utilities.formatDate(now, CONFIG.timezone, 'u')) % 7];
+  return day === CONFIG.snapshotDay;
+}
+
+// One dated copy a week, kept forever. History is never pruned here.
+function writeSnapshot(trackerFolder, trackerFile, now) {
+  const name = `${Utilities.formatDate(now, CONFIG.timezone, 'yyyy-MM-dd')}_GeBIZ_Tender_Tracker`;
+  const history = historyFolder(trackerFolder);
+  const existing = history.getFilesByName(name);
+  if (existing.hasNext()) {
+    const url = existing.next().getUrl();
+    PropertiesService.getScriptProperties().setProperty('lastSnapshot', `${name} (already existed)`);
+    return url;
+  }
+  const copy = trackerFile.makeCopy(name, history);
+  PropertiesService.getScriptProperties().setProperty('lastSnapshot', `${name} (${Utilities.formatDate(now, CONFIG.timezone, 'dd MMM yyyy')})`);
+  return copy.getUrl();
+}
+
+// Accessors so tests can reference the schemas without duplicating them.
+function openHeaders() { return OPEN_HEADERS; }
+function shortlistHeaders() { return SHORTLIST_HEADERS; }
+function closedHeaders() { return CLOSED_HEADERS; }
+function tabNames() { return TAB_NAMES; }
+function reviewFields() { return REVIEW_FIELDS; }
 
 function setupCloudTask() {
-  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'runDailyTracker').forEach(t => ScriptApp.deleteTrigger(t));
+  const handled = ['runDailyTracker', 'runWeeklyReview'];
+  ScriptApp.getProjectTriggers()
+    .filter(t => handled.indexOf(t.getHandlerFunction()) >= 0)
+    .forEach(t => ScriptApp.deleteTrigger(t));
   CONFIG.runHours.forEach(hour => {
     ScriptApp.newTrigger('runDailyTracker').timeBased().atHour(hour).nearMinute(0).everyDays(1).inTimezone(CONFIG.timezone).create();
   });
-  return `Cloud triggers installed for approximately ${CONFIG.runHours.join(':00 and ')}:00 SGT.`;
+  CONFIG.reviewDays.forEach(day => {
+    ScriptApp.newTrigger('runWeeklyReview').timeBased()
+      .onWeekDay(ScriptApp.WeekDay[day]).atHour(CONFIG.reviewHour).inTimezone(CONFIG.timezone).create();
+  });
+  return [
+    `Collection: daily at approximately ${CONFIG.runHours.join(':00 and ')}:00 SGT.`,
+    `Review: ${CONFIG.reviewDays.join(' and ')} at approximately ${CONFIG.reviewHour}:00 SGT.`,
+    `Everything runs in Google's cloud; this PC does not need to be on.`,
+  ].join(' ');
 }
 
 function runDailyTracker(forceRun) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(1000)) return 'Skipped: another run is active.';
   const run = {
-    errors: [], newGebiz: 0, newTb: 0, newManual: 0, manualPatched: 0, moved: 0, upgrades: 0,
+    errors: [], notes: [], newGebiz: 0, newTb: 0, newManual: 0, manualPatched: 0, moved: 0, upgrades: 0,
+    reviewsRestored: 0, trackerUrl: '',
     tbArchive: '', tbStatus: '', gebizStatus: 'OK', manualStatus: 'No MANUAL_TENDERS file.',
     feedCounts: [], feedsUnavailable: [], feedsFailed: [], feedsDiscovered: [],
   };
@@ -153,12 +386,18 @@ function runDailyTracker(forceRun) {
     const now = new Date();
     const trackerFolder = DriveApp.getFolderById(CONFIG.trackerFolderId);
     const archiveFolder = DriveApp.getFolderById(CONFIG.archiveFolderId);
-    const latest = findLatestTracker(trackerFolder);
-    const cadence = readCadence(trackerFolder, now, latest && latest.getDateCreated());
+    const cadence = readCadence(trackerFolder, now, findLatestCollectionTime());
     if (!forceRun && !cadence.run) return `Skipped by cadence: ${cadence.directive}`;
 
-    const state = loadState(latest ? SpreadsheetApp.openById(latest.getId()) : SpreadsheetApp.openById(CONFIG.seedId));
+    const tracker = resolveTracker(trackerFolder);
+    run.trackerUrl = tracker.file.getUrl();
+    if (tracker.created) run.notes.push(`Created permanent tracker from ${tracker.seededFrom}`);
+    const output = SpreadsheetApp.openById(tracker.file.getId());
+    const state = loadState(output);
     migrateRows(state);
+    // Reviewer-owned values are indexed before any merging, then re-applied, so
+    // a row the collector rebuilds or re-creates keeps the verdict it had.
+    const reviewIndex = buildReviewIndex(state.active.concat(state.closed));
     const gebiz = fetchGebiz(run);
     const tb = fetchTenderBoard(run, archiveFolder, now);
     const manual = fetchManual(run, trackerFolder);
@@ -167,15 +406,13 @@ function runDailyTracker(forceRun) {
     captureAwards(state, run);
     updateLedger(state, now, run);
 
-    const stamp = Utilities.formatDate(now, CONFIG.timezone, 'yyyy-MM-dd_HHmm');
-    const sourceFile = latest || DriveApp.getFileById(CONFIG.seedId);
-    const outputFile = sourceFile.makeCopy(`${stamp}_GeBIZ_Open_Tenders`, trackerFolder);
-    const output = SpreadsheetApp.openById(outputFile.getId());
-    writeTracker(output, state, run, cadence, sourceFile);
+    run.reviewsRestored = applyReviewIndex(reviewIndex, state.active.concat(state.closed));
+    PropertiesService.getScriptProperties().setProperty('lastCollectionAt', now.toISOString());
+    writeTracker(output, state, run, cadence);
     SpreadsheetApp.flush();
     verifyTracker(output, state);
 
-    const summary = buildSummary(outputFile, state, run);
+    const summary = buildSummary(tracker.file, state, run);
     const newTotal = run.newGebiz + run.newTb + run.newManual;
     MailApp.sendEmail(CONFIG.notifyEmail, `GeBIZ/TB: ${newTotal ? newTotal + ' New Tenders' : 'NO New Tenders'}`, summary);
     return summary;
@@ -188,11 +425,43 @@ function runDailyTracker(forceRun) {
   }
 }
 
+// The one permanent tracker. Resolution order: remembered id, then a file of
+// that name in the folder, then seeded from the newest legacy dated copy, then
+// from the seed workbook. The id is written back so later runs never search.
+function resolveTracker(folder) {
+  const properties = PropertiesService.getScriptProperties();
+  const storedId = properties.getProperty(CONFIG.trackerIdProperty);
+  if (storedId) {
+    try {
+      const file = DriveApp.getFileById(storedId);
+      if (!file.isTrashed()) return { file: file, created: false };
+    } catch (_) {
+      // Remembered id no longer resolves; fall through and re-establish it.
+    }
+  }
+  const named = folder.getFilesByName(CONFIG.trackerName);
+  if (named.hasNext()) {
+    const file = named.next();
+    properties.setProperty(CONFIG.trackerIdProperty, file.getId());
+    return { file: file, created: false };
+  }
+  const seedFrom = findLatestTracker(folder) || DriveApp.getFileById(CONFIG.seedId);
+  const file = seedFrom.makeCopy(CONFIG.trackerName, folder);
+  properties.setProperty(CONFIG.trackerIdProperty, file.getId());
+  return { file: file, created: true, seededFrom: seedFrom.getName() };
+}
+
+function historyFolder(folder) {
+  const existing = folder.getFoldersByName(CONFIG.historyFolderName);
+  return existing.hasNext() ? existing.next() : folder.createFolder(CONFIG.historyFolderName);
+}
+
 function findLatestTracker(folder) {
   const files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
   let latest = null;
   while (files.hasNext()) {
     const file = files.next();
+    if (file.getName() === CONFIG.trackerName) continue;
     if (!file.getName().includes('GeBIZ_Open_Tenders')) continue;
     if (!latest || file.getDateCreated() > latest.getDateCreated()) latest = file;
   }
@@ -380,6 +649,17 @@ function migrateRows(state) {
   const restate = row => {
     row['Procurement Category'] = normalizeCategory(row);
     row['Category Group'] = categoryGroup(row);
+    // Legacy schema: the old collector wrote a blanket "Advise to look at" tag
+    // into TECQ Recommendation. Carry it over as a Possible — it was applied by
+    // a keyword rule, not a judgment, so it must not arrive as a Look at.
+    if (!hasReview(row) && /advise to look at/i.test(cleanText(row['TECQ Recommendation']))) {
+      row['TECQ Review'] = REVIEW_POSSIBLE;
+      row.Why = 'Migrated from the legacy TECQ Recommendation tag; not yet reviewed on its merits.';
+      row['Reviewed On'] = '';
+      row['Review Fingerprint'] = '';
+    }
+    delete row['TECQ Recommendation'];
+    delete row['Why Unsure'];
   };
   state.active.forEach(row => { restate(row); row._bucket = routeBucket(row, row._bucket); });
   state.closed.forEach(restate);
@@ -425,7 +705,12 @@ function mergeCandidates(state, candidates, run) {
         return;
       }
       if (match.Source === 'TenderBoard' && candidate.Source === 'GeBIZ' && state.active.indexOf(match) >= 0) {
-        Object.assign(match, candidate); run.upgrades += 1;
+        // A GeBIZ upgrade replaces the collector's facts, never the review.
+        const review = {};
+        REVIEW_FIELDS.forEach(field => review[field] = match[field]);
+        Object.assign(match, candidate);
+        preserveReview(match, review);
+        run.upgrades += 1;
       }
       return;
     }
@@ -444,6 +729,7 @@ function moveClosed(state, now, run) {
     if (closing && closing < now) {
       const closed = Object.assign({}, row, { 'Move Date': Utilities.formatDate(now, CONFIG.timezone, 'dd MMM yyyy') });
       delete closed.Status; delete closed['Publish Date/Time']; delete closed._bucket;
+      delete closed['Review Fingerprint'];
       delete closed._new; delete closed._manual;
       state.closed.push(closed); run.moved += 1;
     } else stillOpen.push(row);
@@ -500,11 +786,15 @@ function updateLedger(state, now, run) {
   state.ledger = order.map(key => map[key]).sort((a, b) => cleanText(b.Date).localeCompare(cleanText(a.Date)));
 }
 
-function writeTracker(ss, state, run, cadence, previousFile) {
+function writeTracker(ss, state, run, cadence) {
   const cmp = state.active.filter(r => r._bucket === 'EPU/CMP/10').sort(sortPublishDesc);
   const ser = state.active.filter(r => r._bucket === 'EPU/SER/34').sort(sortPublishDesc);
   state.closed.sort((a, b) => cleanText(a['Closing Date/Time']).localeCompare(cleanText(b['Closing Date/Time'])));
   state.awards.sort((a, b) => cleanText(b['Award Date']).localeCompare(cleanText(a['Award Date'])));
+  const shortlist = buildShortlist(cmp.concat(ser)).map(row => Object.assign({}, row, { 'EPU Tab': row._bucket }));
+  run.shortlistCount = shortlist.length;
+  writeTable(ss, 'TECQ Shortlist', SHORTLIST_HEADERS, shortlist,
+    'Nothing shortlisted. Rows appear here once the Wednesday/Friday review marks them Look at or Possible.');
   writeTable(ss, 'EPU/CMP/10', OPEN_HEADERS, cmp);
   writeTable(ss, 'EPU/SER/34', OPEN_HEADERS, ser);
   writeTable(ss, 'Closed Tenders', CLOSED_HEADERS, state.closed);
@@ -526,8 +816,14 @@ function writeTracker(ss, state, run, cadence, previousFile) {
     `Awarded (Intel): total ${state.awards.length}, permanent and uncapped`,
     `Excluded This Run: 0 — relevance and exclusion filtering are disabled; every item returned by an in-scope GeBIZ feed, the TenderBoard handoff and ${CONFIG.manualFile} is kept in EPU/CMP/10 or EPU/SER/34`,
     `Source Upgrades This Run: ${run.upgrades}`,
-    `Previous File: ${previousFile.getUrl()}`,
-    `Upload: native Google Sheets copy/update; verified ${TAB_NAMES.length} tabs and row counts; no base64 ceiling`,
+    `Notes: ${run.notes.join(' | ') || 'none'}`,
+    `Tracker (permanent): ${ss.getUrl()}`,
+    `Last collection: ${scriptProperty('lastCollectionAt') || 'never'} | Last review: ${scriptProperty('lastReviewAt') || 'never'}`,
+    `Review: ${scriptProperty('lastReviewStatus') || 'not yet run'}`,
+    `Reviewed: ${countReviews(cmp.concat(ser))} of ${cmp.length + ser.length} open rows | awaiting review ${cmp.concat(ser).filter(needsReview).length} | reviews carried across this refresh ${run.reviewsRestored}`,
+    `TECQ Shortlist: ${run.shortlistCount} open row(s) marked ${REVIEW_LOOK} or ${REVIEW_POSSIBLE}`,
+    `Friday snapshot: ${scriptProperty('lastSnapshot') || 'none yet'}`,
+    `Update: permanent sheet updated in place; verified ${TAB_NAMES.length} tabs and row counts`,
     `Errors: ${run.errors.join(' | ') || 'None'}`,
   ];
   writeTable(ss, 'Coverage & Method', ['Coverage & Method'], coverage.map(text => ({ 'Coverage & Method': text })));
@@ -545,6 +841,22 @@ function summariseGroups(rows) {
   });
   return Object.keys(counts).sort((a, b) => counts[b] - counts[a])
     .map(group => `${group} ${counts[group]}`).join('; ') || 'none';
+}
+
+function scriptProperty(name) {
+  return PropertiesService.getScriptProperties().getProperty(name) || '';
+}
+
+function countReviews(rows) {
+  return rows.filter(hasReview).length;
+}
+
+// Latest collection time, for the cadence gate now that dated copies are gone.
+function findLatestCollectionTime() {
+  const stamp = scriptProperty('lastCollectionAt');
+  if (!stamp) return null;
+  const parsed = new Date(stamp);
+  return isNaN(parsed.getTime()) ? null : parsed;
 }
 
 function sortPublishDesc(a, b) {
@@ -566,10 +878,17 @@ function writeTable(ss, name, headers, rows, emptyMessage) {
   sheet.getDataRange().setFontFamily('Arial').setFontSize(11).setWrap(true).setBorder(true,true,true,true,true,true);
   sheet.getRange(1,1,1,headers.length).setFontWeight('bold').setBackground('#d9d9d9');
   const sourceCol = headers.indexOf('Source') + 1;
+  const reviewCol = headers.indexOf('TECQ Review') + 1;
   const linkCol = headers.indexOf('Link') + 1;
   rows.forEach((row, index) => {
     const sheetRow = index + 2;
     if (sourceCol) sheet.getRange(sheetRow, sourceCol).setBackground(row.Source === 'TenderBoard' ? '#fff2cc' : '#ddebf7');
+    if (reviewCol) {
+      const verdict = cleanText(row['TECQ Review']);
+      if (verdict === REVIEW_LOOK) sheet.getRange(sheetRow, reviewCol).setBackground('#c6efce').setFontWeight('bold');
+      else if (verdict === REVIEW_POSSIBLE) sheet.getRange(sheetRow, reviewCol).setBackground('#ffeb9c');
+      else if (verdict === REVIEW_NOT) sheet.getRange(sheetRow, reviewCol).setBackground('#f2f2f2').setFontColor('#808080');
+    }
     if (linkCol && row.Link) {
       const label = row.Source === 'TenderBoard' ? 'Open in TenderBoard' : 'Open in GeBIZ';
       sheet.getRange(sheetRow, linkCol).setFormula(`=HYPERLINK("${String(row.Link).replace(/"/g, '""')}","${label}")`);
@@ -578,6 +897,10 @@ function writeTable(ss, name, headers, rows, emptyMessage) {
   sheet.autoResizeColumns(1, headers.length);
   const scopeCol = headers.indexOf('Scope Summary') + 1;
   if (scopeCol) sheet.setColumnWidth(scopeCol, 420);
+  const whyCol = headers.indexOf('Why') + 1;
+  if (whyCol) sheet.setColumnWidth(whyCol, 380);
+  const fingerprintCol = headers.indexOf('Review Fingerprint') + 1;
+  if (fingerprintCol) sheet.hideColumns(fingerprintCol);
 }
 
 function verifyTracker(ss, state) {
@@ -587,6 +910,9 @@ function verifyTracker(ss, state) {
   if (ss.getSheetByName('Awarded (Intel)').getLastRow() !== Math.max(2, state.awards.length + 1)) throw new Error('Verification failed: Awarded row count mismatch');
   const open = ss.getSheetByName('EPU/CMP/10').getLastRow() - 1 + ss.getSheetByName('EPU/SER/34').getLastRow() - 1;
   if (open !== state.active.length) throw new Error(`Verification failed: ${state.active.length} open tenders held but ${open} written — a tender would have been dropped`);
+  const held = state.active.filter(hasReview).length;
+  const written = readObjects(ss, 'EPU/CMP/10').concat(readObjects(ss, 'EPU/SER/34')).filter(hasReview).length;
+  if (written !== held) throw new Error(`Verification failed: ${held} reviewed rows held but ${written} written — a review would have been lost`);
 }
 
 function buildSummary(file, state, run) {
@@ -597,6 +923,7 @@ function buildSummary(file, state, run) {
     `GeBIZ new: ${run.newGebiz} | TenderBoard new: ${run.newTb} | Manual backfill new: ${run.newManual}`,
     `Open totals: EPU/CMP/10 ${state.active.filter(r => r._bucket === 'EPU/CMP/10').length} | EPU/SER/34 ${state.active.filter(r => r._bucket === 'EPU/SER/34').length}`,
     `Moved closed: ${run.moved} | Awarded retained: ${state.awards.length}`,
+    `Shortlist: ${run.shortlistCount} | reviews carried across: ${run.reviewsRestored}`,
     `GeBIZ: ${run.gebizStatus}`,
     `GeBIZ feeds unavailable: ${run.feedsUnavailable.join('; ') || 'none'}`,
     `TenderBoard archive: ${run.tbArchive || 'not created'}`,

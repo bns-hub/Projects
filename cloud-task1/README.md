@@ -2,14 +2,63 @@
 
 This Google Apps Script runs Task 1 entirely in Google's cloud. After authorization, Benson's PC does not need to be on.
 
+## What this is
+
+Two cloud jobs against **one permanent spreadsheet**:
+
+- **Collector** (daily, ~11:00 and ~23:00 SGT) — fetches GeBIZ RSS, the TenderBoard handoff and `MANUAL_TENDERS`, and updates the tracker in place. It owns tender facts, closures, awards, the ledger and coverage. It filters nothing.
+- **Reviewer** (Wednesday and Friday, ~12:00 SGT) — sends the open tenders to Claude and records a verdict per row. It owns the review columns and nothing else.
+
+The tracker is `GeBIZ Tender Tracker — Current` in the GeBiz Daily folder. Its Drive id is remembered in a script property, so it is never forked into a second file. Dated copies are no longer made after every collection; one snapshot is taken each Friday into a `History` subfolder and never pruned.
+
 ## One-time setup
 
 1. Open <https://script.google.com/home> and create a **New project** named `GeBIZ Tender Tracker`.
 2. Replace the default editor contents with the complete contents of [`dist/Code.gs`](dist/Code.gs).
 3. Save. Select `setupCloudTask` in the function menu and click **Run**. Approve access to Google Drive, Google Sheets, external web requests, triggers and email.
-4. Select `runTestNow` and click **Run** once. Confirm a new dated tracker appears in Drive folder `1euxFqdf9FmGEWZmxMDGOwMSrVzisS15g` and a dated TenderBoard raw CSV appears in folder `1TPg44swiYi14FD3rciZx-WNCsFE8Qyve`.
+4. **Add the Anthropic API key** — see *Reviewer credentials* below. Without it the reviewer will not run.
+5. Select `runTestNow` and click **Run** once, then `runReviewNow`.
 
-`setupCloudTask` installs two daily triggers, at approximately 11:00 AM and 11:00 PM Asia/Singapore. GitHub Task 2 publishes TenderBoard at 10:00 AM SGT.
+`setupCloudTask` installs four triggers, all in Google's cloud — collection daily at ~11:00 and ~23:00 SGT, review on Wednesday and Friday at ~12:00 SGT. This PC does not need to be on. GitHub Task 2 publishes TenderBoard at 10:00 AM SGT.
+
+## Reviewer credentials — human-owned, never committed
+
+The reviewer makes a real semantic judgment by calling Claude. **There is deliberately no keyword fallback**: a keyword rule presented as a review looks authoritative and is not, so with no key the reviewer records `NOT RUN`, emails these instructions, and changes nothing.
+
+In the Apps Script editor: **Project Settings → Script Properties → Add script property**
+
+| Property | Value |
+|---|---|
+| `ANTHROPIC_API_KEY` | a key from <https://console.anthropic.com/settings/keys> |
+
+The key lives only in Script Properties. It is not in this repository, the bundle, or the spreadsheet. Cost is roughly a few cents per review run: only rows that are new or whose facts have changed are sent, in batches of 12.
+
+## Who owns which column
+
+| Owner | Columns |
+|---|---|
+| Collector | everything describing the tender — reference, title, agency, category, source, scope, dates, status, link |
+| Reviewer | `TECQ Review`, `Why`, `Reviewed On`, `Review Fingerprint` |
+
+The collector must never erase a reviewer column. Reviews are indexed before each refresh and re-applied afterwards, matched on the normalized reference first, then normalized title paired with agency or closing date. A row rebuilt from scratch, renamed by its source, or upgraded from TenderBoard to GeBIZ keeps its verdict. `verifyTracker` fails the run if the reviewed-row count written does not match the count held.
+
+**Review Fingerprint** is a hash of the facts a verdict depends on. Unchanged rows are never re-reviewed; if a title, category, scope or closing date changes, the fingerprint stops matching and the row is judged again. The column is hidden in the sheet.
+
+## Verdicts
+
+| Verdict | Meaning |
+|---|---|
+| `Look at` | strong fit — custom apps/portals, modernisation, integration/APIs, workflow/case/registry/licensing, AMS, GCC/cloud migration, data/analytics, document management, mobile/field apps, Singpass/digital identity, AI/agentic/RAG/automation, digital-government consultancy or implementation PMO |
+| `Possible` | plausible adjacent ICT work, insufficient detail, partner-dependent scope, generic digital/AI consultancy, or managed infrastructure that may carry application scope |
+| `Not relevant` | construction/facilities, industrial machinery/electrical/plant, AV/PA, catering/cleaning/events, training-only, non-ICT consultancy, parking leases, or pure hardware with no integration or software scope |
+
+The judgment is on the primary deliverable purchased. Words like *system*, *development*, *licence*, *platform*, *maintenance* and *automation* are never sufficient alone. TECQ's known gaps — no proven OT/SCADA or industrial plant integration, no workplace-safety or permit-to-work record — pull a verdict down, not up.
+
+**`Not relevant` rows are never deleted or hidden.** They stay on their EPU tab, greyed, with the reason recorded, so a disagreement is visible and correctable.
+
+## TECQ Shortlist
+
+The first tab. Open `Look at` and `Possible` rows only, `Look at` first, then closing date ascending. It is a **view**, rebuilt from the EPU tabs on every collection and every review — never edit it, and never treat it as a second source of truth.
 
 ## Cloud sequence
 
@@ -64,12 +113,16 @@ Both columns are recomputed for every row on every run, so rows stored under an 
 
 ## Tabs
 
-`EPU/CMP/10`, `EPU/SER/34`, `Closed Tenders`, `Awarded (Intel)`, `Run Ledger`, `Coverage & Method`. All four tender tabs carry `Procurement Category` and `Category Group`.
+`TECQ Shortlist`, `EPU/CMP/10`, `EPU/SER/34`, `Closed Tenders`, `Awarded (Intel)`, `Run Ledger`, `Coverage & Method`. All tender tabs carry `Procurement Category` and `Category Group`.
+
+Rows found in a legacy `Review (Unsure)` tab are re-routed into the two EPU tabs on load. A legacy `TECQ Recommendation` of "Advise to look at" migrates to **`Possible`**, not `Look at` — it was applied by a keyword rule, not a judgment, so it is queued for a real review rather than trusted.
 
 Rows found in a legacy `Review (Unsure)` tab are re-routed into the two EPU tabs on load rather than discarded.
 
 ## Tests
 
-- `node test-core.js` — offline unit tests for routing, category-group derivation, dedup, cadence and date handling.
+- `node test-core.js` — offline unit tests for routing, category groups, dedup, cadence, dates, fingerprints, review carry-over, shortlist ordering and response parsing.
+- `node test-pipeline.js` — end-to-end tests running the real bundle inside `fake-apps-script.js`, a small in-memory stand-in for the Apps Script services. Covers the sheet round-trip, the TenderBoard→GeBIZ upgrade, a full refresh, fingerprint invalidation, closure, legacy migration, and the missing-key path.
+- `node demo-run.js` — prints the whole sequence (collect → review → shortlist → refresh → re-review) with the Anthropic call stubbed. Deterministic and free to run.
 - `node smoke-test.mjs` — online; fetches every configured GeBIZ feed and asserts no item is dropped during routing. Requires outbound access to `www.gebiz.gov.sg`.
 - `node build-bundle.mjs` — regenerates `dist/Code.gs` from `Core.gs` + `Code.gs`. Run this after any edit; `dist/Code.gs` is what gets pasted into Apps Script.

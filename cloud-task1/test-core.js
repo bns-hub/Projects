@@ -84,4 +84,106 @@ assert.equal(context.expandDayMonth('03 Sep', new Date('2026-08-30T10:00:00+08:0
 assert.equal(context.expandDayMonth('30 Dec', new Date('2026-01-02T10:00:00+08:00'), 'publish'), '30 Dec 2025');
 assert.equal(context.csvToObjects('A,B\n1,2\n', text => text.trim().split(/\n/).map(line => line.split(','))).length, 1);
 
+// ---------------------------------------------------------------------------
+// Reviewer-owned state
+// ---------------------------------------------------------------------------
+
+const tender = (over) => Object.assign({
+  'Tender/Ref No.': 'ABC000ETT26000001', Title: 'Provision of a licensing system',
+  Agency: 'Some Agency', 'Procurement Category': 'IT&Telecommunication ⇒ IT Services & Software Development',
+  'Category Group': 'IT&Telecommunication', Source: 'GeBIZ', 'Scope Summary': '',
+  'Closing Date/Time': '21/09/2026 16:00:00',
+}, over || {});
+
+// A fingerprint changes when, and only when, the facts behind a verdict change.
+const base = tender();
+assert.equal(context.reviewFingerprint(base), context.reviewFingerprint(tender()));
+assert.notEqual(context.reviewFingerprint(base), context.reviewFingerprint(tender({ Title: 'Something else' })));
+assert.notEqual(context.reviewFingerprint(base), context.reviewFingerprint(tender({ 'Scope Summary': 'Now with scope text' })));
+assert.notEqual(context.reviewFingerprint(base), context.reviewFingerprint(tender({ 'Closing Date/Time': '22/09/2026 16:00:00' })));
+// Presentation-only differences must not invalidate a good review.
+assert.equal(context.reviewFingerprint(base), context.reviewFingerprint(tender({ Title: '  Provision of a   licensing system ' })));
+assert.equal(context.reviewFingerprint(base), context.reviewFingerprint(tender({ Agency: 'SOME AGENCY' })));
+
+// An unreviewed row needs review; a reviewed one does not until its facts move.
+assert.equal(context.needsReview(base), true);
+const reviewed = tender({ 'TECQ Review': 'Look at', Why: 'Licensing system.', 'Reviewed On': '2026-09-02 12:00' });
+reviewed['Review Fingerprint'] = context.reviewFingerprint(reviewed);
+assert.equal(context.needsReview(reviewed), false);
+reviewed['Closing Date/Time'] = '30/09/2026 16:00:00';
+assert.equal(context.needsReview(reviewed), true, 'changed facts must invalidate the stored verdict');
+// A junk verdict is not a review.
+assert.equal(context.needsReview(tender({ 'TECQ Review': 'probably?' })), true);
+
+// Reviews are carried across a refresh by reference...
+const stored = tender({ 'TECQ Review': 'Not relevant', Why: 'Air-conditioning works.', 'Reviewed On': '2026-09-02 12:00', 'Review Fingerprint': 'x' });
+let index = context.buildReviewIndex([stored]);
+let fresh = [tender({ Title: 'Title rewritten by the source', Agency: 'Different Agency' })];
+assert.equal(context.applyReviewIndex(index, fresh), 1);
+assert.equal(fresh[0]['TECQ Review'], 'Not relevant');
+assert.equal(fresh[0].Why, 'Air-conditioning works.');
+
+// ...and by title + agency, or title + closing date, when there is no reference.
+const noRef = tender({ 'Tender/Ref No.': '', Source: 'TenderBoard', 'TECQ Review': 'Possible', Why: 'Listing only.' });
+index = context.buildReviewIndex([noRef]);
+const byAgency = [tender({ 'Tender/Ref No.': '', Source: 'TenderBoard', 'Closing Date/Time': 'Unknown' })];
+assert.equal(context.applyReviewIndex(index, byAgency), 1, 'title + agency must carry a review');
+assert.equal(byAgency[0]['TECQ Review'], 'Possible');
+const byClosing = [tender({ 'Tender/Ref No.': '', Source: 'TenderBoard', Agency: 'Renamed In Listing' })];
+assert.equal(context.applyReviewIndex(index, byClosing), 1, 'title + closing date must carry a review');
+// A genuinely different tender must not inherit someone else\'s verdict.
+const unrelated = [tender({ 'Tender/Ref No.': '', Title: 'Totally different tender', Agency: 'Elsewhere', 'Closing Date/Time': '01/01/2027' })];
+assert.equal(context.applyReviewIndex(index, unrelated), 0);
+assert.equal(context.hasReview(unrelated[0]), false);
+// An existing review is never overwritten by the index.
+const alreadyReviewed = [tender({ 'TECQ Review': 'Look at', Why: 'Mine.' })];
+context.applyReviewIndex(context.buildReviewIndex([stored]), alreadyReviewed);
+assert.equal(alreadyReviewed[0].Why, 'Mine.');
+
+// preserveReview copies only non-empty reviewer fields.
+const target = tender();
+context.preserveReview(target, { 'TECQ Review': 'Look at', Why: '', 'Reviewed On': '2026-09-02', 'Review Fingerprint': 'abc' });
+assert.equal(target['TECQ Review'], 'Look at');
+assert.equal(target.Why, undefined, 'a blank field must not clobber');
+
+// Shortlist: Look at first, then closing date ascending; Not relevant excluded.
+const shortlist = context.buildShortlist([
+  tender({ Title: 'P late', 'TECQ Review': 'Possible', 'Closing Date/Time': '30/09/2026 16:00:00' }),
+  tender({ Title: 'Not this', 'TECQ Review': 'Not relevant', 'Closing Date/Time': '01/09/2026 16:00:00' }),
+  tender({ Title: 'L late', 'TECQ Review': 'Look at', 'Closing Date/Time': '25/09/2026 16:00:00' }),
+  tender({ Title: 'Unreviewed', 'Closing Date/Time': '02/09/2026 16:00:00' }),
+  tender({ Title: 'L early', 'TECQ Review': 'Look at', 'Closing Date/Time': '10/09/2026 16:00:00' }),
+  tender({ Title: 'P unknown', 'TECQ Review': 'Possible', 'Closing Date/Time': 'Unknown' }),
+]);
+assert.deepEqual(shortlist.map(r => r.Title), ['L early', 'L late', 'P late', 'P unknown'],
+  'Look at first, then closing date ascending, unknown closing last');
+
+// Verdict normalisation only ever yields one of the three canonical values.
+assert.equal(context.normalizeReviewVerdict('look at'), 'Look at');
+assert.equal(context.normalizeReviewVerdict('Possible'), 'Possible');
+assert.equal(context.normalizeReviewVerdict('NOT RELEVANT'), 'Not relevant');
+assert.equal(context.normalizeReviewVerdict('probably relevant'), '');
+assert.equal(context.normalizeReviewVerdict(''), '');
+
+// Response parsing: bare array, fenced, and prose-wrapped all work.
+const good = '[{"id":1,"verdict":"Look at","why":"Licensing system build."},{"id":2,"verdict":"Not relevant","why":"Catering."}]';
+let parsed = context.parseReviewResponse(good, 2);
+assert.equal(parsed[1].verdict, 'Look at');
+assert.equal(parsed[2].verdict, 'Not relevant');
+assert.equal(Object.keys(context.parseReviewResponse('```json\n' + good + '\n```', 2)).length, 2);
+assert.equal(Object.keys(context.parseReviewResponse('Here you go:\n' + good, 2)).length, 2);
+// Out-of-range ids and unusable verdicts are dropped, never guessed at.
+assert.deepEqual(Object.keys(context.parseReviewResponse('[{"id":9,"verdict":"Look at","why":"x"}]', 2)), []);
+assert.deepEqual(Object.keys(context.parseReviewResponse('[{"id":1,"verdict":"dunno","why":"x"}]', 2)), []);
+assert.throws(() => context.parseReviewResponse('I could not do that', 2), /no JSON array/);
+
+// The prompt must carry the evidence the judgment depends on, and say plainly
+// when there is none — that is what separates Possible from Not relevant.
+const prompt = context.buildReviewPrompt([tender({ Title: 'Case management portal' }), tender({ Source: 'TenderBoard', 'Scope Summary': '' })]);
+assert.ok(prompt.includes('Case management portal'));
+assert.ok(prompt.includes('IT&Telecommunication ⇒ IT Services & Software Development'));
+assert.ok(prompt.includes('no scope text available'));
+assert.ok(context.reviewSystemPrompt().includes('KAIZEN'));
+assert.ok(context.reviewSystemPrompt().includes('permit-to-work'));
+
 console.log('Core tests passed');
