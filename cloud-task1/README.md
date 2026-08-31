@@ -39,7 +39,11 @@ If capture fails, `runNow` stops and does not review — there would be nothing 
 
 Review is semantic judgment, so it needs a model. There are two places it can run, and Apps Script picks based on whether a key is present.
 
-**Default — outside Apps Script (no API key).** A scheduled Claude Routine fires Wednesday and Friday at 12:00 SGT, reads the newest tracker from the Drive folder, judges every open row against the criteria below, and writes a dated `TECQ Shortlist YYYY-MM-DD` sheet into the same folder. `setupCloudTask` installs no review triggers in this mode, and `runNow` reports review as `Skipped — review runs outside Apps Script`. The tracker's `TECQ Review` columns stay empty; the shortlist sheet is the output.
+**Default — outside Apps Script (no API key).** A scheduled Claude Routine fires Wednesday and Friday at 12:00 SGT, reads the newest tracker from the Drive folder, judges every open row whose `TECQ Review` is still empty, and writes `TECQ_REVIEWS.csv` back into the same folder. The collector merges that file into the tracker's own `TECQ Review` / `Why` columns on its next run, so verdicts land in the tracker exactly as they would with a key — the review just happens elsewhere.
+
+`setupCloudTask` installs no review triggers in this mode, and `runNow` reports review as `Skipped — review runs outside Apps Script`.
+
+The merge **fills blanks only**. A row that already carries a verdict — judged earlier, or corrected by hand in the sheet — is never touched, and the reviewer is told to skip those rows too, so it does not spend tokens re-judging them. Each filled row is fingerprinted on the way in, so it is not queued again unless its facts change.
 
 **Optional — inside Apps Script (with an API key).** Set `ANTHROPIC_API_KEY` under **Project Settings → Script Properties** (a key from <https://console.anthropic.com/settings/keys>). `setupCloudTask` then installs the Wednesday/Friday review triggers, and verdicts are written back into the tracker's own `TECQ Review` / `Why` columns, so they persist per row and drive the built-in `TECQ Shortlist` tab. Roughly cents per run: only new or changed rows are sent, batched 12 at a time.
 
@@ -103,6 +107,14 @@ A confirmed feed that breaks is reported as an error; an unconfirmed name that f
 Run by hand from the editor when a category is missing. It fetches every page in `CONFIG.feedIndexProbeUrls` and writes `GEBIZ_FEED_INDEX.txt` into the tracker folder listing, per page, the HTTP status, any `*-CREATE_BO_FEED.xml` filenames, any link mentioning rss/feed/xml, and any `<option>` labels (the category dropdown). Pin whatever it finds into `CONFIG.feeds`. It only fetches; it never writes to a tracker.
 
 As of 31 Aug 2026 the categories `IT&Telecommunication => Telecommunication` and `IT&Telecommunication => Others` are still not being fetched: neither is a working filename, thirteen guessed spellings all failed, and scraping the index pages found no feed links.
+
+## TECQ_REVIEWS.csv
+
+Written by the external reviewer, read by the collector. Columns:
+
+`Tender/Ref No.,Title,Agency,Closing Date/Time,TECQ Review,Why,Reviewed On`
+
+Only `Title` and a valid `TECQ Review` (`Look at` / `Possible` / `Not relevant`) are required; the other identity columns improve matching, which uses the same rules as review carry-over — normalized reference first, then normalized title with agency or closing date. Unrecognised verdicts are ignored rather than guessed at. You can edit or hand-write this file yourself; it is a plain CSV.
 
 ## MANUAL_TENDERS backfill
 

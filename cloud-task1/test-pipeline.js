@@ -237,4 +237,36 @@ console.log('\n8. runNow captures, and defers review when there is no key');
   });
 }
 
+console.log('\n9. External verdicts fill blanks only, never overwrite');
+{
+  const env = createEnvironment();
+  const index = env.buildReviewIndex([
+    { Title: 'Provision of a licensing system', Agency: 'Some Agency', 'Tender/Ref No.': 'ABC000ETT26000001',
+      'TECQ Review': 'Look at', Why: 'Licensing system build.', 'Reviewed On': '2026-09-02 12:05' },
+    { Title: 'Already judged by hand', Agency: 'Some Agency', 'Tender/Ref No.': 'HAND-1',
+      'TECQ Review': 'Not relevant', Why: 'Reviewer disagrees.', 'Reviewed On': '2026-09-02 12:05' },
+  ]);
+  const rows = [
+    openRow({}),
+    openRow({ 'Tender/Ref No.': 'HAND-1', Title: 'Already judged by hand',
+      'TECQ Review': 'Look at', Why: 'Benson corrected this by hand.', 'Reviewed On': '2026-09-01 09:00' }),
+    openRow({ 'Tender/Ref No.': 'UNSEEN', Title: 'Not in the CSV at all' }),
+  ];
+  const applied = env.applyExternalReviews(index, rows);
+
+  check('a blank row is filled from the CSV', () => {
+    assert.equal(rows[0]['TECQ Review'], 'Look at');
+    assert.equal(rows[0].Why, 'Licensing system build.');
+  });
+  check('a row that already has a verdict is left untouched', () => {
+    assert.equal(rows[1]['TECQ Review'], 'Look at');
+    assert.equal(rows[1].Why, 'Benson corrected this by hand.');
+  });
+  check('a row the CSV does not mention stays blank', () => assert.equal(env.hasReview(rows[2]), false));
+  check('only the blank row counted as applied', () => assert.equal(applied, 1));
+  check('the filled row is fingerprinted, so it is not queued again', () => {
+    assert.equal(env.needsReview(rows[0]), false);
+  });
+}
+
 console.log(`\nAll ${checks} pipeline checks passed`);

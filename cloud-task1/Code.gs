@@ -112,6 +112,10 @@ const CONFIG = Object.freeze({
   // single failed run can no longer drop a whole day of tenders on the floor.
   runHours: [11, 23],
   manualFile: 'MANUAL_TENDERS',
+  // Verdicts produced by the scheduled review that runs outside Apps Script.
+  // A plain CSV, because a Claude session can create a Drive file but cannot
+  // write cells inside an existing spreadsheet — Apps Script does that part.
+  reviewFile: 'TECQ_REVIEWS.csv',
   // One permanent tracker, updated in place. Its Drive id is remembered in a
   // script property so a rename can never fork it into two files.
   trackerName: 'GeBIZ Tender Tracker — Current',
@@ -433,7 +437,7 @@ function runDailyTracker(forceRun) {
   if (!lock.tryLock(1000)) return 'Skipped: another run is active.';
   const run = {
     errors: [], notes: [], newGebiz: 0, newTb: 0, newManual: 0, manualPatched: 0, moved: 0, upgrades: 0,
-    reviewsRestored: 0, trackerUrl: '',
+    reviewsRestored: 0, reviewsApplied: 0, reviewFileStatus: '', trackerUrl: '',
     tbArchive: '', tbStatus: '', gebizStatus: 'OK', manualStatus: 'No MANUAL_TENDERS file.',
     feedCounts: [], feedsUnavailable: [], feedsFailed: [], feedsDiscovered: [],
   };
@@ -462,6 +466,9 @@ function runDailyTracker(forceRun) {
     updateLedger(state, now, run);
 
     run.reviewsRestored = applyReviewIndex(reviewIndex, state.active.concat(state.closed));
+    // Verdicts from the external reviewer are applied last, so a newer judgment
+    // wins over whatever the row was carrying.
+    run.reviewsApplied = applyExternalReviews(fetchExternalReviews(run, trackerFolder), state.active);
     PropertiesService.getScriptProperties().setProperty('lastCollectionAt', now.toISOString());
     writeTracker(output, state, run, cadence);
     SpreadsheetApp.flush();
@@ -687,6 +694,26 @@ function fetchManual(run, folder) {
   }
 }
 
+// Read verdicts left in the folder by the external reviewer. Columns:
+// Tender/Ref No., Title, Agency, Closing Date/Time, TECQ Review, Why, Reviewed On.
+// Only Title and TECQ Review are strictly required; the rest improve matching.
+function fetchExternalReviews(run, folder) {
+  const files = folder.getFilesByName(CONFIG.reviewFile);
+  if (!files.hasNext()) { run.reviewFileStatus = `No ${CONFIG.reviewFile} in the folder.`; return {}; }
+  try {
+    const rows = csvToObjects(files.next().getBlob().getDataAsString(), text => Utilities.parseCsv(text))
+      .filter(row => cleanText(row.Title) && normalizeReviewVerdict(row['TECQ Review']));
+    run.reviewFileStatus = `OK — ${rows.length} verdict(s) read from ${CONFIG.reviewFile}`;
+    return buildReviewIndex(rows.map(row => Object.assign({}, row, {
+      'TECQ Review': normalizeReviewVerdict(row['TECQ Review']),
+    })));
+  } catch (error) {
+    run.reviewFileStatus = `FAILED — ${briefError(error)}`;
+    run.errors.push(`${CONFIG.reviewFile}: ${briefError(error)}`);
+    return {};
+  }
+}
+
 function loadState(ss) {
   return {
     active: readObjects(ss, 'EPU/CMP/10').map(r => (r._bucket = 'EPU/CMP/10', r))
@@ -874,7 +901,8 @@ function writeTracker(ss, state, run, cadence) {
     `Notes: ${run.notes.join(' | ') || 'none'}`,
     `Tracker (permanent): ${ss.getUrl()}`,
     `Last collection: ${scriptProperty('lastCollectionAt') || 'never'} | Last review: ${scriptProperty('lastReviewAt') || 'never'}`,
-    `Review: ${scriptProperty('lastReviewStatus') || 'not yet run'}`,
+    `Review: ${scriptProperty('lastReviewStatus') || 'handled outside Apps Script'}`,
+    `External verdicts (${CONFIG.reviewFile}): ${run.reviewFileStatus} | applied to ${run.reviewsApplied} row(s) this run`,
     `Reviewed: ${countReviews(cmp.concat(ser))} of ${cmp.length + ser.length} open rows | awaiting review ${cmp.concat(ser).filter(needsReview).length} | reviews carried across this refresh ${run.reviewsRestored}`,
     `TECQ Shortlist: ${run.shortlistCount} open row(s) marked ${REVIEW_LOOK} or ${REVIEW_POSSIBLE}`,
     `Friday snapshot: ${scriptProperty('lastSnapshot') || 'none yet'}`,
@@ -978,7 +1006,7 @@ function buildSummary(file, state, run) {
     `GeBIZ new: ${run.newGebiz} | TenderBoard new: ${run.newTb} | Manual backfill new: ${run.newManual}`,
     `Open totals: EPU/CMP/10 ${state.active.filter(r => r._bucket === 'EPU/CMP/10').length} | EPU/SER/34 ${state.active.filter(r => r._bucket === 'EPU/SER/34').length}`,
     `Moved closed: ${run.moved} | Awarded retained: ${state.awards.length}`,
-    `Shortlist: ${run.shortlistCount} | reviews carried across: ${run.reviewsRestored}`,
+    `Shortlist: ${run.shortlistCount} | reviews carried across: ${run.reviewsRestored} | external verdicts applied: ${run.reviewsApplied}`,
     `GeBIZ: ${run.gebizStatus}`,
     `GeBIZ feeds unavailable: ${run.feedsUnavailable.join('; ') || 'none'}`,
     `TenderBoard archive: ${run.tbArchive || 'not created'}`,

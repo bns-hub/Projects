@@ -282,6 +282,27 @@ function needsReview(row) {
   return cleanText(row['Review Fingerprint']) !== reviewFingerprint(row);
 }
 
+// Reviews produced outside Apps Script arrive as a CSV and fill in blanks only.
+// A row that already carries a verdict is left exactly as it is — a judgment
+// already recorded, or corrected by hand, is never overwritten by a later run.
+// The fingerprint is stamped on the rows it does fill, so they are not requeued.
+function applyExternalReviews(index, rows) {
+  let applied = 0;
+  (rows || []).forEach(row => {
+    if (hasReview(row)) return;
+    const key = reviewKeys(row).find(candidate => index[candidate]);
+    if (!key) return;
+    const verdict = normalizeReviewVerdict(index[key]['TECQ Review']);
+    if (!verdict) return;
+    row['TECQ Review'] = verdict;
+    row.Why = cleanText(index[key].Why);
+    row['Reviewed On'] = cleanText(index[key]['Reviewed On']);
+    row['Review Fingerprint'] = reviewFingerprint(row);
+    applied += 1;
+  });
+  return applied;
+}
+
 // The shortlist is a view over the open rows, never a second source of truth.
 function buildShortlist(rows) {
   return (rows || [])
