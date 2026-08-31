@@ -108,9 +108,9 @@ Run by hand from the editor when a category is missing. It fetches every page in
 
 As of 31 Aug 2026 the categories `IT&Telecommunication => Telecommunication` and `IT&Telecommunication => Others` are still not being fetched: neither is a working filename, thirteen guessed spellings all failed, and scraping the index pages found no feed links.
 
-## TECQ_REVIEWS.csv
+## TECQ_REVIEWS
 
-Written by the external reviewer, read by the collector. Columns:
+Written by the external reviewer, read by the collector. Each review run drops a **new dated file**, `TECQ_REVIEWS_YYYY-MM-DD.csv`, and deletes nothing — the collector reads whichever file whose name starts with `TECQ_REVIEWS` was created most recently, so a fresh drop supersedes the last automatically. That keeps a history of past reviews in the folder and means the scheduled reviewer never needs a destructive permission. Columns:
 
 `Tender/Ref No.,Title,Agency,Closing Date/Time,TECQ Review,Why,Reviewed On`
 
@@ -136,6 +136,8 @@ Every tender row on every tab carries two columns, using GeBIZ's and TenderBoard
 The two sources spell categories differently and had to be reconciled. TenderBoard gives `Group: Sub`. GeBIZ names each RSS feed after the *sub-category alone* (`Servers`, `Professional Services`), so `SUBCATEGORY_GROUPS` in `Core.gs` maps those back to their group — without it, filtering `Category Group = IT&Telecommunication` would return TenderBoard rows only and silently miss every GeBIZ one. Add an entry there whenever a new GeBIZ feed category appears.
 
 Both columns are recomputed for every row on every run, so rows stored under an older scheme are corrected in place rather than left inconsistent. Coverage & Method prints the row count per group.
+
+Every tender tab carries a **filter** over its header row, so columns can be sorted and filtered in the sheet without touching the data. It is rebuilt each run because the row count changes; an empty tab gets none.
 
 ## Tabs
 

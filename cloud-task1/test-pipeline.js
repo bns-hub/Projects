@@ -304,13 +304,22 @@ console.log('\n10. Data files work as CSV or as a Google Sheet');
     assert.equal(asCsv.applyExternalReviews(csvIndex, rows), 1);
   });
 
-  // The reviewer may drop the extension; accept either name.
-  const alias = createEnvironment();
-  alias.__state.trackerFolder.createSheetFile('TECQ_REVIEWS', [header, data]);
-  const runAlias = { reviewFileStatus: '', errors: [] };
-  alias.fetchExternalReviews(runAlias, alias.__state.trackerFolder);
-  check('the file is found with or without the .csv extension', () => {
-    assert.ok(/OK — 1 verdict/.test(runAlias.reviewFileStatus), runAlias.reviewFileStatus);
+  // The reviewer drops a dated file each run and never deletes the old one, so
+  // it needs no destructive permission. The newest must win.
+  const dated = createEnvironment();
+  dated.__state.trackerFolder.createSheetFile('TECQ_REVIEWS_2026-09-02.csv',
+    [header, ['OLD-1', 'Provision of a licensing system', 'Some Agency', '21/09/2026 16:00:00',
+      'Not relevant', 'Stale verdict from the older drop.', '2026-09-02 12:05']]);
+  dated.__state.trackerFolder.createSheetFile('TECQ_REVIEWS_2026-09-04.csv', [header, data]);
+  const runDated = { reviewFileStatus: '', errors: [] };
+  const datedIndex = dated.fetchExternalReviews(runDated, dated.__state.trackerFolder);
+  check('the newest dated review file is the one used', () => {
+    assert.ok(/TECQ_REVIEWS_2026-09-04/.test(runDated.reviewFileStatus), runDated.reviewFileStatus);
+  });
+  check('and the superseded drop is ignored, not merged', () => {
+    const rows = [openRow({})];
+    dated.applyExternalReviews(datedIndex, rows);
+    assert.equal(rows[0]['TECQ Review'], 'Look at');
   });
 
   // MANUAL_TENDERS has the same problem and the same fix.
@@ -324,6 +333,28 @@ console.log('\n10. Data files work as CSV or as a Google Sheet');
     assert.equal(manualRows.length, 1);
     assert.equal(manualRows[0].Title, 'Mobile data plan tender');
     assert.equal(manualRows[0]['Category Group'], 'IT&Telecommunication');
+  });
+}
+
+console.log('\n11. Tender tabs carry a filter for sorting');
+{
+  const env = createEnvironment();
+  const ss = env.SpreadsheetApp.openById('filter-test');
+  env.writeTable(ss, 'EPU/CMP/10', env.openHeaders(), [openRow({}), openRow({ 'Tender/Ref No.': 'B2' })]);
+
+  check('a filter is created over the header row and data', () => {
+    const filter = ss.getSheetByName('EPU/CMP/10').getFilter();
+    assert.notEqual(filter, null);
+    assert.deepEqual(filter.range, [1, 1, 3, env.openHeaders().length]);
+  });
+  check('rewriting the tab replaces the filter rather than failing', () => {
+    env.writeTable(ss, 'EPU/CMP/10', env.openHeaders(), [openRow({})]);
+    const filter = ss.getSheetByName('EPU/CMP/10').getFilter();
+    assert.deepEqual(filter.range, [1, 1, 2, env.openHeaders().length]);
+  });
+  check('an empty tab is left without a filter, not broken', () => {
+    env.writeTable(ss, 'EPU/SER/34', env.openHeaders(), []);
+    assert.equal(ss.getSheetByName('EPU/SER/34').getFilter(), null);
   });
 }
 

@@ -41,6 +41,11 @@ class FakeRange {
   setFontFamily() { return this; } setFontSize() { return this; } setWrap() { return this; }
   setBorder() { return this; } setFontWeight() { return this; } setBackground() { return this; }
   setFontColor() { return this; }
+  createFilter() {
+    if (this.sheet.filter) throw new Error('a sheet may only have one filter');
+    this.sheet.filter = { range: [this.row, this.col, this.rows, this.cols], remove: () => { this.sheet.filter = null; } };
+    return this.sheet.filter;
+  }
 }
 
 class FakeSheet {
@@ -55,6 +60,7 @@ class FakeSheet {
   autoResizeColumns() { return this; }
   setColumnWidth() { return this; }
   hideColumns(col) { this.hidden.push(col); return this; }
+  getFilter() { return this.filter || null; }
 }
 
 class FakeSpreadsheet {
@@ -75,11 +81,13 @@ function createEnvironment(options) {
   const fetchHandler = opts.fetch || (() => ({ code: 404, body: '' }));
   const mails = [];
 
+  let fileClock = 0;
   const makeFile = (id, name, spreadsheet, mimeType) => {
+    const created = new Date(Date.parse('2026-08-31T00:00:00Z') + (fileClock += 1000));
     const file = {
       getId: () => id, getName: () => name, getUrl: () => `https://drive.google.com/file/d/${id}`,
       getMimeType: () => mimeType || (spreadsheet ? 'sheets' : 'text/csv'),
-      isTrashed: () => false, getDateCreated: () => new Date('2026-08-31T00:00:00Z'),
+      isTrashed: () => false, getDateCreated: () => created,
       getBlob: () => ({ getDataAsString: () => (opts.textFiles || {})[name] || '' }),
       setContent: () => file,
       makeCopy: (newName, folder) => {
@@ -106,6 +114,7 @@ function createEnvironment(options) {
       _files: [], _folders: [], getId: () => id, getName: () => name,
       getFilesByName(wanted) { return iterator(this._files.filter(f => f.getName() === wanted)); },
       getFilesByType() { return iterator(this._files); },
+      getFiles() { return iterator(this._files); },
       getFoldersByName(wanted) { return iterator(this._folders.filter(f => f.getName() === wanted)); },
       createFolder(childName) { const child = makeFolder(`${id}-${childName}`, childName); this._folders.push(child); return child; },
       createFile(fileName, content) {

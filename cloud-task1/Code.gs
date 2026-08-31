@@ -115,8 +115,10 @@ const CONFIG = Object.freeze({
   // Verdicts produced by the scheduled review that runs outside Apps Script.
   // A plain CSV, because a Claude session can create a Drive file but cannot
   // write cells inside an existing spreadsheet — Apps Script does that part.
-  reviewFile: 'TECQ_REVIEWS.csv',
-  reviewFileAliases: ['TECQ_REVIEWS.csv', 'TECQ_REVIEWS'],
+  // Any file whose name starts with this is a review drop. The newest wins, so
+  // the reviewer can write a fresh dated file each run and never has to delete
+  // anything — a scheduled job should not need destructive permissions.
+  reviewFile: 'TECQ_REVIEWS',
   manualFileAliases: ['MANUAL_TENDERS', 'MANUAL_TENDERS.csv'],
   // One permanent tracker, updated in place. Its Drive id is remembered in a
   // script property so a rename can never fork it into two files.
@@ -720,13 +722,27 @@ function findByAnyName(folder, names) {
   return null;
 }
 
+// Newest file whose name starts with the prefix. Lets each review run drop a
+// dated file rather than replacing one, so nothing is ever deleted and the
+// review history stays in the folder.
+function findNewestByPrefix(folder, prefix) {
+  const files = folder.getFiles();
+  let newest = null;
+  while (files.hasNext()) {
+    const file = files.next();
+    if (file.getName().indexOf(prefix) !== 0) continue;
+    if (!newest || file.getDateCreated() > newest.getDateCreated()) newest = file;
+  }
+  return newest;
+}
+
 function fetchExternalReviews(run, folder) {
-  const file = findByAnyName(folder, CONFIG.reviewFileAliases);
-  if (!file) { run.reviewFileStatus = `No ${CONFIG.reviewFile} in the folder.`; return {}; }
+  const file = findNewestByPrefix(folder, CONFIG.reviewFile);
+  if (!file) { run.reviewFileStatus = `No ${CONFIG.reviewFile}* file in the folder.`; return {}; }
   try {
     const rows = readTabularRows(file)
       .filter(row => cleanText(row.Title) && normalizeReviewVerdict(row['TECQ Review']));
-    run.reviewFileStatus = `OK — ${rows.length} verdict(s) read from ${CONFIG.reviewFile}`;
+    run.reviewFileStatus = `OK — ${rows.length} verdict(s) read from ${file.getName()}`;
     return buildReviewIndex(rows.map(row => Object.assign({}, row, {
       'TECQ Review': normalizeReviewVerdict(row['TECQ Review']),
     })));
@@ -1000,6 +1016,18 @@ function writeTable(ss, name, headers, rows, emptyMessage) {
       sheet.getRange(sheetRow, linkCol).setFormula(`=HYPERLINK("${String(row.Link).replace(/"/g, '""')}","${label}")`);
     }
   });
+  // A filter on the header row, so columns can be sorted and filtered in the
+  // sheet without touching the data. A sheet holds at most one, and the range
+  // changes every run, so the old one is removed first.
+  if (headers.length > 1) {
+    try {
+      const existing = sheet.getFilter();
+      if (existing) existing.remove();
+      if (sheet.getLastRow() > 1) sheet.getRange(1, 1, sheet.getLastRow(), headers.length).createFilter();
+    } catch (_) {
+      // A filter is a convenience; never fail a run over one.
+    }
+  }
   sheet.autoResizeColumns(1, headers.length);
   const scopeCol = headers.indexOf('Scope Summary') + 1;
   if (scopeCol) sheet.setColumnWidth(scopeCol, 420);
