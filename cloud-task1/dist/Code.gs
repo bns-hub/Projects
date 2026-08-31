@@ -116,6 +116,8 @@ const CONFIG = Object.freeze({
   // A plain CSV, because a Claude session can create a Drive file but cannot
   // write cells inside an existing spreadsheet — Apps Script does that part.
   reviewFile: 'TECQ_REVIEWS.csv',
+  reviewFileAliases: ['TECQ_REVIEWS.csv', 'TECQ_REVIEWS'],
+  manualFileAliases: ['MANUAL_TENDERS', 'MANUAL_TENDERS.csv'],
   // One permanent tracker, updated in place. Its Drive id is remembered in a
   // script property so a rename can never fork it into two files.
   trackerName: 'GeBIZ Tender Tracker — Current',
@@ -663,10 +665,10 @@ function fetchTenderBoard(run, archiveFolder, now) {
 // is otherwise unrecoverable. Rows are deduplicated like any other candidate,
 // so a manual row is harmless once the real feed catches up with it.
 function fetchManual(run, folder) {
-  const files = folder.getFilesByName(CONFIG.manualFile);
-  if (!files.hasNext()) return [];
+  const file = findByAnyName(folder, CONFIG.manualFileAliases);
+  if (!file) return [];
   try {
-    const rows = csvToObjects(files.next().getBlob().getDataAsString(), text => Utilities.parseCsv(text)).map(source => {
+    const rows = readTabularRows(file).map(source => {
       const row = Object.assign({}, source);
       if (!row.Title) return null;
       const bucketHint = cleanText(row.Bucket);
@@ -694,14 +696,35 @@ function fetchManual(run, folder) {
   }
 }
 
+// A data file in Drive can be a plain CSV or a Google Sheet: Drive converts on
+// upload unless told not to, and opening a CSV in Sheets converts it as well.
+// getBlob() on a Google Sheet returns a PDF export rather than the data, so the
+// two cases have to be read differently or the rows come back as garbage.
+function readTabularRows(file) {
+  if (file.getMimeType() === MimeType.GOOGLE_SHEETS) {
+    const sheet = SpreadsheetApp.openById(file.getId()).getSheets()[0];
+    if (!sheet || sheet.getLastRow() < 2) return [];
+    return gridToObjects(sheet.getDataRange().getDisplayValues());
+  }
+  return csvToObjects(file.getBlob().getDataAsString(), text => Utilities.parseCsv(text));
+}
+
 // Read verdicts left in the folder by the external reviewer. Columns:
 // Tender/Ref No., Title, Agency, Closing Date/Time, TECQ Review, Why, Reviewed On.
 // Only Title and TECQ Review are strictly required; the rest improve matching.
+function findByAnyName(folder, names) {
+  for (let index = 0; index < names.length; index += 1) {
+    const files = folder.getFilesByName(names[index]);
+    if (files.hasNext()) return files.next();
+  }
+  return null;
+}
+
 function fetchExternalReviews(run, folder) {
-  const files = folder.getFilesByName(CONFIG.reviewFile);
-  if (!files.hasNext()) { run.reviewFileStatus = `No ${CONFIG.reviewFile} in the folder.`; return {}; }
+  const file = findByAnyName(folder, CONFIG.reviewFileAliases);
+  if (!file) { run.reviewFileStatus = `No ${CONFIG.reviewFile} in the folder.`; return {}; }
   try {
-    const rows = csvToObjects(files.next().getBlob().getDataAsString(), text => Utilities.parseCsv(text))
+    const rows = readTabularRows(file)
       .filter(row => cleanText(row.Title) && normalizeReviewVerdict(row['TECQ Review']));
     run.reviewFileStatus = `OK — ${rows.length} verdict(s) read from ${CONFIG.reviewFile}`;
     return buildReviewIndex(rows.map(row => Object.assign({}, row, {
@@ -1179,15 +1202,20 @@ function feedCategoryName(filename) {
   return cleanText(name.replace(/_/g, ' '));
 }
 
-function csvToObjects(csvText, parser) {
-  const grid = parser(csvText);
-  if (!grid.length) return [];
+// Header row plus data rows to objects. Shared by the CSV and Google Sheets
+// readers, so a data file behaves the same whichever form it is stored in.
+function gridToObjects(grid) {
+  if (!grid || !grid.length) return [];
   const headers = grid[0].map(cleanText);
   return grid.slice(1).filter(row => row.some(cell => cleanText(cell))).map(row => {
     const object = {};
-    headers.forEach((header, index) => object[header] = cleanText(row[index]));
+    headers.forEach((header, index) => { if (header) object[header] = cleanText(row[index]); });
     return object;
   });
+}
+
+function csvToObjects(csvText, parser) {
+  return gridToObjects(parser(csvText));
 }
 
 // ---------------------------------------------------------------------------

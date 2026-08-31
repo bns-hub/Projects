@@ -269,4 +269,62 @@ console.log('\n9. External verdicts fill blanks only, never overwrite');
   });
 }
 
+console.log('\n10. Data files work as CSV or as a Google Sheet');
+{
+  const header = ['Tender/Ref No.', 'Title', 'Agency', 'Closing Date/Time', 'TECQ Review', 'Why', 'Reviewed On'];
+  const data = ['ABC000ETT26000001', 'Provision of a licensing system', 'Some Agency',
+    '21/09/2026 16:00:00', 'Look at', 'Licensing system build.', '2026-09-02 12:05'];
+
+  // Drive converts an uploaded CSV to a Google Sheet unless told not to, and
+  // getBlob on a Sheet returns a PDF — the case that silently broke the read.
+  const asSheet = createEnvironment();
+  asSheet.__state.trackerFolder.createSheetFile('TECQ_REVIEWS.csv', [header, data]);
+  const runSheet = { reviewFileStatus: '', errors: [] };
+  const sheetIndex = asSheet.fetchExternalReviews(runSheet, asSheet.__state.trackerFolder);
+
+  check('a Google Sheet data file is read, not parsed as a PDF', () => {
+    assert.ok(/OK — 1 verdict/.test(runSheet.reviewFileStatus), runSheet.reviewFileStatus);
+    assert.equal(runSheet.errors.length, 0);
+  });
+  check('and its verdict applies to a matching row', () => {
+    const rows = [openRow({})];
+    assert.equal(asSheet.applyExternalReviews(sheetIndex, rows), 1);
+    assert.equal(rows[0]['TECQ Review'], 'Look at');
+  });
+
+  // The plain-CSV form must keep working too.
+  const asCsv = createEnvironment();
+  const csv = [header, data].map(line => line.map(c => `"${c}"`).join(',')).join('\n');
+  asCsv.__state.trackerFolder.createFile('TECQ_REVIEWS.csv', csv);
+  const runCsv = { reviewFileStatus: '', errors: [] };
+  const csvIndex = asCsv.fetchExternalReviews(runCsv, asCsv.__state.trackerFolder);
+  check('a plain CSV data file still works', () => {
+    assert.ok(/OK — 1 verdict/.test(runCsv.reviewFileStatus), runCsv.reviewFileStatus);
+    const rows = [openRow({})];
+    assert.equal(asCsv.applyExternalReviews(csvIndex, rows), 1);
+  });
+
+  // The reviewer may drop the extension; accept either name.
+  const alias = createEnvironment();
+  alias.__state.trackerFolder.createSheetFile('TECQ_REVIEWS', [header, data]);
+  const runAlias = { reviewFileStatus: '', errors: [] };
+  alias.fetchExternalReviews(runAlias, alias.__state.trackerFolder);
+  check('the file is found with or without the .csv extension', () => {
+    assert.ok(/OK — 1 verdict/.test(runAlias.reviewFileStatus), runAlias.reviewFileStatus);
+  });
+
+  // MANUAL_TENDERS has the same problem and the same fix.
+  const manual = createEnvironment();
+  manual.__state.trackerFolder.createSheetFile('MANUAL_TENDERS',
+    [['Tender/Ref No.', 'Title', 'Agency', 'Procurement Category', 'Source', 'Closing Date/Time'],
+     ['NEA000ETT26000085', 'Mobile data plan tender', 'NEA', 'IT&Telecommunication ⇒ Others', 'GeBIZ', '21/09/2026 16:00:00']]);
+  const runManual = { manualStatus: '', errors: [] };
+  const manualRows = manual.fetchManual(runManual, manual.__state.trackerFolder);
+  check('MANUAL_TENDERS stored as a Google Sheet is read correctly', () => {
+    assert.equal(manualRows.length, 1);
+    assert.equal(manualRows[0].Title, 'Mobile data plan tender');
+    assert.equal(manualRows[0]['Category Group'], 'IT&Telecommunication');
+  });
+}
+
 console.log(`\nAll ${checks} pipeline checks passed`);

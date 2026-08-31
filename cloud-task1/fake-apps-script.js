@@ -75,9 +75,10 @@ function createEnvironment(options) {
   const fetchHandler = opts.fetch || (() => ({ code: 404, body: '' }));
   const mails = [];
 
-  const makeFile = (id, name, spreadsheet) => {
+  const makeFile = (id, name, spreadsheet, mimeType) => {
     const file = {
       getId: () => id, getName: () => name, getUrl: () => `https://drive.google.com/file/d/${id}`,
+      getMimeType: () => mimeType || (spreadsheet ? 'sheets' : 'text/csv'),
       isTrashed: () => false, getDateCreated: () => new Date('2026-08-31T00:00:00Z'),
       getBlob: () => ({ getDataAsString: () => (opts.textFiles || {})[name] || '' }),
       setContent: () => file,
@@ -108,8 +109,21 @@ function createEnvironment(options) {
       getFoldersByName(wanted) { return iterator(this._folders.filter(f => f.getName() === wanted)); },
       createFolder(childName) { const child = makeFolder(`${id}-${childName}`, childName); this._folders.push(child); return child; },
       createFile(fileName, content) {
-        const file = makeFile(`${id}-${fileName}`, fileName, null);
+        const file = makeFile(`${id}-${fileName}`, fileName, null, 'text/csv');
         file.getBlob = () => ({ getDataAsString: () => content });
+        this._files.push(file);
+        return file;
+      },
+      // A data file stored as a Google Sheet rather than a CSV.
+      createSheetFile(fileName, grid) {
+        const sheetId = `${id}-${fileName}-sheet`;
+        const spreadsheet = new FakeSpreadsheet(sheetId);
+        const sheet = spreadsheet.insertSheet('Sheet1');
+        sheet.getRange(1, 1, grid.length, grid[0].length).setValues(grid);
+        spreadsheets[sheetId] = spreadsheet;
+        const file = makeFile(sheetId, fileName, spreadsheet, 'sheets');
+        // getBlob on a real Google Sheet yields a PDF, not the data.
+        file.getBlob = () => ({ getDataAsString: () => '%PDF-1.4 binary garbage' });
         this._files.push(file);
         return file;
       },

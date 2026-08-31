@@ -114,6 +114,8 @@ Written by the external reviewer, read by the collector. Columns:
 
 `Tender/Ref No.,Title,Agency,Closing Date/Time,TECQ Review,Why,Reviewed On`
 
+The file may be stored either as a plain CSV or as a Google Sheet — Drive converts an uploaded CSV to a Sheet unless told not to, and opening one in Sheets converts it too. Both are read correctly, and both `TECQ_REVIEWS.csv` and `TECQ_REVIEWS` are accepted as names. The same applies to `MANUAL_TENDERS`. (`getBlob()` on a Google Sheet returns a PDF export rather than the data, so the two forms are read by different paths.)
+
 Only `Title` and a valid `TECQ Review` (`Look at` / `Possible` / `Not relevant`) are required; the other identity columns improve matching, which uses the same rules as review carry-over — normalized reference first, then normalized title with agency or closing date. Unrecognised verdicts are ignored rather than guessed at. You can edit or hand-write this file yourself; it is a plain CSV.
 
 ## MANUAL_TENDERS backfill

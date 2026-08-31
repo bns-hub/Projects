@@ -162,15 +162,20 @@ function feedCategoryName(filename) {
   return cleanText(name.replace(/_/g, ' '));
 }
 
-function csvToObjects(csvText, parser) {
-  const grid = parser(csvText);
-  if (!grid.length) return [];
+// Header row plus data rows to objects. Shared by the CSV and Google Sheets
+// readers, so a data file behaves the same whichever form it is stored in.
+function gridToObjects(grid) {
+  if (!grid || !grid.length) return [];
   const headers = grid[0].map(cleanText);
   return grid.slice(1).filter(row => row.some(cell => cleanText(cell))).map(row => {
     const object = {};
-    headers.forEach((header, index) => object[header] = cleanText(row[index]));
+    headers.forEach((header, index) => { if (header) object[header] = cleanText(row[index]); });
     return object;
   });
+}
+
+function csvToObjects(csvText, parser) {
+  return gridToObjects(parser(csvText));
 }
 
 // ---------------------------------------------------------------------------
