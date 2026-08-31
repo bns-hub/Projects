@@ -109,6 +109,17 @@ function expandDayMonth(value, referenceDate, kind) {
   return `${String(match[1]).padStart(2, '0')} ${match[2]} ${year}${match[3] || ''}`.trim();
 }
 
+// GeBIZ answers an unknown feed name with HTTP 200 and an HTML error page,
+// not a 404, so the response body is the only reliable check.
+function looksLikeFeed(text) {
+  return /^\s*(?:<\?xml|<rss[\s>]|<feed[\s>])/i.test(String(text || '').slice(0, 500));
+}
+
+// Keep one failure from filling a ledger cell with a stack trace.
+function briefError(error) {
+  return cleanText(String(error)).slice(0, 140);
+}
+
 // Pull every "<Category>-CREATE_BO_FEED.xml" name out of a GeBIZ RSS index page.
 function extractFeedNames(html) {
   const matches = String(html || '').match(/[A-Za-z0-9_%.'()+,&-]+-CREATE_BO_FEED\.xml/g) || [];

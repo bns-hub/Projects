@@ -21,9 +21,12 @@ const CONFIG = Object.freeze({
   // Optional index pages scanned for RSS feed names we do not know about yet.
   // A miss is silent: the fixed list below is always used regardless.
   feedIndexUrls: [
+    'https://www.gebiz.gov.sg/',
     'https://www.gebiz.gov.sg/rss/',
+    'https://www.gebiz.gov.sg/rss.html',
     'https://www.gebiz.gov.sg/ptn/rss/rssFeed.xhtml',
     'https://www.gebiz.gov.sg/ptn/rss/rssFeeds.xhtml',
+    'https://www.gebiz.gov.sg/ptn/opportunity/opportunityListing.xhtml',
   ],
   // Every IT&Telecommunication sub-category plus Services => Professional
   // Services. Previously only five IT sub-categories were fetched, so anything
@@ -157,7 +160,10 @@ function fetchGebiz(run) {
       const code = response.getResponseCode();
       if (code === 404) { run.feedsUnavailable.push(feed.category); return; }
       if (code !== 200) throw new Error(`HTTP ${code}`);
-      const doc = XmlService.parse(response.getContentText());
+      const body = response.getContentText();
+      // Not a feed: GeBIZ does not publish this category. Report it, don't fail.
+      if (!looksLikeFeed(body)) { run.feedsUnavailable.push(feed.category); return; }
+      const doc = XmlService.parse(body);
       const channel = doc.getRootElement().getChild('channel');
       const items = channel ? channel.getChildren('item') : [];
       items.forEach(item => {
@@ -178,7 +184,7 @@ function fetchGebiz(run) {
       });
       run.feedCounts.push(`${feed.category} ${items.length}`);
     } catch (error) {
-      run.feedsFailed.push(`${feed.category}: ${error}`);
+      run.feedsFailed.push(`${feed.category}: ${briefError(error)}`);
     }
   });
   if (run.feedsFailed.length) {
@@ -392,7 +398,7 @@ function writeTracker(ss, state, run, cadence, previousFile) {
     `Run Date: ${Utilities.formatDate(new Date(), CONFIG.timezone, 'dd MMM yyyy, h:mm a')} SGT | Auth Status: PASS | Cadence: ${cadence.directive}`,
     `GeBIZ RSS: ${run.gebizStatus}`,
     `GeBIZ feeds scanned (${run.feedCounts.length}): ${run.feedCounts.join('; ') || 'none'}`,
-    `GeBIZ feeds unavailable (HTTP 404): ${run.feedsUnavailable.join('; ') || 'none'}`,
+    `GeBIZ feeds not published by GeBIZ (404 or non-XML): ${run.feedsUnavailable.join('; ') || 'none'}`,
     `GeBIZ feeds discovered from index: ${run.feedsDiscovered.join('; ') || 'none'}`,
     `TenderBoard: ${run.tbStatus}`,
     `TenderBoard Archive: ${run.tbArchive || 'NOT CREATED'}`,
@@ -580,6 +586,17 @@ function expandDayMonth(value, referenceDate, kind) {
   if (kind === 'publish' && candidate - referenceDate > 2 * 86400000) year -= 1;
   if (kind === 'closing' && referenceDate - candidate > 30 * 86400000) year += 1;
   return `${String(match[1]).padStart(2, '0')} ${match[2]} ${year}${match[3] || ''}`.trim();
+}
+
+// GeBIZ answers an unknown feed name with HTTP 200 and an HTML error page,
+// not a 404, so the response body is the only reliable check.
+function looksLikeFeed(text) {
+  return /^\s*(?:<\?xml|<rss[\s>]|<feed[\s>])/i.test(String(text || '').slice(0, 500));
+}
+
+// Keep one failure from filling a ledger cell with a stack trace.
+function briefError(error) {
+  return cleanText(String(error)).slice(0, 140);
 }
 
 // Pull every "<Category>-CREATE_BO_FEED.xml" name out of a GeBIZ RSS index page.

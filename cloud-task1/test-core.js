@@ -42,6 +42,13 @@ assert.deepEqual(
   ['Others-CREATE_BO_FEED.xml', 'Softwares_%26_Licences-CREATE_BO_FEED.xml']
 );
 assert.equal(context.feedCategoryName('Softwares_%26_Licences-CREATE_BO_FEED.xml'), 'Softwares & Licences');
+
+// GeBIZ answers an unknown feed name with HTTP 200 and an HTML page.
+assert.equal(context.looksLikeFeed('<?xml version="1.0"?><rss><channel/></rss>'), true);
+assert.equal(context.looksLikeFeed('<rss version="2.0">'), true);
+assert.equal(context.looksLikeFeed('<!DOCTYPE html><html><body><img src="x"></body></html>'), false);
+assert.equal(context.looksLikeFeed(''), false);
+assert.equal(context.briefError(new Error('x'.repeat(400))).length, 140);
 assert.equal(context.isDiscoverableFeed('Telecommunication'), true);
 assert.equal(context.isDiscoverableFeed('Catering'), false);
 
