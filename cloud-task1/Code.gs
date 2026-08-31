@@ -5,6 +5,53 @@ function runTestNow() {
   return runDailyTracker(true);
 }
 
+// Diagnostic. Run this by hand when GeBIZ feed names need to be found.
+// It fetches the pages that might link to the RSS feeds and writes everything
+// it can see about them to GEBIZ_FEED_INDEX.txt in the tracker folder, so the
+// real filenames can be read off and pinned into CONFIG.feeds. Fetches only;
+// it never touches the tracker.
+function discoverFeedNames() {
+  const report = [`GeBIZ feed index probe — ${Utilities.formatDate(new Date(), CONFIG.timezone, 'yyyy-MM-dd HH:mm')} SGT`, ''];
+  const found = {};
+
+  CONFIG.feedIndexProbeUrls.forEach(url => {
+    report.push(`--- ${url}`);
+    try {
+      const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true });
+      const code = response.getResponseCode();
+      const body = response.getContentText();
+      report.push(`HTTP ${code}, ${body.length} chars, ${response.getHeaders()['Content-Type'] || 'no content-type'}`);
+      if (code !== 200) { report.push(''); return; }
+
+      extractFeedNames(body).forEach(name => { found[name] = true; report.push(`FEED FILE: ${name}`); });
+
+      // Any link that mentions rss/feed/xml, so a differently-named scheme shows up too.
+      const links = body.match(/(?:href|src|action)\s*=\s*["']([^"']*(?:rss|feed|\.xml)[^"']*)["']/gi) || [];
+      Array.from(new Set(links)).slice(0, 60).forEach(link => report.push(`LINK: ${cleanText(link)}`));
+
+      // Category labels, to compare against the feed filenames.
+      const options = body.match(/<option[^>]*>([^<]{3,60})<\/option>/gi) || [];
+      Array.from(new Set(options)).slice(0, 80).forEach(option => report.push(`OPTION: ${cleanText(option.replace(/<[^>]+>/g, ''))}`));
+
+      if (!links.length && !options.length) report.push('(no rss/feed/xml links and no option labels in the HTML — page is probably script-rendered)');
+    } catch (error) {
+      report.push(`FETCH FAILED: ${briefError(error)}`);
+    }
+    report.push('');
+  });
+
+  const names = Object.keys(found);
+  report.push(`TOTAL DISTINCT FEED FILENAMES FOUND: ${names.length}`);
+  names.forEach(name => report.push(name));
+
+  const folder = DriveApp.getFolderById(CONFIG.trackerFolderId);
+  const existing = folder.getFilesByName('GEBIZ_FEED_INDEX.txt');
+  const text = report.join('\n');
+  if (existing.hasNext()) existing.next().setContent(text);
+  else folder.createFile('GEBIZ_FEED_INDEX.txt', text, MimeType.PLAIN_TEXT);
+  return `Wrote GEBIZ_FEED_INDEX.txt — ${names.length} feed filename(s) found across ${CONFIG.feedIndexProbeUrls.length} pages.`;
+}
+
 const CONFIG = Object.freeze({
   trackerFolderId: '1euxFqdf9FmGEWZmxMDGOwMSrVzisS15g',
   archiveFolderId: '1TPg44swiYi14FD3rciZx-WNCsFE8Qyve',
@@ -24,6 +71,20 @@ const CONFIG = Object.freeze({
   // whatever they list. These are GeBIZ's real RSS/alerts pages. A page that
   // is unreachable or lists nothing is skipped silently; the named feeds below
   // always run regardless.
+  // Wider list, used only by the discoverFeedNames diagnostic.
+  feedIndexProbeUrls: [
+    'https://www.gebiz.gov.sg/business-alerts.html',
+    'https://www.gebiz.gov.sg/scripts/rss/faq.html',
+    'https://www.gebiz.gov.sg/rss-terms-of-use.html',
+    'https://www.gebiz.gov.sg/rss/',
+    'https://www.gebiz.gov.sg/',
+    'https://www.gebiz.gov.sg/faq.html',
+    'https://www.gebiz.gov.sg/announcements.html',
+    'https://www.gebiz.gov.sg/ptn/opportunity/BOListing.xhtml?origin=opportunities',
+    'https://www.gebiz.gov.sg/ptn/opportunity/opportunityListing.xhtml',
+    'https://www.gebiz.gov.sg/sitemap.xml',
+    'https://www.gebiz.gov.sg/robots.txt',
+  ],
   feedIndexUrls: [
     'https://www.gebiz.gov.sg/business-alerts.html',
     'https://www.gebiz.gov.sg/scripts/rss/faq.html',

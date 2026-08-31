@@ -37,6 +37,12 @@ GeBIZ names the feed files itself, so a category can only be fetched if its exac
 
 A confirmed feed that breaks is reported as an error; an unconfirmed name that fails is only reported as a count.
 
+### Finding feed names: `discoverFeedNames`
+
+Run by hand from the editor when a category is missing. It fetches every page in `CONFIG.feedIndexProbeUrls` and writes `GEBIZ_FEED_INDEX.txt` into the tracker folder listing, per page, the HTTP status, any `*-CREATE_BO_FEED.xml` filenames, any link mentioning rss/feed/xml, and any `<option>` labels (the category dropdown). Pin whatever it finds into `CONFIG.feeds`. It only fetches; it never writes to a tracker.
+
+As of 31 Aug 2026 the categories `IT&Telecommunication => Telecommunication` and `IT&Telecommunication => Others` are still not being fetched: neither is a working filename, thirteen guessed spellings all failed, and scraping the index pages found no feed links.
+
 ## MANUAL_TENDERS backfill
 
 GeBIZ RSS only carries about two days of items, so a tender published before the automation's first run — or during an outage longer than two days — can never be re-fetched. Optional plain-CSV file `MANUAL_TENDERS` in the tracker folder covers that gap.
