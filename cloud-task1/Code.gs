@@ -1,3 +1,10 @@
+// Run this one by hand to do a full fetch/merge/publish cycle now.
+// It is deliberately first in the file: the Apps Script editor preselects the
+// first function in the picker, and running a helper by accident is a no-op.
+function runTestNow() {
+  return runDailyTracker(true);
+}
+
 const CONFIG = Object.freeze({
   trackerFolderId: '1euxFqdf9FmGEWZmxMDGOwMSrVzisS15g',
   archiveFolderId: '1TPg44swiYi14FD3rciZx-WNCsFE8Qyve',
@@ -46,10 +53,6 @@ function setupCloudTask() {
     ScriptApp.newTrigger('runDailyTracker').timeBased().atHour(hour).nearMinute(0).everyDays(1).inTimezone(CONFIG.timezone).create();
   });
   return `Cloud triggers installed for approximately ${CONFIG.runHours.join(':00 and ')}:00 SGT.`;
-}
-
-function runTestNow() {
-  return runDailyTracker(true);
 }
 
 function runDailyTracker(forceRun) {
