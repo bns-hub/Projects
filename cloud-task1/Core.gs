@@ -1,4 +1,10 @@
-const TECQ_TAG = 'Advise to look at';
+// Routing keywords for the EPU/SER/34 (professional services) bucket.
+// Everything that does not match routes to EPU/CMP/10. Nothing is ever dropped.
+const SER_PATTERN = /(professional services|consultan|consulting|advisory|\badvisor\b|\bpmo\b)/i;
+
+// Categories worth auto-adopting when a GeBIZ RSS feed is discovered that is not
+// already in CONFIG.feeds. Keeps the flow from silently missing a new category.
+const DISCOVER_PATTERN = /(\bit\b|information technology|software|licence|license|comput|server|notebook|desktop|telecom|digital|\bdata\b|network|professional services|consultan)/i;
 
 function cleanText(value) {
   return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
@@ -25,42 +31,22 @@ function parseGebizDescription(description) {
   };
 }
 
-function classifyTender(row) {
-  const title = cleanText(row.Title || row.title);
+// Top-level procurement group shown in the "Category Group" column.
+// Handles "GeBIZ: X", "TenderBoard: A: B", "A => B" and legacy "A ⇒ B".
+function categoryGroup(row) {
+  const raw = cleanText(row['Procurement Category'] || row.category)
+    .replace(/^(?:GeBIZ|TenderBoard)\s*:\s*/i, '');
+  if (!raw) return 'Not Specified';
+  return cleanText(raw.split(/\s*(?:⇒|=>|:)\s*/)[0]) || 'Not Specified';
+}
+
+// Every captured tender lands in one of the two EPU tabs. There is no
+// relevance filter and no exclusion list: a tender in scope is never dropped.
+function routeBucket(row, fallbackBucket) {
   const category = cleanText(row['Procurement Category'] || row.category);
-  const scope = cleanText(row['Scope Summary'] || row.scope);
-  const titleScope = `${title} ${scope}`.toLowerCase();
-  const text = `${titleScope} ${category}`.toLowerCase();
-
-  const systemSignals = /(software|application|app\b|system|platform|portal|digital|cloud|hosting|data|analytics|dashboard|workflow|case management|registry|licen[cs]|permit|integration|api\b|microservice|moderni[sz]|maintenance|support services|managed application|document management|content management|singpass|digital identity|artificial intelligence|\bai\b|agentic|automation|low.code|enterprise architecture|consultancy|consulting|pmo|roadmap|transformation|development|implementation)/i;
-  const explicitSystem = systemSignals.test(titleScope);
-  const strongBuildSignal = /(develop|implement|integrat|moderni[sz]|application|portal|workflow|case management|registry|licen[cs]ing system)/i.test(titleScope);
-
-  const exclusions = [
-    { number: 1, re: /(penetration test|vulnerability assessment|soc service|siem|ddos|cyber ?security|threat intelligence|security operations)/i },
-    { number: 2, re: /(audio visual|audiovisual|av system|video wall|public address system)/i },
-    { number: 3, re: /(network switch|router|wireless access point|structured cabling|internet service|5g service|network hardware)/i },
-    { number: 4, re: /(training course|workshop|learning camp|e.learning content|trainer|coaching service)/i },
-    { number: 5, re: /(medical equipment|laboratory equipment|industrial machine|printer|photocopier|furniture|vehicle|plant equipment|disposal of equipment)/i },
-    { number: 6, re: /(catering|cleaning service|uniform|construction work|renovation work|landscaping|security guard|event management|travel service|legal service|audit service|recruitment service)/i },
-  ];
-
-  for (const exclusion of exclusions) {
-    if (exclusion.re.test(title) && !strongBuildSignal) {
-      return { relevant: false, review: false, exclusion: exclusion.number, recommendation: '' };
-    }
-  }
-
-  const softwareCategory = /(it services|software development|software)/i.test(category);
-  const professionalCategory = /professional services/i.test(category);
-  const hardwareCategory = /(desktop|notebook|server|computer accessories|hardware)/i.test(category);
-  if (explicitSystem || (softwareCategory && !hardwareCategory)) {
-    return { relevant: true, review: false, exclusion: 0, recommendation: TECQ_TAG };
-  }
-  if (softwareCategory || professionalCategory || hardwareCategory || !category) {
-    return { relevant: true, review: true, exclusion: 0, recommendation: TECQ_TAG };
-  }
-  return { relevant: false, review: false, exclusion: 0, recommendation: '' };
+  if (SER_PATTERN.test(category) || SER_PATTERN.test(categoryGroup(row))) return 'EPU/SER/34';
+  if (fallbackBucket === 'EPU/SER/34' || fallbackBucket === 'EPU/CMP/10') return fallbackBucket;
+  return 'EPU/CMP/10';
 }
 
 function sameTender(a, b) {
@@ -121,6 +107,24 @@ function expandDayMonth(value, referenceDate, kind) {
   if (kind === 'publish' && candidate - referenceDate > 2 * 86400000) year -= 1;
   if (kind === 'closing' && referenceDate - candidate > 30 * 86400000) year += 1;
   return `${String(match[1]).padStart(2, '0')} ${match[2]} ${year}${match[3] || ''}`.trim();
+}
+
+// Pull every "<Category>-CREATE_BO_FEED.xml" name out of a GeBIZ RSS index page.
+function extractFeedNames(html) {
+  const matches = String(html || '').match(/[A-Za-z0-9_%.'()+,&-]+-CREATE_BO_FEED\.xml/g) || [];
+  return Array.from(new Set(matches));
+}
+
+// A discovered feed is adopted only when its category looks in-scope, so
+// index discovery cannot silently pull the whole of GeBIZ into the tracker.
+function isDiscoverableFeed(category) {
+  return DISCOVER_PATTERN.test(cleanText(category));
+}
+
+function feedCategoryName(filename) {
+  let name = String(filename || '').replace(/-CREATE_BO_FEED\.xml$/i, '');
+  try { name = decodeURIComponent(name); } catch (_) {}
+  return cleanText(name.replace(/_/g, ' '));
 }
 
 function csvToObjects(csvText, parser) {

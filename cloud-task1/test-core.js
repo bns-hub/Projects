@@ -13,17 +13,37 @@ const description = context.parseGebizDescription('ITT: X | Published Date: 28/0
 assert.equal(description.agency, 'Central Provident Fund Board');
 assert.equal(description.closing, '22/09/2026 16:00:00');
 
-const fit = context.classifyTender({ Title: 'Development and maintenance of digital licensing portal', 'Procurement Category': 'IT Services & Software Development' });
-assert.equal(fit.relevant, true);
-assert.equal(fit.recommendation, 'Advise to look at');
+// Category Group derivation across every "Procurement Category" shape in play.
+assert.equal(context.categoryGroup({ 'Procurement Category': 'GeBIZ: IT Services & Software Development' }), 'IT Services & Software Development');
+assert.equal(context.categoryGroup({ 'Procurement Category': 'IT&Telecommunication ⇒ IT Services & Software Development' }), 'IT&Telecommunication');
+assert.equal(context.categoryGroup({ 'Procurement Category': 'IT&Telecommunication: Notebooks' }), 'IT&Telecommunication');
+assert.equal(context.categoryGroup({ 'Procurement Category': 'TenderBoard: Event Organising, Food & Beverages: Event Organising' }), 'Event Organising, Food & Beverages');
+assert.equal(context.categoryGroup({ 'Procurement Category': '' }), 'Not Specified');
 
-const cyber = context.classifyTender({ Title: 'Provision of DDoS protection service', 'Procurement Category': 'IT Services & Software Development' });
-assert.equal(cyber.relevant, false);
-assert.equal(cyber.exclusion, 1);
+// Nothing is excluded any more: every tender routes to one of the two EPU tabs.
+const previouslyExcluded = [
+  { Title: 'Provision of DDoS protection service', 'Procurement Category': 'GeBIZ: IT Services & Software Development' },
+  { Title: 'ITQ - PG Office and CSO Printer', 'Procurement Category': 'IT&Telecommunication: Computer Accessories' },
+  { Title: 'TENDER FOR PROVISION OF MOBILE DATA PLAN AND UNIFIED COMMUNICATIONS AS A SERVICE', 'Procurement Category': 'GeBIZ: Others' },
+];
+for (const row of previouslyExcluded) {
+  assert.equal(context.routeBucket(row, 'EPU/CMP/10'), 'EPU/CMP/10');
+}
+assert.equal(context.routeBucket({ Title: 'Provision of catering services', 'Procurement Category': 'GeBIZ: Professional Services' }, 'EPU/SER/34'), 'EPU/SER/34');
+// A professional-services category wins over the feed's own bucket hint.
+assert.equal(context.routeBucket({ 'Procurement Category': 'Services: Professional Services' }, 'EPU/CMP/10'), 'EPU/SER/34');
+// Facilities-management rows are not professional services.
+assert.equal(context.routeBucket({ 'Procurement Category': 'Facilities Management: Management Services' }, 'EPU/CMP/10'), 'EPU/CMP/10');
+// A row with no bucket hint at all still lands somewhere.
+assert.equal(context.routeBucket({ 'Procurement Category': '' }, ''), 'EPU/CMP/10');
 
-const catering = context.classifyTender({ Title: 'Provision of catering services', 'Procurement Category': 'Professional Services' });
-assert.equal(catering.relevant, false);
-assert.equal(catering.exclusion, 6);
+assert.deepEqual(
+  context.extractFeedNames('<a href="/rss/Others-CREATE_BO_FEED.xml">x</a> <a href="/rss/Softwares_%26_Licences-CREATE_BO_FEED.xml">y</a>'),
+  ['Others-CREATE_BO_FEED.xml', 'Softwares_%26_Licences-CREATE_BO_FEED.xml']
+);
+assert.equal(context.feedCategoryName('Softwares_%26_Licences-CREATE_BO_FEED.xml'), 'Softwares & Licences');
+assert.equal(context.isDiscoverableFeed('Telecommunication'), true);
+assert.equal(context.isDiscoverableFeed('Catering'), false);
 
 assert.equal(context.sameTender(
   { 'Tender/Ref No.': 'ABC-123', Title: 'A', Agency: 'X' },

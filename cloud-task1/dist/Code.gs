@@ -1,4 +1,10 @@
-const TECQ_TAG = 'Advise to look at';
+// Routing keywords for the EPU/SER/34 (professional services) bucket.
+// Everything that does not match routes to EPU/CMP/10. Nothing is ever dropped.
+const SER_PATTERN = /(professional services|consultan|consulting|advisory|\badvisor\b|\bpmo\b)/i;
+
+// Categories worth auto-adopting when a GeBIZ RSS feed is discovered that is not
+// already in CONFIG.feeds. Keeps the flow from silently missing a new category.
+const DISCOVER_PATTERN = /(\bit\b|information technology|software|licence|license|comput|server|notebook|desktop|telecom|digital|\bdata\b|network|professional services|consultan)/i;
 
 function cleanText(value) {
   return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
@@ -25,42 +31,22 @@ function parseGebizDescription(description) {
   };
 }
 
-function classifyTender(row) {
-  const title = cleanText(row.Title || row.title);
+// Top-level procurement group shown in the "Category Group" column.
+// Handles "GeBIZ: X", "TenderBoard: A: B", "A => B" and legacy "A ⇒ B".
+function categoryGroup(row) {
+  const raw = cleanText(row['Procurement Category'] || row.category)
+    .replace(/^(?:GeBIZ|TenderBoard)\s*:\s*/i, '');
+  if (!raw) return 'Not Specified';
+  return cleanText(raw.split(/\s*(?:⇒|=>|:)\s*/)[0]) || 'Not Specified';
+}
+
+// Every captured tender lands in one of the two EPU tabs. There is no
+// relevance filter and no exclusion list: a tender in scope is never dropped.
+function routeBucket(row, fallbackBucket) {
   const category = cleanText(row['Procurement Category'] || row.category);
-  const scope = cleanText(row['Scope Summary'] || row.scope);
-  const titleScope = `${title} ${scope}`.toLowerCase();
-  const text = `${titleScope} ${category}`.toLowerCase();
-
-  const systemSignals = /(software|application|app\b|system|platform|portal|digital|cloud|hosting|data|analytics|dashboard|workflow|case management|registry|licen[cs]|permit|integration|api\b|microservice|moderni[sz]|maintenance|support services|managed application|document management|content management|singpass|digital identity|artificial intelligence|\bai\b|agentic|automation|low.code|enterprise architecture|consultancy|consulting|pmo|roadmap|transformation|development|implementation)/i;
-  const explicitSystem = systemSignals.test(titleScope);
-  const strongBuildSignal = /(develop|implement|integrat|moderni[sz]|application|portal|workflow|case management|registry|licen[cs]ing system)/i.test(titleScope);
-
-  const exclusions = [
-    { number: 1, re: /(penetration test|vulnerability assessment|soc service|siem|ddos|cyber ?security|threat intelligence|security operations)/i },
-    { number: 2, re: /(audio visual|audiovisual|av system|video wall|public address system)/i },
-    { number: 3, re: /(network switch|router|wireless access point|structured cabling|internet service|5g service|network hardware)/i },
-    { number: 4, re: /(training course|workshop|learning camp|e.learning content|trainer|coaching service)/i },
-    { number: 5, re: /(medical equipment|laboratory equipment|industrial machine|printer|photocopier|furniture|vehicle|plant equipment|disposal of equipment)/i },
-    { number: 6, re: /(catering|cleaning service|uniform|construction work|renovation work|landscaping|security guard|event management|travel service|legal service|audit service|recruitment service)/i },
-  ];
-
-  for (const exclusion of exclusions) {
-    if (exclusion.re.test(title) && !strongBuildSignal) {
-      return { relevant: false, review: false, exclusion: exclusion.number, recommendation: '' };
-    }
-  }
-
-  const softwareCategory = /(it services|software development|software)/i.test(category);
-  const professionalCategory = /professional services/i.test(category);
-  const hardwareCategory = /(desktop|notebook|server|computer accessories|hardware)/i.test(category);
-  if (explicitSystem || (softwareCategory && !hardwareCategory)) {
-    return { relevant: true, review: false, exclusion: 0, recommendation: TECQ_TAG };
-  }
-  if (softwareCategory || professionalCategory || hardwareCategory || !category) {
-    return { relevant: true, review: true, exclusion: 0, recommendation: TECQ_TAG };
-  }
-  return { relevant: false, review: false, exclusion: 0, recommendation: '' };
+  if (SER_PATTERN.test(category) || SER_PATTERN.test(categoryGroup(row))) return 'EPU/SER/34';
+  if (fallbackBucket === 'EPU/SER/34' || fallbackBucket === 'EPU/CMP/10') return fallbackBucket;
+  return 'EPU/CMP/10';
 }
 
 function sameTender(a, b) {
@@ -123,6 +109,24 @@ function expandDayMonth(value, referenceDate, kind) {
   return `${String(match[1]).padStart(2, '0')} ${match[2]} ${year}${match[3] || ''}`.trim();
 }
 
+// Pull every "<Category>-CREATE_BO_FEED.xml" name out of a GeBIZ RSS index page.
+function extractFeedNames(html) {
+  const matches = String(html || '').match(/[A-Za-z0-9_%.'()+,&-]+-CREATE_BO_FEED\.xml/g) || [];
+  return Array.from(new Set(matches));
+}
+
+// A discovered feed is adopted only when its category looks in-scope, so
+// index discovery cannot silently pull the whole of GeBIZ into the tracker.
+function isDiscoverableFeed(category) {
+  return DISCOVER_PATTERN.test(cleanText(category));
+}
+
+function feedCategoryName(filename) {
+  let name = String(filename || '').replace(/-CREATE_BO_FEED\.xml$/i, '');
+  try { name = decodeURIComponent(name); } catch (_) {}
+  return cleanText(name.replace(/_/g, ' '));
+}
+
 function csvToObjects(csvText, parser) {
   const grid = parser(csvText);
   if (!grid.length) return [];
@@ -143,26 +147,45 @@ const CONFIG = Object.freeze({
   notifyEmail: 'bnsn4ull@gmail.com',
   timezone: 'Asia/Singapore',
   ledgerStart: '2026-08-07',
+  // GeBIZ RSS keeps roughly two days of items. Running twice a day means a
+  // single failed run can no longer drop a whole day of tenders on the floor.
+  runHours: [11, 23],
+  manualFile: 'MANUAL_TENDERS',
+  // Optional index pages scanned for RSS feed names we do not know about yet.
+  // A miss is silent: the fixed list below is always used regardless.
+  feedIndexUrls: [
+    'https://www.gebiz.gov.sg/rss/',
+    'https://www.gebiz.gov.sg/ptn/rss/rssFeed.xhtml',
+    'https://www.gebiz.gov.sg/ptn/rss/rssFeeds.xhtml',
+  ],
+  // Every IT&Telecommunication sub-category plus Services => Professional
+  // Services. Previously only five IT sub-categories were fetched, so anything
+  // filed under Others, Telecommunication or Softwares & Licences was invisible.
   feeds: [
     ['IT Services & Software Development', 'EPU/CMP/10', 'IT_Services_%26_Software_Development-CREATE_BO_FEED.xml'],
+    ['Softwares & Licences', 'EPU/CMP/10', 'Softwares_%26_Licences-CREATE_BO_FEED.xml'],
     ['Desktop Computers', 'EPU/CMP/10', 'Desktop_Computers-CREATE_BO_FEED.xml'],
     ['Computer Accessories', 'EPU/CMP/10', 'Computer_Accessories-CREATE_BO_FEED.xml'],
     ['Notebooks', 'EPU/CMP/10', 'Notebooks-CREATE_BO_FEED.xml'],
     ['Servers', 'EPU/CMP/10', 'Servers-CREATE_BO_FEED.xml'],
+    ['Telecommunication', 'EPU/CMP/10', 'Telecommunication-CREATE_BO_FEED.xml'],
+    ['Others', 'EPU/CMP/10', 'Others-CREATE_BO_FEED.xml'],
     ['Professional Services', 'EPU/SER/34', 'Professional_Services-CREATE_BO_FEED.xml'],
   ],
 });
 
-const OPEN_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Source','Scope Summary','Publish Date/Time','Closing Date/Time','Status','TECQ Recommendation','Link'];
-const CLOSED_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Source','Scope Summary','Closing Date/Time','Move Date','TECQ Recommendation','Link'];
-const REVIEW_HEADERS = OPEN_HEADERS.slice(0, -1).concat(['Why Unsure','Link']);
+const OPEN_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Publish Date/Time','Closing Date/Time','Status','Link'];
+const CLOSED_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Closing Date/Time','Move Date','Link'];
 const AWARD_HEADERS = ['Tender/Ref No.','Title','Agency','Source','Awarded To','Award Value','Award Date','Link'];
 const LEDGER_HEADERS = ['Date','GeBIZ','TenderBoard','New (GeBIZ)','New (TB)','Notes'];
+const TAB_NAMES = ['EPU/CMP/10','EPU/SER/34','Closed Tenders','Awarded (Intel)','Run Ledger','Coverage & Method'];
 
 function setupCloudTask() {
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'runDailyTracker').forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('runDailyTracker').timeBased().atHour(11).nearMinute(0).everyDays(1).inTimezone(CONFIG.timezone).create();
-  return 'Daily cloud trigger installed for approximately 11:00 AM SGT.';
+  CONFIG.runHours.forEach(hour => {
+    ScriptApp.newTrigger('runDailyTracker').timeBased().atHour(hour).nearMinute(0).everyDays(1).inTimezone(CONFIG.timezone).create();
+  });
+  return `Cloud triggers installed for approximately ${CONFIG.runHours.join(':00 and ')}:00 SGT.`;
 }
 
 function runTestNow() {
@@ -172,7 +195,11 @@ function runTestNow() {
 function runDailyTracker(forceRun) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(1000)) return 'Skipped: another run is active.';
-  const run = { errors: [], exclusions: [], newGebiz: 0, newTb: 0, moved: 0, upgrades: 0, tbArchive: '', tbStatus: '', gebizStatus: 'OK' };
+  const run = {
+    errors: [], newGebiz: 0, newTb: 0, newManual: 0, moved: 0, upgrades: 0,
+    tbArchive: '', tbStatus: '', gebizStatus: 'OK', manualStatus: 'No MANUAL_TENDERS file.',
+    feedCounts: [], feedsUnavailable: [], feedsFailed: [], feedsDiscovered: [],
+  };
   try {
     const now = new Date();
     const trackerFolder = DriveApp.getFolderById(CONFIG.trackerFolderId);
@@ -182,10 +209,11 @@ function runDailyTracker(forceRun) {
     if (!forceRun && !cadence.run) return `Skipped by cadence: ${cadence.directive}`;
 
     const state = loadState(latest ? SpreadsheetApp.openById(latest.getId()) : SpreadsheetApp.openById(CONFIG.seedId));
-    tagExistingRows(state);
+    migrateRows(state);
     const gebiz = fetchGebiz(run);
     const tb = fetchTenderBoard(run, archiveFolder, now);
-    mergeCandidates(state, gebiz.concat(tb), run);
+    const manual = fetchManual(run, trackerFolder);
+    mergeCandidates(state, gebiz.concat(tb).concat(manual), run);
     moveClosed(state, now, run);
     captureAwards(state, run);
     updateLedger(state, now, run);
@@ -199,7 +227,8 @@ function runDailyTracker(forceRun) {
     verifyTracker(output, state);
 
     const summary = buildSummary(outputFile, state, run);
-    MailApp.sendEmail(CONFIG.notifyEmail, `GeBIZ/TB: ${run.newGebiz + run.newTb ? run.newGebiz + run.newTb + ' New Tenders' : 'NO New Tenders'}`, summary);
+    const newTotal = run.newGebiz + run.newTb + run.newManual;
+    MailApp.sendEmail(CONFIG.notifyEmail, `GeBIZ/TB: ${newTotal ? newTotal + ' New Tenders' : 'NO New Tenders'}`, summary);
     return summary;
   } catch (error) {
     const message = `Cloud Task 1 failed: ${error && error.stack ? error.stack : error}`;
@@ -229,42 +258,79 @@ function readCadence(folder, now, latestDate) {
   return parseCadence(file.getBlob().getDataAsString(), now, latestDate);
 }
 
+// Configured feeds, plus any feed name found on a GeBIZ RSS index page that
+// looks like an IT/telecom/professional-services category we do not have yet.
+function resolveFeeds(run) {
+  const feeds = CONFIG.feeds.map(([category, bucket, filename]) => ({ category, bucket, filename }));
+  const known = {};
+  feeds.forEach(feed => known[feed.filename.toLowerCase()] = true);
+  CONFIG.feedIndexUrls.forEach(url => {
+    try {
+      const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+      if (response.getResponseCode() !== 200) return;
+      extractFeedNames(response.getContentText()).forEach(filename => {
+        if (known[filename.toLowerCase()]) return;
+        const category = feedCategoryName(filename);
+        if (!isDiscoverableFeed(category)) return;
+        known[filename.toLowerCase()] = true;
+        feeds.push({ category, bucket: SER_PATTERN.test(category) ? 'EPU/SER/34' : 'EPU/CMP/10', filename });
+        run.feedsDiscovered.push(category);
+      });
+    } catch (_) {
+      // An unreachable index page is never fatal; the fixed list still runs.
+    }
+  });
+  return feeds;
+}
+
+// Fetch every in-scope GeBIZ feed and keep every item it returns.
+// No relevance test, no exclusion list: nothing is dropped between the feed
+// and the EPU tabs.
 function fetchGebiz(run) {
   const candidates = [];
-  CONFIG.feeds.forEach(([category, bucket, filename]) => {
+  resolveFeeds(run).forEach(feed => {
     try {
-      const response = UrlFetchApp.fetch(`https://www.gebiz.gov.sg/rss/${filename}`, { muteHttpExceptions: true });
-      if (response.getResponseCode() !== 200) throw new Error(`HTTP ${response.getResponseCode()}`);
+      const response = UrlFetchApp.fetch(`https://www.gebiz.gov.sg/rss/${feed.filename}`, { muteHttpExceptions: true });
+      const code = response.getResponseCode();
+      if (code === 404) { run.feedsUnavailable.push(feed.category); return; }
+      if (code !== 200) throw new Error(`HTTP ${code}`);
       const doc = XmlService.parse(response.getContentText());
       const channel = doc.getRootElement().getChild('channel');
-      (channel ? channel.getChildren('item') : []).forEach(item => {
+      const items = channel ? channel.getChildren('item') : [];
+      items.forEach(item => {
         const link = cleanText(item.getChildText('link'));
         const title = cleanText(item.getChildText('title'));
+        if (!title) return;
         const details = parseGebizDescription(item.getChildText('description'));
         const refMatch = link.match(/[?&]code=([^&]+)/i);
         const row = {
           'Tender/Ref No.': refMatch ? decodeURIComponent(refMatch[1]) : '', Title: title,
-          Agency: details.agency, 'Procurement Category': `GeBIZ: ${category}`, Source: 'GeBIZ',
+          Agency: details.agency, 'Procurement Category': `GeBIZ: ${feed.category}`,
+          'Category Group': feed.category, Source: 'GeBIZ',
           'Scope Summary': '', 'Publish Date/Time': details.publish, 'Closing Date/Time': details.closing || 'Unknown',
-          Status: 'Open', 'TECQ Recommendation': '', Link: link, _bucket: bucket,
+          Status: 'Open', Link: link,
         };
-        const decision = classifyTender(row);
-        if (!decision.relevant) {
-          if (decision.exclusion) run.exclusions.push(`${title} (rule ${decision.exclusion})`);
-          return;
-        }
-        row['TECQ Recommendation'] = decision.recommendation;
-        if (decision.review) { row._bucket = 'Review (Unsure)'; row['Why Unsure'] = 'Insufficient detail in feed; plausible TECQ fit.'; }
+        row._bucket = routeBucket(row, feed.bucket);
         candidates.push(row);
       });
+      run.feedCounts.push(`${feed.category} ${items.length}`);
     } catch (error) {
-      run.gebizStatus = `PARTIAL FAILURE — ${filename}: ${error}`;
-      run.errors.push(run.gebizStatus);
+      run.feedsFailed.push(`${feed.category}: ${error}`);
     }
   });
+  if (run.feedsFailed.length) {
+    run.gebizStatus = `PARTIAL FAILURE — ${run.feedsFailed.join('; ')}`;
+    run.errors.push(run.gebizStatus);
+  } else if (!candidates.length) {
+    run.gebizStatus = 'FAILED — no items returned by any feed';
+    run.errors.push(run.gebizStatus);
+  } else {
+    run.gebizStatus = `OK — ${candidates.length} items from ${run.feedCounts.length} feeds`;
+  }
   return candidates;
 }
 
+// Same rule as GeBIZ: every row in the handoff CSV is kept and routed.
 function fetchTenderBoard(run, archiveFolder, now) {
   try {
     const statusResponse = UrlFetchApp.fetch(CONFIG.tbStatus, { muteHttpExceptions: true });
@@ -282,14 +348,10 @@ function fetchTenderBoard(run, archiveFolder, now) {
     run.tbArchive = archive.getUrl();
     run.tbStatus = `OK — ${status.records} scanned from ${status.generated_at_sgt}`;
     return csvToObjects(csv, text => Utilities.parseCsv(text)).map(source => {
-      const row = Object.assign({}, source, { Source: 'TenderBoard', Status: source.Status || 'Open', _bucket: /consult|advis|pmo|professional/i.test(source['Procurement Category']) ? 'EPU/SER/34' : 'EPU/CMP/10' });
-      const decision = classifyTender(row);
-      if (!decision.relevant) {
-        if (decision.exclusion) run.exclusions.push(`${row.Title} (rule ${decision.exclusion})`);
-        return null;
-      }
-      row['TECQ Recommendation'] = decision.recommendation;
-      if (decision.review) { row._bucket = 'Review (Unsure)'; row['Why Unsure'] = 'TenderBoard listing is incomplete; plausible TECQ fit.'; }
+      const row = Object.assign({}, source, { Source: 'TenderBoard', Status: source.Status || 'Open' });
+      if (!row.Title) return null;
+      row['Category Group'] = row['Category Group'] || categoryGroup(row);
+      row._bucket = routeBucket(row, 'EPU/CMP/10');
       if (!row['Closing Date/Time']) row['Closing Date/Time'] = 'Unknown';
       else row['Closing Date/Time'] = expandDayMonth(row['Closing Date/Time'], generated, 'closing');
       if (!row['Publish Date/Time']) row['Publish Date/Time'] = `${Utilities.formatDate(generated, CONFIG.timezone, 'dd MMM yyyy')} (first seen)`;
@@ -304,22 +366,57 @@ function fetchTenderBoard(run, archiveFolder, now) {
   }
 }
 
+// Optional CSV in the tracker folder for tenders the feeds cannot reach —
+// GeBIZ RSS only carries about two days, so anything older than the last run
+// is otherwise unrecoverable. Rows are deduplicated like any other candidate,
+// so a manual row is harmless once the real feed catches up with it.
+function fetchManual(run, folder) {
+  const files = folder.getFilesByName(CONFIG.manualFile);
+  if (!files.hasNext()) return [];
+  try {
+    const rows = csvToObjects(files.next().getBlob().getDataAsString(), text => Utilities.parseCsv(text)).map(source => {
+      const row = Object.assign({}, source);
+      if (!row.Title) return null;
+      const bucketHint = cleanText(row.Bucket);
+      delete row.Bucket;
+      row.Source = row.Source || 'GeBIZ';
+      row.Status = row.Status || 'Open';
+      row.Agency = row.Agency || 'Not stated (manual)';
+      row['Category Group'] = row['Category Group'] || categoryGroup(row);
+      row['Closing Date/Time'] = row['Closing Date/Time'] || 'Unknown';
+      row['Publish Date/Time'] = row['Publish Date/Time'] || 'Unknown';
+      row._bucket = routeBucket(row, bucketHint || 'EPU/CMP/10');
+      row._manual = true;
+      return row;
+    }).filter(Boolean);
+    run.manualStatus = `OK — ${rows.length} row(s) read from ${CONFIG.manualFile}`;
+    return rows;
+  } catch (error) {
+    run.manualStatus = `FAILED — ${error}`;
+    run.errors.push(`${CONFIG.manualFile}: ${error}`);
+    return [];
+  }
+}
+
 function loadState(ss) {
   return {
     active: readObjects(ss, 'EPU/CMP/10').map(r => (r._bucket = 'EPU/CMP/10', r))
       .concat(readObjects(ss, 'EPU/SER/34').map(r => (r._bucket = 'EPU/SER/34', r)))
-      .concat(readObjects(ss, 'Review (Unsure)').map(r => (r._bucket = 'Review (Unsure)', r))),
+      // Legacy tab from the previous schema: its rows are re-routed into the
+      // two EPU tabs rather than discarded.
+      .concat(readObjects(ss, 'Review (Unsure)').map(r => (r._bucket = '', r))),
     closed: readObjects(ss, 'Closed Tenders'),
     awards: readObjects(ss, 'Awarded (Intel)'),
     ledger: readObjects(ss, 'Run Ledger'),
   };
 }
 
-function tagExistingRows(state) {
+function migrateRows(state) {
   state.active.forEach(row => {
-    if (row._bucket === 'EPU/CMP/10' || row._bucket === 'EPU/SER/34') row['TECQ Recommendation'] = TECQ_TAG;
-    else if (classifyTender(row).relevant) row['TECQ Recommendation'] = TECQ_TAG;
+    row['Category Group'] = row['Category Group'] || categoryGroup(row);
+    row._bucket = routeBucket(row, row._bucket);
   });
+  state.closed.forEach(row => { row['Category Group'] = row['Category Group'] || categoryGroup(row); });
 }
 
 function readObjects(ss, name) {
@@ -343,14 +440,16 @@ function mergeCandidates(state, candidates, run) {
     let match = state.active.find(row => sameTender(row, candidate));
     if (!match) match = state.closed.find(row => sameTender(row, candidate));
     if (match) {
-      if (match.Source === 'TenderBoard' && candidate.Source === 'GeBIZ' && state.active.includes(match)) {
+      if (match.Source === 'TenderBoard' && candidate.Source === 'GeBIZ' && !candidate._manual && state.active.indexOf(match) >= 0) {
         Object.assign(match, candidate); run.upgrades += 1;
       }
       return;
     }
     state.active.push(candidate);
     candidate._new = true;
-    if (candidate.Source === 'GeBIZ') run.newGebiz += 1; else run.newTb += 1;
+    if (candidate._manual) run.newManual += 1;
+    else if (candidate.Source === 'GeBIZ') run.newGebiz += 1;
+    else run.newTb += 1;
   });
 }
 
@@ -361,7 +460,7 @@ function moveClosed(state, now, run) {
     if (closing && closing < now) {
       const closed = Object.assign({}, row, { 'Move Date': Utilities.formatDate(now, CONFIG.timezone, 'dd MMM yyyy') });
       delete closed.Status; delete closed['Publish Date/Time']; delete closed._bucket;
-      if (row._bucket === 'Review (Unsure)') closed.Title = `${closed.Title} (was: Review)`;
+      delete closed._new; delete closed._manual;
       state.closed.push(closed); run.moved += 1;
     } else stillOpen.push(row);
   });
@@ -369,9 +468,10 @@ function moveClosed(state, now, run) {
 }
 
 function captureAwards(state, run) {
-  const awardedRefs = new Set(state.awards.map(r => normalizeRef(r['Tender/Ref No.'])));
+  const awardedRefs = {};
+  state.awards.forEach(r => awardedRefs[normalizeRef(r['Tender/Ref No.'])] = true);
   const properties = PropertiesService.getScriptProperties();
-  const pending = state.closed.filter(row => row.Source === 'GeBIZ' && row.Link && !awardedRefs.has(normalizeRef(row['Tender/Ref No.'])) && properties.getProperty(`award:${normalizeRef(row['Tender/Ref No.'])}`) !== 'NO_AWARD');
+  const pending = state.closed.filter(row => row.Source === 'GeBIZ' && row.Link && !awardedRefs[normalizeRef(row['Tender/Ref No.'])] && properties.getProperty(`award:${normalizeRef(row['Tender/Ref No.'])}`) !== 'NO_AWARD');
   for (let offset = 0; offset < pending.length; offset += 50) {
     const batch = pending.slice(offset, offset + 50);
     const responses = UrlFetchApp.fetchAll(batch.map(row => ({ url: row.Link, muteHttpExceptions: true })));
@@ -401,51 +501,63 @@ function extractLabelValue(html, label) {
 
 function updateLedger(state, now, run) {
   const today = Utilities.formatDate(now, CONFIG.timezone, 'yyyy-MM-dd');
-  const map = new Map(state.ledger.map(row => [cleanText(row.Date), row]));
+  const map = {};
+  const order = [];
+  const put = (key, value) => { if (!(key in map)) order.push(key); map[key] = value; };
+  state.ledger.forEach(row => put(cleanText(row.Date), row));
   for (let date = new Date(`${CONFIG.ledgerStart}T00:00:00+08:00`); date <= now; date = new Date(date.getTime() + 86400000)) {
     const key = Utilities.formatDate(date, CONFIG.timezone, 'yyyy-MM-dd');
-    if (!map.has(key)) map.set(key, { Date: key, GeBIZ: 'NOT RUN', TenderBoard: 'NOT RUN', 'New (GeBIZ)': 0, 'New (TB)': 0, Notes: 'No prior ledger row.' });
+    if (!(key in map)) put(key, { Date: key, GeBIZ: 'NOT RUN', TenderBoard: 'NOT RUN', 'New (GeBIZ)': 0, 'New (TB)': 0, Notes: 'No prior ledger row.' });
   }
-  map.set(today, { Date: today, GeBIZ: run.gebizStatus, TenderBoard: run.tbStatus, 'New (GeBIZ)': run.newGebiz, 'New (TB)': run.newTb, Notes: run.errors.join(' | ') || 'Completed.' });
-  state.ledger = Array.from(map.values()).sort((a, b) => cleanText(b.Date).localeCompare(cleanText(a.Date)));
+  const notes = [run.errors.join(' | ') || 'Completed.'];
+  if (run.newManual) notes.push(`Manual backfill: ${run.newManual}`);
+  put(today, { Date: today, GeBIZ: run.gebizStatus, TenderBoard: run.tbStatus, 'New (GeBIZ)': run.newGebiz, 'New (TB)': run.newTb, Notes: notes.join(' | ') });
+  state.ledger = order.map(key => map[key]).sort((a, b) => cleanText(b.Date).localeCompare(cleanText(a.Date)));
 }
 
 function writeTracker(ss, state, run, cadence, previousFile) {
   const cmp = state.active.filter(r => r._bucket === 'EPU/CMP/10').sort(sortPublishDesc);
   const ser = state.active.filter(r => r._bucket === 'EPU/SER/34').sort(sortPublishDesc);
-  const review = state.active.filter(r => r._bucket === 'Review (Unsure)').sort(sortPublishDesc);
   state.closed.sort((a, b) => cleanText(a['Closing Date/Time']).localeCompare(cleanText(b['Closing Date/Time'])));
   state.awards.sort((a, b) => cleanText(b['Award Date']).localeCompare(cleanText(a['Award Date'])));
   writeTable(ss, 'EPU/CMP/10', OPEN_HEADERS, cmp);
   writeTable(ss, 'EPU/SER/34', OPEN_HEADERS, ser);
   writeTable(ss, 'Closed Tenders', CLOSED_HEADERS, state.closed);
-  writeTable(ss, 'Review (Unsure)', REVIEW_HEADERS, review, 'Nothing uncertain this run.');
   writeTable(ss, 'Awarded (Intel)', AWARD_HEADERS, state.awards, 'No awarded-tender data captured yet — see Coverage & Method.');
   writeTable(ss, 'Run Ledger', LEDGER_HEADERS, state.ledger);
-  const tagged = state.active.filter(r => r['TECQ Recommendation'] === TECQ_TAG);
   const coverage = [
     `Run Date: ${Utilities.formatDate(new Date(), CONFIG.timezone, 'dd MMM yyyy, h:mm a')} SGT | Auth Status: PASS | Cadence: ${cadence.directive}`,
     `GeBIZ RSS: ${run.gebizStatus}`,
+    `GeBIZ feeds scanned (${run.feedCounts.length}): ${run.feedCounts.join('; ') || 'none'}`,
+    `GeBIZ feeds unavailable (HTTP 404): ${run.feedsUnavailable.join('; ') || 'none'}`,
+    `GeBIZ feeds discovered from index: ${run.feedsDiscovered.join('; ') || 'none'}`,
     `TenderBoard: ${run.tbStatus}`,
     `TenderBoard Archive: ${run.tbArchive || 'NOT CREATED'}`,
-    `EPU/CMP/10: total ${cmp.length}, new GeBIZ ${run.newGebiz}, new TB ${run.newTb}`,
+    `Manual backfill (${CONFIG.manualFile}): ${run.manualStatus} | new this run ${run.newManual}`,
+    `EPU/CMP/10: total ${cmp.length}, new GeBIZ ${run.newGebiz}, new TB ${run.newTb}, new manual ${run.newManual}`,
     `EPU/SER/34: total ${ser.length}`,
     `Closed Tenders: total ${state.closed.length}, moved this run ${run.moved}`,
-    `Review (Unsure): total ${review.length}`,
     `Awarded (Intel): total ${state.awards.length}, permanent and uncapped`,
-    `TECQ Recommendation: ${tagged.length} open tenders tagged ${TECQ_TAG} (GeBIZ ${tagged.filter(r => r.Source === 'GeBIZ').length} | TB ${tagged.filter(r => r.Source === 'TenderBoard').length})`,
-    `Excluded This Run: ${run.exclusions.length} ${run.exclusions.slice(0,25).join('; ')}`,
+    `Excluded This Run: 0 — relevance and exclusion filtering are disabled; every item returned by an in-scope GeBIZ feed, the TenderBoard handoff and ${CONFIG.manualFile} is kept in EPU/CMP/10 or EPU/SER/34`,
     `Source Upgrades This Run: ${run.upgrades}`,
     `Previous File: ${previousFile.getUrl()}`,
-    `Upload: native Google Sheets copy/update; verified 7 tabs and row counts; no base64 ceiling`,
+    `Upload: native Google Sheets copy/update; verified ${TAB_NAMES.length} tabs and row counts; no base64 ceiling`,
     `Errors: ${run.errors.join(' | ') || 'None'}`,
   ];
   writeTable(ss, 'Coverage & Method', ['Coverage & Method'], coverage.map(text => ({ 'Coverage & Method': text })));
-  const allowed = new Set(['EPU/CMP/10','EPU/SER/34','Closed Tenders','Review (Unsure)','Awarded (Intel)','Run Ledger','Coverage & Method']);
-  ss.getSheets().forEach(sheet => { if (!allowed.has(sheet.getName())) ss.deleteSheet(sheet); });
+  const allowed = {};
+  TAB_NAMES.forEach(name => allowed[name] = true);
+  ss.getSheets().forEach(sheet => { if (!allowed[sheet.getName()]) ss.deleteSheet(sheet); });
 }
 
-function sortPublishDesc(a, b) { return cleanText(b['Publish Date/Time']).localeCompare(cleanText(a['Publish Date/Time'])); }
+function sortPublishDesc(a, b) {
+  const ad = parseFlexibleDate(a['Publish Date/Time']);
+  const bd = parseFlexibleDate(b['Publish Date/Time']);
+  if (ad && bd && ad.getTime() !== bd.getTime()) return bd - ad;
+  if (ad && !bd) return -1;
+  if (!ad && bd) return 1;
+  return cleanText(b['Publish Date/Time']).localeCompare(cleanText(a['Publish Date/Time']));
+}
 
 function writeTable(ss, name, headers, rows, emptyMessage) {
   let sheet = ss.getSheetByName(name);
@@ -457,12 +569,10 @@ function writeTable(ss, name, headers, rows, emptyMessage) {
   sheet.getDataRange().setFontFamily('Arial').setFontSize(11).setWrap(true).setBorder(true,true,true,true,true,true);
   sheet.getRange(1,1,1,headers.length).setFontWeight('bold').setBackground('#d9d9d9');
   const sourceCol = headers.indexOf('Source') + 1;
-  const recCol = headers.indexOf('TECQ Recommendation') + 1;
   const linkCol = headers.indexOf('Link') + 1;
   rows.forEach((row, index) => {
     const sheetRow = index + 2;
     if (sourceCol) sheet.getRange(sheetRow, sourceCol).setBackground(row.Source === 'TenderBoard' ? '#fff2cc' : '#ddebf7');
-    if (recCol && row['TECQ Recommendation'] === TECQ_TAG) sheet.getRange(sheetRow, recCol).setBackground('#e2f0d9');
     if (linkCol && row.Link) {
       const label = row.Source === 'TenderBoard' ? 'Open in TenderBoard' : 'Open in GeBIZ';
       sheet.getRange(sheetRow, linkCol).setFormula(`=HYPERLINK("${String(row.Link).replace(/"/g, '""')}","${label}")`);
@@ -474,20 +584,24 @@ function writeTable(ss, name, headers, rows, emptyMessage) {
 }
 
 function verifyTracker(ss, state) {
-  const expected = ['EPU/CMP/10','EPU/SER/34','Closed Tenders','Review (Unsure)','Awarded (Intel)','Run Ledger','Coverage & Method'];
   const actual = ss.getSheets().map(s => s.getName());
-  expected.forEach(name => { if (!actual.includes(name)) throw new Error(`Verification failed: missing ${name}`); });
+  TAB_NAMES.forEach(name => { if (actual.indexOf(name) < 0) throw new Error(`Verification failed: missing ${name}`); });
   if (ss.getSheetByName('Closed Tenders').getLastRow() !== state.closed.length + 1) throw new Error('Verification failed: Closed row count mismatch');
   if (ss.getSheetByName('Awarded (Intel)').getLastRow() !== Math.max(2, state.awards.length + 1)) throw new Error('Verification failed: Awarded row count mismatch');
+  const open = ss.getSheetByName('EPU/CMP/10').getLastRow() - 1 + ss.getSheetByName('EPU/SER/34').getLastRow() - 1;
+  if (open !== state.active.length) throw new Error(`Verification failed: ${state.active.length} open tenders held but ${open} written — a tender would have been dropped`);
 }
 
 function buildSummary(file, state, run) {
   const newRows = state.active.filter(r => r._new).slice(0,3);
+  const newTotal = run.newGebiz + run.newTb + run.newManual;
   return [
-    `${run.newGebiz + run.newTb ? run.newGebiz + run.newTb + ' new tenders' : 'NO New Tenders'}`,
-    `GeBIZ new: ${run.newGebiz} | TenderBoard new: ${run.newTb}`,
+    `${newTotal ? newTotal + ' new tenders' : 'NO New Tenders'}`,
+    `GeBIZ new: ${run.newGebiz} | TenderBoard new: ${run.newTb} | Manual backfill new: ${run.newManual}`,
+    `Open totals: EPU/CMP/10 ${state.active.filter(r => r._bucket === 'EPU/CMP/10').length} | EPU/SER/34 ${state.active.filter(r => r._bucket === 'EPU/SER/34').length}`,
     `Moved closed: ${run.moved} | Awarded retained: ${state.awards.length}`,
-    `Advise to look at: ${state.active.filter(r => r['TECQ Recommendation'] === TECQ_TAG).length}`,
+    `GeBIZ: ${run.gebizStatus}`,
+    `GeBIZ feeds unavailable: ${run.feedsUnavailable.join('; ') || 'none'}`,
     `TenderBoard archive: ${run.tbArchive || 'not created'}`,
     `Tracker: ${file.getUrl()}`,
     run.errors.length ? `Errors: ${run.errors.join(' | ')}` : 'Errors: None',

@@ -4,7 +4,7 @@ Run unattended at 11:00 AM Asia/Singapore. Task 2 runs in GitHub at 10:00 AM SGT
 
 ## Objective
 
-Maintain an accumulating tender tracker for TOPPAN Ecquaria, a Singapore digital-government system integrator. Capture relevant open tenders from GeBIZ and TenderBoard, retain all captured relevant awards as competitor intelligence, flag opportunities Benson should inspect, archive each valid TenderBoard raw CSV, and publish a verified seven-tab Google Sheet without destroying prior history.
+Maintain an accumulating tender tracker for TOPPAN Ecquaria, a Singapore digital-government system integrator. Capture relevant open tenders from GeBIZ and TenderBoard, retain all captured relevant awards as competitor intelligence, archive each valid TenderBoard raw CSV, and publish a verified six-tab Google Sheet without destroying prior history.
 
 ## Fixed resources
 
@@ -49,14 +49,21 @@ Find native Sheets in the tracker folder whose title contains `GeBIZ_Open_Tender
 
 Fetch each official RSS feed once, requesting only reference, title, link and publication date:
 
-1. `https://www.gebiz.gov.sg/rss/IT_Services_%26_Software_Development-CREATE_BO_FEED.xml`
-2. `https://www.gebiz.gov.sg/rss/Desktop_Computers-CREATE_BO_FEED.xml`
-3. `https://www.gebiz.gov.sg/rss/Computer_Accessories-CREATE_BO_FEED.xml`
-4. `https://www.gebiz.gov.sg/rss/Notebooks-CREATE_BO_FEED.xml`
-5. `https://www.gebiz.gov.sg/rss/Servers-CREATE_BO_FEED.xml`
-6. `https://www.gebiz.gov.sg/rss/Professional_Services-CREATE_BO_FEED.xml`
+Fetch every IT&Telecommunication sub-category plus Services => Professional Services. A partial list silently loses tenders: a category with no feed is invisible to the run.
 
-Deduplicate before detail fetch. For each new candidate, fetch its official detail page once and extract only exact procurement category, agency, full title, publication/closing timestamps and a one- or two-sentence scope. Route IT/telecommunication to `EPU/CMP/10`, professional consulting to `EPU/SER/34`, and unclear plausible items to `Review (Unsure)`.
+1. `https://www.gebiz.gov.sg/rss/IT_Services_%26_Software_Development-CREATE_BO_FEED.xml`
+2. `https://www.gebiz.gov.sg/rss/Softwares_%26_Licences-CREATE_BO_FEED.xml`
+3. `https://www.gebiz.gov.sg/rss/Desktop_Computers-CREATE_BO_FEED.xml`
+4. `https://www.gebiz.gov.sg/rss/Computer_Accessories-CREATE_BO_FEED.xml`
+5. `https://www.gebiz.gov.sg/rss/Notebooks-CREATE_BO_FEED.xml`
+6. `https://www.gebiz.gov.sg/rss/Servers-CREATE_BO_FEED.xml`
+7. `https://www.gebiz.gov.sg/rss/Telecommunication-CREATE_BO_FEED.xml`
+8. `https://www.gebiz.gov.sg/rss/Others-CREATE_BO_FEED.xml`
+9. `https://www.gebiz.gov.sg/rss/Professional_Services-CREATE_BO_FEED.xml`
+
+A feed that returns HTTP 404 is logged as unavailable and does not fail the run. Also scan the GeBIZ RSS index for `*-CREATE_BO_FEED.xml` names not in the list and adopt any IT/telecom/professional-services category found there.
+
+Deduplicate before detail fetch. For each new candidate, fetch its official detail page once and extract only exact procurement category, agency, full title, publication/closing timestamps and a one- or two-sentence scope. Route professional consulting to `EPU/SER/34` and everything else to `EPU/CMP/10`. There is no third destination: nothing is held back or dropped.
 
 For awards, use only verified official GeBIZ award feeds/listings; never guess a URL. Fetch awards on every full-run day because GeBIZ states award RSS covers approximately two days and refreshes daily. Retain all relevant captured awards forever; there is no row cap. Record unavailable or failed award coverage accurately.
 
@@ -72,15 +79,17 @@ Fetch status first, returning only success, `generated_at_sgt`, record count, pa
 
 After a valid current CSV is parsed, archive the exact unchanged CSV in Drive folder `1TPg44swiYi14FD3rciZx-WNCsFE8Qyve` as `TenderBoard_Raw_<YYYY-MM-DD_HHMM>.csv`, based on its SGT status timestamp, `text/csv`, conversion disabled. Search for the exact title first and do not duplicate it. Archive failure is nonfatal but must be logged and notified.
 
-## Relevance and TOPPAN Ecquaria attention rule
+## Capture rule — capture everything in scope
 
-Capture software/system development, integration, modernisation, workflow/case/registry/licensing systems, portals, mobile/field apps, cloud/GCC migration, AMS, data/reporting/analytics, document management, cross-agency exchange, APIs/microservices, digital identity/Singpass integration, AI/agentic/process automation, enterprise architecture, digital-government consultancy/PMO, and hardware/licences/hosting forming a material part of such a system.
+Scope is the GeBIZ feeds listed above, the TenderBoard handoff CSV, and the `MANUAL_TENDERS` backfill file. Within that scope nothing is filtered: no relevance test, no keyword exclusion list, no exclusion log. Every captured item is written to `EPU/CMP/10` or `EPU/SER/34`.
 
-Exclude only when the primary subject is unambiguously: cybersecurity-only; AV; switches/pure networking hardware; training/e-learning-only; or unrelated/non-IT machinery, supplies, printers, furniture or plant. Incidental mentions do not disqualify a system tender. When in doubt, capture and route to Review.
+Verify before publishing that the two EPU tabs together hold every open tender the run was carrying, and fail the run if they do not.
 
-Add `TECQ Recommendation` immediately before `Link` on both EPU tabs, Review and Closed. Every relevant open EPU row must contain exactly `Advise to look at`. Apply it to Review rows when a plausible TECQ fit remains despite missing detail. Domain gaps or likely partner needs do not suppress the tag. It is an attention flag, not a bid/no-bid claim. On the first migrated run, classify stored open rows using existing fields only; do not refetch old details. Preserve the tag when closing a row. Use light-green fill.
+## Backfill — `MANUAL_TENDERS`
 
-Log every exclusion with title and exclusion number, capped at 25 plus remaining count.
+GeBIZ RSS carries about two days of items, so a tender published before the first run, or during an outage longer than two days, is unrecoverable from the feeds. Read optional plain-CSV `MANUAL_TENDERS` from the tracker folder each run: the open-tab header row plus an optional `Bucket` column, `Title` required. Merge its rows through the normal deduplication so a manual row is ignored once the feed or an earlier tracker already carries that reference. Never invent a `Link`.
+
+Run twice daily (approximately 11:00 AM and 11:00 PM SGT) so one failed run cannot lose a day inside the two-day RSS window.
 
 ## Deduplication
 
@@ -90,7 +99,7 @@ For awards, key by normalized GeBIZ tender/quotation number plus supplier/line i
 
 ## Closing and sorting
 
-Move passed known closing timestamps from EPU/Review to Closed, preserving Source, Scope and TECQ Recommendation and adding Move Date. Append `(was: Review)` when applicable. Never auto-close `Unknown`; flag it after 60 days. Sort open and Review by Publish descending; Closed by Closing ascending; awards by Award Date descending.
+Move passed known closing timestamps from the EPU tabs to Closed, preserving Source and Scope and adding Move Date. Never auto-close `Unknown`; flag it after 60 days. Sort open tabs by Publish descending; Closed by Closing ascending; awards by Award Date descending.
 
 ## Run Ledger
 
@@ -101,28 +110,29 @@ Use `OK`, `FAILED — reason`, `NOT RUN`, `SKIPPED (cadence)`, `BACKFILLED (DD M
 
 ## Workbook
 
-Create one `.xlsx` with seven tabs, Arial 11, gray bold frozen headers, thin borders, wrapped scope, real hyperlinks and source colors (GeBIZ light blue, TenderBoard light amber):
+Create one `.xlsx` with six tabs, Arial 11, gray bold frozen headers, thin borders, wrapped scope, real hyperlinks and source colors (GeBIZ light blue, TenderBoard light amber):
 
-1. `EPU/CMP/10`: Ref | Title | Agency | Procurement Category | Source | Scope Summary | Publish Date/Time | Closing Date/Time | Status | TECQ Recommendation | Link.
+1. `EPU/CMP/10`: Ref | Title | Agency | Procurement Category | Category Group | Source | Scope Summary | Publish Date/Time | Closing Date/Time | Status | Link.
 2. `EPU/SER/34`: same.
-3. `Closed Tenders`: same minus Status/Publish, plus Move Date; retain TECQ Recommendation.
-4. `Review (Unsure)`: open schema plus Why Unsure.
-5. `Awarded (Intel)`: Ref | Title | Agency | Source | Awarded To | Award Value | Award Date | Link. Permanent and uncapped.
-6. `Run Ledger`.
-7. `Coverage & Method`.
+3. `Closed Tenders`: same minus Status/Publish, plus Move Date.
+4. `Awarded (Intel)`: Ref | Title | Agency | Source | Awarded To | Award Value | Award Date | Link. Permanent and uncapped.
+5. `Run Ledger`.
+6. `Coverage & Method`.
 
-Coverage & Method must concisely include SGT run time, auth, cadence, each source status/counts, EPU totals/new counts by source, Closed/Review counts, exclusions, borderline calls, source upgrades, ledger summary, archive result, upload size/verification, previous file, eight newest gaps/manual patches, and `TECQ Recommendation: N open tenders tagged Advise to look at (GeBIZ N | TB N)`.
+Rows found in a legacy `Review (Unsure)` tab are re-routed into the two EPU tabs on load, never discarded.
+
+Coverage & Method must concisely include SGT run time, auth, cadence, each source status/counts, per-feed item counts, feeds unavailable, feeds discovered from the index, manual-backfill status, EPU totals/new counts by source, Closed count, source upgrades, ledger summary, archive result, upload verification and previous file.
 
 ## Upload and verification
 
 Build in memory and measure base64 before upload. Use native Sheet conversion with the exact tracker filename in the tracker folder.
 
-- At or below 24,000 base64 characters: upload once, read back, confirm all seven tab names and row counts. Trash a bad upload and retry once.
-- Above 24,000 characters: do not attempt the unsafe single-file upload. Save seven clearly prefixed per-tab CSV stopgaps, record the measured ceiling failure, and report that a local merge is required. Never call stopgaps the final tracker.
+- At or below 24,000 base64 characters: upload once, read back, confirm all six tab names and row counts. Trash a bad upload and retry once.
+- Above 24,000 characters: do not attempt the unsafe single-file upload. Save six clearly prefixed per-tab CSV stopgaps, record the measured ceiling failure, and report that a local merge is required. Never call stopgaps the final tracker.
 - On upload failure, leave the previous tracker untouched and report the failure.
 
 Do not routinely delete prior tracker files; they are history.
 
 ## Final report
 
-Report new tender count and the first three new items with title, reference, agency, source, short scope and closing time; totals by EPU tab; moved-to-Closed, Review, Awarded, gaps, TenderBoard handoff/archive status; count tagged `Advise to look at`; and the verified tracker link. If no new tenders, report `NO New Tenders` with the same status summary. Cadence skips are silent.
+Report new tender count and the first three new items with title, reference, agency, source, short scope and closing time; totals by EPU tab; moved-to-Closed, Awarded, gaps, TenderBoard handoff/archive status; and the verified tracker link. If no new tenders, report `NO New Tenders` with the same status summary. Cadence skips are silent.
