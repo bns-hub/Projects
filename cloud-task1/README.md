@@ -35,17 +35,15 @@ Select **`runNow`** and click **Run**. One click does everything the schedule do
 
 If capture fails, `runNow` stops and does not review — there would be nothing new to review. If review fails or has no key, capture still stands and the log says so.
 
-## Reviewer credentials — human-owned, never committed
+## Where review happens
 
-The reviewer makes a real semantic judgment by calling Claude. **There is deliberately no keyword fallback**: a keyword rule presented as a review looks authoritative and is not, so with no key the reviewer records `NOT RUN`, emails these instructions, and changes nothing.
+Review is semantic judgment, so it needs a model. There are two places it can run, and Apps Script picks based on whether a key is present.
 
-In the Apps Script editor: **Project Settings → Script Properties → Add script property**
+**Default — outside Apps Script (no API key).** A scheduled Claude Routine fires Wednesday and Friday at 12:00 SGT, reads the newest tracker from the Drive folder, judges every open row against the criteria below, and writes a dated `TECQ Shortlist YYYY-MM-DD` sheet into the same folder. `setupCloudTask` installs no review triggers in this mode, and `runNow` reports review as `Skipped — review runs outside Apps Script`. The tracker's `TECQ Review` columns stay empty; the shortlist sheet is the output.
 
-| Property | Value |
-|---|---|
-| `ANTHROPIC_API_KEY` | a key from <https://console.anthropic.com/settings/keys> |
+**Optional — inside Apps Script (with an API key).** Set `ANTHROPIC_API_KEY` under **Project Settings → Script Properties** (a key from <https://console.anthropic.com/settings/keys>). `setupCloudTask` then installs the Wednesday/Friday review triggers, and verdicts are written back into the tracker's own `TECQ Review` / `Why` columns, so they persist per row and drive the built-in `TECQ Shortlist` tab. Roughly cents per run: only new or changed rows are sent, batched 12 at a time.
 
-The key lives only in Script Properties. It is not in this repository, the bundle, or the spreadsheet. Cost is roughly a few cents per review run: only rows that are new or whose facts have changed are sent, in batches of 12.
+**There is deliberately no keyword fallback in either mode.** A keyword rule presented as a review looks authoritative and is not.
 
 ## Who owns which column
 

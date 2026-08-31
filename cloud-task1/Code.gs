@@ -26,14 +26,19 @@ function runNow() {
 
   // A capture that was gated by RUN_CADENCE has not refreshed anything, but the
   // reviewer still runs — there may be rows outstanding from an earlier day.
+  // With no API key, review is handled outside Apps Script; say so and stop.
   lines.push('', '[2/2] Review');
-  let review;
-  try {
-    review = runWeeklyReview(true);
-  } catch (error) {
-    review = `FAILED — ${briefError(error)}`;
+  if (!PropertiesService.getScriptProperties().getProperty(CONFIG.anthropicKeyProperty)) {
+    lines.push('  Skipped — review runs outside Apps Script (no API key configured here).');
+  } else {
+    let review;
+    try {
+      review = runWeeklyReview(true);
+    } catch (error) {
+      review = `FAILED — ${briefError(error)}`;
+    }
+    lines.push(`  ${review}`);
   }
-  lines.push(`  ${review}`);
 
   const seconds = Math.round((new Date() - started) / 1000);
   lines.push('', `Done in ${seconds}s. Open the TECQ Shortlist tab.`);
@@ -404,15 +409,22 @@ function setupCloudTask() {
   CONFIG.runHours.forEach(hour => {
     ScriptApp.newTrigger('runDailyTracker').timeBased().atHour(hour).nearMinute(0).everyDays(1).inTimezone(CONFIG.timezone).create();
   });
-  CONFIG.reviewDays.forEach(day => {
-    ScriptApp.newTrigger('runWeeklyReview').timeBased()
-      .onWeekDay(ScriptApp.WeekDay[day]).atHour(CONFIG.reviewHour).inTimezone(CONFIG.timezone).create();
-  });
+  // The in-script reviewer needs an API key. Without one it can only report
+  // that it did not run, so installing its triggers would just email that twice
+  // a week forever. Review is then handled outside Apps Script instead.
+  const hasKey = !!PropertiesService.getScriptProperties().getProperty(CONFIG.anthropicKeyProperty);
+  if (hasKey) {
+    CONFIG.reviewDays.forEach(day => {
+      ScriptApp.newTrigger('runWeeklyReview').timeBased()
+        .onWeekDay(ScriptApp.WeekDay[day]).atHour(CONFIG.reviewHour).inTimezone(CONFIG.timezone).create();
+    });
+  }
   return [
     `Collection: daily at approximately ${CONFIG.runHours.join(':00 and ')}:00 SGT.`,
-    `Review: ${CONFIG.reviewDays.join(' and ')} at approximately ${CONFIG.reviewHour}:00 SGT.`,
+    hasKey
+      ? `Review: in-script, ${CONFIG.reviewDays.join(' and ')} at approximately ${CONFIG.reviewHour}:00 SGT.`
+      : `Review: no ${CONFIG.anthropicKeyProperty} set, so no review triggers were installed — review runs outside Apps Script.`,
     `Everything runs in Google's cloud; this PC does not need to be on.`,
-    `To run both by hand at any time, select runNow and click Run.`,
   ].join(' ');
 }
 

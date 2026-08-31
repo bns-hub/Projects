@@ -201,7 +201,7 @@ console.log('\n7. The reviewer stops cleanly when the API key is absent');
   });
 }
 
-console.log('\n8. runNow chains capture and review in one click');
+console.log('\n8. runNow captures, and defers review when there is no key');
 {
   // Capture reaches the network; stub every source so the chain is deterministic.
   const env = createEnvironment({
@@ -225,9 +225,9 @@ console.log('\n8. runNow chains capture and review in one click');
     assert.ok(/new tenders|NO New Tenders/.test(summary), summary);
     assert.equal(env.__state.properties.lastCollectionAt !== undefined, true);
   });
-  check('the review stage ran and reported the missing key honestly', () => {
-    assert.ok(/NOT RUN/.test(summary), summary);
-    assert.ok(/ANTHROPIC_API_KEY/.test(summary), summary);
+  check('with no key, review is skipped rather than nagged about', () => {
+    assert.ok(/Skipped — review runs outside Apps Script/.test(summary), summary);
+    assert.ok(!/NOT RUN/.test(summary), summary);
   });
   check('a failing source does not stop the chain', () => {
     assert.ok(/Done in \d+s/.test(summary), summary);
