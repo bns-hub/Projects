@@ -13,12 +13,32 @@ const description = context.parseGebizDescription('ITT: X | Published Date: 28/0
 assert.equal(description.agency, 'Central Provident Fund Board');
 assert.equal(description.closing, '22/09/2026 16:00:00');
 
-// Category Group derivation across every "Procurement Category" shape in play.
-assert.equal(context.categoryGroup({ 'Procurement Category': 'GeBIZ: IT Services & Software Development' }), 'IT Services & Software Development');
-assert.equal(context.categoryGroup({ 'Procurement Category': 'IT&Telecommunication ⇒ IT Services & Software Development' }), 'IT&Telecommunication');
-assert.equal(context.categoryGroup({ 'Procurement Category': 'IT&Telecommunication: Notebooks' }), 'IT&Telecommunication');
-assert.equal(context.categoryGroup({ 'Procurement Category': 'TenderBoard: Event Organising, Food & Beverages: Event Organising' }), 'Event Organising, Food & Beverages');
-assert.equal(context.categoryGroup({ 'Procurement Category': '' }), 'Not Specified');
+// Category Group must be the top-level group for BOTH sources, otherwise
+// filtering on it silently drops one of them. GeBIZ names a feed after the
+// sub-category alone, so those have to be mapped back up to their group.
+const groupOf = category => context.categoryGroup({ 'Procurement Category': category });
+assert.equal(groupOf('GeBIZ: IT Services & Software Development'), 'IT&Telecommunication');
+assert.equal(groupOf('GeBIZ: Servers'), 'IT&Telecommunication');
+assert.equal(groupOf('Softwares & Licences'), 'IT&Telecommunication');
+assert.equal(groupOf('GeBIZ: Professional Services'), 'Services');
+assert.equal(groupOf('IT&Telecommunication ⇒ IT Services & Software Development'), 'IT&Telecommunication');
+assert.equal(groupOf('IT&Telecommunication: Notebooks'), 'IT&Telecommunication');
+assert.equal(groupOf('TenderBoard: Event Organising, Food & Beverages: Event Organising'), 'Event Organising, Food & Beverages');
+assert.equal(groupOf('Construction: Renovation Supplies & Services'), 'Construction');
+assert.equal(groupOf('Not Specified'), 'Not Specified');
+assert.equal(groupOf(''), 'Not Specified');
+
+// Both sources end up spelled the same way, so the column sorts and groups.
+const categoryOf = category => context.normalizeCategory({ 'Procurement Category': category });
+assert.equal(categoryOf('GeBIZ: Servers'), 'IT&Telecommunication ⇒ Servers');
+assert.equal(categoryOf('IT&Telecommunication: Notebooks'), 'IT&Telecommunication ⇒ Notebooks');
+assert.equal(categoryOf('IT&Telecommunication ⇒ Notebooks'), 'IT&Telecommunication ⇒ Notebooks');
+assert.equal(categoryOf('GeBIZ: Professional Services'), 'Services ⇒ Professional Services');
+assert.equal(categoryOf('Not Specified'), 'Not Specified');
+// An unmapped single word is a group with no sub-category, not a fake pairing.
+assert.equal(categoryOf('Construction'), 'Construction');
+// Normalising twice must not change the answer.
+assert.equal(categoryOf(categoryOf('GeBIZ: Servers')), 'IT&Telecommunication ⇒ Servers');
 
 // Nothing is excluded any more: every tender routes to one of the two EPU tabs.
 const previouslyExcluded = [
@@ -32,6 +52,7 @@ for (const row of previouslyExcluded) {
 assert.equal(context.routeBucket({ Title: 'Provision of catering services', 'Procurement Category': 'GeBIZ: Professional Services' }, 'EPU/SER/34'), 'EPU/SER/34');
 // A professional-services category wins over the feed's own bucket hint.
 assert.equal(context.routeBucket({ 'Procurement Category': 'Services: Professional Services' }, 'EPU/CMP/10'), 'EPU/SER/34');
+assert.equal(context.routeBucket({ 'Procurement Category': 'GeBIZ: Professional Services' }, 'EPU/CMP/10'), 'EPU/SER/34');
 // Facilities-management rows are not professional services.
 assert.equal(context.routeBucket({ 'Procurement Category': 'Facilities Management: Management Services' }, 'EPU/CMP/10'), 'EPU/CMP/10');
 // A row with no bucket hint at all still lands somewhere.

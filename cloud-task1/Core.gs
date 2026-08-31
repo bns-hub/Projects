@@ -27,13 +27,44 @@ function parseGebizDescription(description) {
   };
 }
 
-// Top-level procurement group shown in the "Category Group" column.
-// Handles "GeBIZ: X", "TenderBoard: A: B", "A => B" and legacy "A ⇒ B".
-function categoryGroup(row) {
+// GeBIZ names a feed after the sub-category alone, so a row whose category is
+// just "Servers" still has to resolve to the IT&Telecommunication group — this
+// is what makes the Category Group column filterable across both sources.
+const SUBCATEGORY_GROUPS = {
+  'it services & software development': 'IT&Telecommunication',
+  'softwares & licences': 'IT&Telecommunication',
+  'software & licences': 'IT&Telecommunication',
+  'desktop computers': 'IT&Telecommunication',
+  'computer accessories': 'IT&Telecommunication',
+  'notebooks': 'IT&Telecommunication',
+  'servers': 'IT&Telecommunication',
+  'telecommunication': 'IT&Telecommunication',
+  'professional services': 'Services',
+};
+
+// Split any category string into its top-level group and sub-category.
+// Accepts "GeBIZ: X", "TenderBoard: A: B", "A: B", "A => B" and legacy "A ⇒ B".
+function splitCategory(row) {
   const raw = cleanText(row['Procurement Category'] || row.category)
     .replace(/^(?:GeBIZ|TenderBoard)\s*:\s*/i, '');
-  if (!raw) return 'Not Specified';
-  return cleanText(raw.split(/\s*(?:⇒|=>|:)\s*/)[0]) || 'Not Specified';
+  if (!raw) return { group: 'Not Specified', sub: '' };
+  const parts = raw.split(/\s*(?:⇒|=>|:)\s*/).map(cleanText).filter(Boolean);
+  if (parts.length > 1) return { group: parts[0], sub: parts.slice(1).join(' ⇒ ') };
+  const mapped = SUBCATEGORY_GROUPS[parts[0].toLowerCase()];
+  return mapped ? { group: mapped, sub: parts[0] } : { group: parts[0], sub: '' };
+}
+
+// Top-level procurement group shown in the "Category Group" column. Always the
+// group, never the sub-category, whichever source the row came from.
+function categoryGroup(row) {
+  return splitCategory(row).group || 'Not Specified';
+}
+
+// One spelling for the "Procurement Category" column: "Group ⇒ Sub-category".
+function normalizeCategory(row) {
+  const parts = splitCategory(row);
+  if (!parts.sub) return parts.group;
+  return `${parts.group} ⇒ ${parts.sub}`;
 }
 
 // Every captured tender lands in one of the two EPU tabs. There is no

@@ -49,11 +49,22 @@ GeBIZ RSS only carries about two days of items, so a tender published before the
 
 Columns are the `EPU/CMP/10` header row plus an optional `Bucket` column (`EPU/CMP/10` or `EPU/SER/34`). Only `Title` is required. See [`MANUAL_TENDERS.sample.csv`](MANUAL_TENDERS.sample.csv).
 
-Rows go through the same deduplication as everything else, so a manual row is harmlessly ignored once the real feed or a later tracker already carries that reference. Leave `Link` blank rather than guessing a GeBIZ URL. Once a manual row has been picked up it lives in the tracker permanently, so the CSV can be emptied afterwards.
+`MANUAL_TENDERS` is also the correction mechanism. If a row already exists in the tracker, the columns you filled in overwrite it on the next run — so a wrong category or a missing title is fixed by editing the CSV, not the sheet. Columns left blank are never used to overwrite anything. Coverage & Method reports how many existing rows were corrected. Leave `Link` blank rather than guessing a GeBIZ URL. Once a manual row has been picked up it lives in the tracker permanently, so the CSV can be emptied afterwards.
+
+## Categorisation
+
+Every tender row on every tab carries two columns, using GeBIZ's and TenderBoard's own taxonomy:
+
+- **`Procurement Category`** — the full path, always spelled `Group ⇒ Sub-category`, e.g. `IT&Telecommunication ⇒ Notebooks`, `Services ⇒ Professional Services`, `Construction ⇒ Renovation Supplies & Services`.
+- **`Category Group`** — the top-level group alone, e.g. `IT&Telecommunication`. This is the column to filter on.
+
+The two sources spell categories differently and had to be reconciled. TenderBoard gives `Group: Sub`. GeBIZ names each RSS feed after the *sub-category alone* (`Servers`, `Professional Services`), so `SUBCATEGORY_GROUPS` in `Core.gs` maps those back to their group — without it, filtering `Category Group = IT&Telecommunication` would return TenderBoard rows only and silently miss every GeBIZ one. Add an entry there whenever a new GeBIZ feed category appears.
+
+Both columns are recomputed for every row on every run, so rows stored under an older scheme are corrected in place rather than left inconsistent. Coverage & Method prints the row count per group.
 
 ## Tabs
 
-`EPU/CMP/10`, `EPU/SER/34`, `Closed Tenders`, `Awarded (Intel)`, `Run Ledger`, `Coverage & Method`.
+`EPU/CMP/10`, `EPU/SER/34`, `Closed Tenders`, `Awarded (Intel)`, `Run Ledger`, `Coverage & Method`. All four tender tabs carry `Procurement Category` and `Category Group`.
 
 Rows found in a legacy `Review (Unsure)` tab are re-routed into the two EPU tabs on load rather than discarded.
 

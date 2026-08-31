@@ -129,7 +129,7 @@ const CONFIG = Object.freeze({
 
 const OPEN_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Publish Date/Time','Closing Date/Time','Status','Link'];
 const CLOSED_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Closing Date/Time','Move Date','Link'];
-const AWARD_HEADERS = ['Tender/Ref No.','Title','Agency','Source','Awarded To','Award Value','Award Date','Link'];
+const AWARD_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Awarded To','Award Value','Award Date','Link'];
 const LEDGER_HEADERS = ['Date','GeBIZ','TenderBoard','New (GeBIZ)','New (TB)','Notes'];
 const TAB_NAMES = ['EPU/CMP/10','EPU/SER/34','Closed Tenders','Awarded (Intel)','Run Ledger','Coverage & Method'];
 
@@ -145,7 +145,7 @@ function runDailyTracker(forceRun) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(1000)) return 'Skipped: another run is active.';
   const run = {
-    errors: [], newGebiz: 0, newTb: 0, newManual: 0, moved: 0, upgrades: 0,
+    errors: [], newGebiz: 0, newTb: 0, newManual: 0, manualPatched: 0, moved: 0, upgrades: 0,
     tbArchive: '', tbStatus: '', gebizStatus: 'OK', manualStatus: 'No MANUAL_TENDERS file.',
     feedCounts: [], feedsUnavailable: [], feedsFailed: [], feedsDiscovered: [],
   };
@@ -263,11 +263,12 @@ function fetchGebiz(run) {
         const refMatch = link.match(/[?&]code=([^&]+)/i);
         const row = {
           'Tender/Ref No.': refMatch ? decodeURIComponent(refMatch[1]) : '', Title: title,
-          Agency: details.agency, 'Procurement Category': `GeBIZ: ${feed.category}`,
-          'Category Group': feed.category, Source: 'GeBIZ',
+          Agency: details.agency, 'Procurement Category': feed.category, Source: 'GeBIZ',
           'Scope Summary': '', 'Publish Date/Time': details.publish, 'Closing Date/Time': details.closing || 'Unknown',
           Status: 'Open', Link: link,
         };
+        row['Procurement Category'] = normalizeCategory(row);
+        row['Category Group'] = categoryGroup(row);
         row._bucket = routeBucket(row, feed.bucket);
         candidates.push(row);
       });
@@ -309,7 +310,8 @@ function fetchTenderBoard(run, archiveFolder, now) {
     return csvToObjects(csv, text => Utilities.parseCsv(text)).map(source => {
       const row = Object.assign({}, source, { Source: 'TenderBoard', Status: source.Status || 'Open' });
       if (!row.Title) return null;
-      row['Category Group'] = row['Category Group'] || categoryGroup(row);
+      row['Procurement Category'] = normalizeCategory(row);
+      row['Category Group'] = categoryGroup(row);
       row._bucket = routeBucket(row, 'EPU/CMP/10');
       if (!row['Closing Date/Time']) row['Closing Date/Time'] = 'Unknown';
       else row['Closing Date/Time'] = expandDayMonth(row['Closing Date/Time'], generated, 'closing');
@@ -338,10 +340,14 @@ function fetchManual(run, folder) {
       if (!row.Title) return null;
       const bucketHint = cleanText(row.Bucket);
       delete row.Bucket;
+      // Only the columns actually filled in are treated as authoritative, so a
+      // default applied below can never overwrite better data on an existing row.
+      row._fields = Object.keys(source).filter(key => key !== 'Bucket' && cleanText(source[key]));
       row.Source = row.Source || 'GeBIZ';
       row.Status = row.Status || 'Open';
       row.Agency = row.Agency || 'Not stated (manual)';
-      row['Category Group'] = row['Category Group'] || categoryGroup(row);
+      row['Procurement Category'] = normalizeCategory(row);
+      row['Category Group'] = categoryGroup(row);
       row['Closing Date/Time'] = row['Closing Date/Time'] || 'Unknown';
       row['Publish Date/Time'] = row['Publish Date/Time'] || 'Unknown';
       row._bucket = routeBucket(row, bucketHint || 'EPU/CMP/10');
@@ -371,11 +377,13 @@ function loadState(ss) {
 }
 
 function migrateRows(state) {
-  state.active.forEach(row => {
-    row['Category Group'] = row['Category Group'] || categoryGroup(row);
-    row._bucket = routeBucket(row, row._bucket);
-  });
-  state.closed.forEach(row => { row['Category Group'] = row['Category Group'] || categoryGroup(row); });
+  const restate = row => {
+    row['Procurement Category'] = normalizeCategory(row);
+    row['Category Group'] = categoryGroup(row);
+  };
+  state.active.forEach(row => { restate(row); row._bucket = routeBucket(row, row._bucket); });
+  state.closed.forEach(restate);
+  state.awards.forEach(restate);
 }
 
 function readObjects(ss, name) {
@@ -399,7 +407,24 @@ function mergeCandidates(state, candidates, run) {
     let match = state.active.find(row => sameTender(row, candidate));
     if (!match) match = state.closed.find(row => sameTender(row, candidate));
     if (match) {
-      if (match.Source === 'TenderBoard' && candidate.Source === 'GeBIZ' && !candidate._manual && state.active.indexOf(match) >= 0) {
+      // MANUAL_TENDERS doubles as the correction mechanism: edit a row there and
+      // the fields you filled in overwrite the tracked row on the next run.
+      if (candidate._manual && state.active.indexOf(match) >= 0) {
+        let patched = false;
+        (candidate._fields || []).forEach(field => {
+          if (cleanText(match[field]) === cleanText(candidate[field])) return;
+          match[field] = candidate[field];
+          patched = true;
+        });
+        if (patched) {
+          match['Procurement Category'] = normalizeCategory(match);
+          match['Category Group'] = categoryGroup(match);
+          match._bucket = routeBucket(match, candidate._bucket);
+          run.manualPatched += 1;
+        }
+        return;
+      }
+      if (match.Source === 'TenderBoard' && candidate.Source === 'GeBIZ' && state.active.indexOf(match) >= 0) {
         Object.assign(match, candidate); run.upgrades += 1;
       }
       return;
@@ -442,7 +467,8 @@ function captureAwards(state, run) {
       if (/>(?:\s|&nbsp;)*NO AWARD(?:\s|&nbsp;)*</i.test(html)) { properties.setProperty(`award:${ref}`, 'NO_AWARD'); return; }
       if (!/>(?:\s|&nbsp;)*AWARDED(?:\s|&nbsp;)*</i.test(html)) return;
       state.awards.push({
-        'Tender/Ref No.': row['Tender/Ref No.'], Title: row.Title, Agency: row.Agency, Source: 'GeBIZ',
+        'Tender/Ref No.': row['Tender/Ref No.'], Title: row.Title, Agency: row.Agency,
+        'Procurement Category': normalizeCategory(row), 'Category Group': categoryGroup(row), Source: 'GeBIZ',
         'Awarded To': extractLabelValue(html, 'Awarded To') || 'Not stated',
         'Award Value': extractLabelValue(html, 'Award Value') || 'Not stated',
         'Award Date': extractLabelValue(html, 'Award Date') || 'Not stated', Link: row.Link,
@@ -492,9 +518,10 @@ function writeTracker(ss, state, run, cadence, previousFile) {
     `GeBIZ feeds discovered from index (${run.feedsDiscovered.length}): ${run.feedsDiscovered.join(' ') || 'none'}`,
     `TenderBoard: ${run.tbStatus}`,
     `TenderBoard Archive: ${run.tbArchive || 'NOT CREATED'}`,
-    `Manual backfill (${CONFIG.manualFile}): ${run.manualStatus} | new this run ${run.newManual}`,
+    `Manual backfill (${CONFIG.manualFile}): ${run.manualStatus} | new this run ${run.newManual} | existing rows corrected ${run.manualPatched}`,
     `EPU/CMP/10: total ${cmp.length}, new GeBIZ ${run.newGebiz}, new TB ${run.newTb}, new manual ${run.newManual}`,
     `EPU/SER/34: total ${ser.length}`,
+    `Category Groups (filter on this column): ${summariseGroups(cmp.concat(ser))}`,
     `Closed Tenders: total ${state.closed.length}, moved this run ${run.moved}`,
     `Awarded (Intel): total ${state.awards.length}, permanent and uncapped`,
     `Excluded This Run: 0 — relevance and exclusion filtering are disabled; every item returned by an in-scope GeBIZ feed, the TenderBoard handoff and ${CONFIG.manualFile} is kept in EPU/CMP/10 or EPU/SER/34`,
@@ -507,6 +534,17 @@ function writeTracker(ss, state, run, cadence, previousFile) {
   const allowed = {};
   TAB_NAMES.forEach(name => allowed[name] = true);
   ss.getSheets().forEach(sheet => { if (!allowed[sheet.getName()]) ss.deleteSheet(sheet); });
+}
+
+// Counts per Category Group, largest first, for the Coverage tab.
+function summariseGroups(rows) {
+  const counts = {};
+  rows.forEach(row => {
+    const group = cleanText(row['Category Group']) || 'Not Specified';
+    counts[group] = (counts[group] || 0) + 1;
+  });
+  return Object.keys(counts).sort((a, b) => counts[b] - counts[a])
+    .map(group => `${group} ${counts[group]}`).join('; ') || 'none';
 }
 
 function sortPublishDesc(a, b) {
