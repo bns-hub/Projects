@@ -2,10 +2,6 @@
 // Everything that does not match routes to EPU/CMP/10. Nothing is ever dropped.
 const SER_PATTERN = /(professional services|consultan|consulting|advisory|\badvisor\b|\bpmo\b)/i;
 
-// Categories worth auto-adopting when a GeBIZ RSS feed is discovered that is not
-// already in CONFIG.feeds. Keeps the flow from silently missing a new category.
-const DISCOVER_PATTERN = /(\bit\b|information technology|software|licence|license|comput|server|notebook|desktop|telecom|digital|\bdata\b|network|professional services|consultan)/i;
-
 function cleanText(value) {
   return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
 }
@@ -124,12 +120,6 @@ function briefError(error) {
 function extractFeedNames(html) {
   const matches = String(html || '').match(/[A-Za-z0-9_%.'()+,&-]+-CREATE_BO_FEED\.xml/g) || [];
   return Array.from(new Set(matches));
-}
-
-// A discovered feed is adopted only when its category looks in-scope, so
-// index discovery cannot silently pull the whole of GeBIZ into the tracker.
-function isDiscoverableFeed(category) {
-  return DISCOVER_PATTERN.test(cleanText(category));
 }
 
 function feedCategoryName(filename) {

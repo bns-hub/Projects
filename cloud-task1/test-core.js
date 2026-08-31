@@ -49,8 +49,6 @@ assert.equal(context.looksLikeFeed('<rss version="2.0">'), true);
 assert.equal(context.looksLikeFeed('<!DOCTYPE html><html><body><img src="x"></body></html>'), false);
 assert.equal(context.looksLikeFeed(''), false);
 assert.equal(context.briefError(new Error('x'.repeat(400))).length, 140);
-assert.equal(context.isDiscoverableFeed('Telecommunication'), true);
-assert.equal(context.isDiscoverableFeed('Catering'), false);
 
 assert.equal(context.sameTender(
   { 'Tender/Ref No.': 'ABC-123', Title: 'A', Agency: 'X' },

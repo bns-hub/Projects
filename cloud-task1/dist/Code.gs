@@ -28,9 +28,7 @@ const CONFIG = Object.freeze({
     'https://www.gebiz.gov.sg/ptn/rss/rssFeeds.xhtml',
     'https://www.gebiz.gov.sg/ptn/opportunity/opportunityListing.xhtml',
   ],
-  // Every IT&Telecommunication sub-category plus Services => Professional
-  // Services. Previously only five IT sub-categories were fetched, so anything
-  // filed under Others, Telecommunication or Softwares & Licences was invisible.
+  // Confirmed live on 31 Aug 2026: each of these returned a parseable feed.
   feeds: [
     ['IT Services & Software Development', 'EPU/CMP/10', 'IT_Services_%26_Software_Development-CREATE_BO_FEED.xml'],
     ['Softwares & Licences', 'EPU/CMP/10', 'Softwares_%26_Licences-CREATE_BO_FEED.xml'],
@@ -38,9 +36,29 @@ const CONFIG = Object.freeze({
     ['Computer Accessories', 'EPU/CMP/10', 'Computer_Accessories-CREATE_BO_FEED.xml'],
     ['Notebooks', 'EPU/CMP/10', 'Notebooks-CREATE_BO_FEED.xml'],
     ['Servers', 'EPU/CMP/10', 'Servers-CREATE_BO_FEED.xml'],
-    ['Telecommunication', 'EPU/CMP/10', 'Telecommunication-CREATE_BO_FEED.xml'],
-    ['Others', 'EPU/CMP/10', 'Others-CREATE_BO_FEED.xml'],
     ['Professional Services', 'EPU/SER/34', 'Professional_Services-CREATE_BO_FEED.xml'],
+  ],
+  // GeBIZ publishes one feed per sub-category and names the files itself, so
+  // the only categories we can fetch are the ones we can name. These are
+  // unconfirmed spellings for categories known to exist in the GeBIZ taxonomy
+  // but whose feed filename is unknown — "Telecommunication" and
+  // "Others" under IT&Telecommunication both returned an HTML error page.
+  // A candidate that is not a real feed costs one request and is skipped
+  // silently, so guessing here is cheap and cannot break a run.
+  feedCandidates: [
+    'Telecommunications-CREATE_BO_FEED.xml',
+    'Telecommunication_Services-CREATE_BO_FEED.xml',
+    'Telecommunication_Equipment-CREATE_BO_FEED.xml',
+    'IT%26Telecommunication-CREATE_BO_FEED.xml',
+    'IT%26Telecommunication_Others-CREATE_BO_FEED.xml',
+    'IT_Others-CREATE_BO_FEED.xml',
+    'Others_%28IT%26Telecommunication%29-CREATE_BO_FEED.xml',
+    'Computer_Software-CREATE_BO_FEED.xml',
+    'Computer_Hardware-CREATE_BO_FEED.xml',
+    'Cloud_Services-CREATE_BO_FEED.xml',
+    'Data_Services-CREATE_BO_FEED.xml',
+    'Consultancy_Services-CREATE_BO_FEED.xml',
+    'Management_Consultancy-CREATE_BO_FEED.xml',
   ],
 });
 
@@ -127,23 +145,29 @@ function readCadence(folder, now, latestDate) {
 // Configured feeds, plus any feed name found on a GeBIZ RSS index page that
 // looks like an IT/telecom/professional-services category we do not have yet.
 function resolveFeeds(run) {
-  const feeds = CONFIG.feeds.map(([category, bucket, filename]) => ({ category, bucket, filename }));
+  const feeds = [];
   const known = {};
-  feeds.forEach(feed => known[feed.filename.toLowerCase()] = true);
+  const add = (filename, bucket, discovered) => {
+    const key = String(filename).toLowerCase();
+    if (known[key]) return;
+    known[key] = true;
+    const category = feedCategoryName(filename);
+    feeds.push({ category, bucket: bucket || (SER_PATTERN.test(category) ? 'EPU/SER/34' : 'EPU/CMP/10'), filename });
+    if (discovered) run.feedsDiscovered.push(category);
+  };
+
+  CONFIG.feeds.forEach(([, bucket, filename]) => add(filename, bucket));
+  CONFIG.feedCandidates.forEach(filename => add(filename));
+
+  // Anything the index page lists is taken as-is. Every feed GeBIZ publishes
+  // is in scope; routing decides which tab it lands in, nothing is screened out.
   CONFIG.feedIndexUrls.forEach(url => {
     try {
       const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
       if (response.getResponseCode() !== 200) return;
-      extractFeedNames(response.getContentText()).forEach(filename => {
-        if (known[filename.toLowerCase()]) return;
-        const category = feedCategoryName(filename);
-        if (!isDiscoverableFeed(category)) return;
-        known[filename.toLowerCase()] = true;
-        feeds.push({ category, bucket: SER_PATTERN.test(category) ? 'EPU/SER/34' : 'EPU/CMP/10', filename });
-        run.feedsDiscovered.push(category);
-      });
+      extractFeedNames(response.getContentText()).forEach(filename => add(filename, null, true));
     } catch (_) {
-      // An unreachable index page is never fatal; the fixed list still runs.
+      // An unreachable index page is never fatal; the named feeds still run.
     }
   });
   return feeds;
@@ -398,7 +422,7 @@ function writeTracker(ss, state, run, cadence, previousFile) {
     `Run Date: ${Utilities.formatDate(new Date(), CONFIG.timezone, 'dd MMM yyyy, h:mm a')} SGT | Auth Status: PASS | Cadence: ${cadence.directive}`,
     `GeBIZ RSS: ${run.gebizStatus}`,
     `GeBIZ feeds scanned (${run.feedCounts.length}): ${run.feedCounts.join('; ') || 'none'}`,
-    `GeBIZ feeds not published by GeBIZ (404 or non-XML): ${run.feedsUnavailable.join('; ') || 'none'}`,
+    `GeBIZ names probed that are not published as feeds: ${run.feedsUnavailable.length} (${run.feedsUnavailable.slice(0, 12).join('; ') || 'none'})`,
     `GeBIZ feeds discovered from index: ${run.feedsDiscovered.join('; ') || 'none'}`,
     `TenderBoard: ${run.tbStatus}`,
     `TenderBoard Archive: ${run.tbArchive || 'NOT CREATED'}`,
@@ -480,10 +504,6 @@ function buildSummary(file, state, run) {
 // Routing keywords for the EPU/SER/34 (professional services) bucket.
 // Everything that does not match routes to EPU/CMP/10. Nothing is ever dropped.
 const SER_PATTERN = /(professional services|consultan|consulting|advisory|\badvisor\b|\bpmo\b)/i;
-
-// Categories worth auto-adopting when a GeBIZ RSS feed is discovered that is not
-// already in CONFIG.feeds. Keeps the flow from silently missing a new category.
-const DISCOVER_PATTERN = /(\bit\b|information technology|software|licence|license|comput|server|notebook|desktop|telecom|digital|\bdata\b|network|professional services|consultan)/i;
 
 function cleanText(value) {
   return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
@@ -603,12 +623,6 @@ function briefError(error) {
 function extractFeedNames(html) {
   const matches = String(html || '').match(/[A-Za-z0-9_%.'()+,&-]+-CREATE_BO_FEED\.xml/g) || [];
   return Array.from(new Set(matches));
-}
-
-// A discovered feed is adopted only when its category looks in-scope, so
-// index discovery cannot silently pull the whole of GeBIZ into the tracker.
-function isDiscoverableFeed(category) {
-  return DISCOVER_PATTERN.test(cleanText(category));
 }
 
 function feedCategoryName(filename) {
