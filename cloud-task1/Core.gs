@@ -105,10 +105,13 @@ function expandDayMonth(value, referenceDate, kind) {
   return `${String(match[1]).padStart(2, '0')} ${match[2]} ${year}${match[3] || ''}`.trim();
 }
 
-// GeBIZ answers an unknown feed name with HTTP 200 and an HTML error page,
-// not a 404, so the response body is the only reliable check.
+// GeBIZ answers an unknown feed name with HTTP 200 and its XHTML error page,
+// not a 404. That page opens with an XML prolog, so testing the first tag is
+// not enough — require an actual feed root element and reject any HTML.
 function looksLikeFeed(text) {
-  return /^\s*(?:<\?xml|<rss[\s>]|<feed[\s>])/i.test(String(text || '').slice(0, 500));
+  const head = String(text || '').slice(0, 2000);
+  if (/<html[\s>]/i.test(head)) return false;
+  return /<(?:rss|feed|rdf:RDF)[\s>]/i.test(head);
 }
 
 // Keep one failure from filling a ledger cell with a stack trace.

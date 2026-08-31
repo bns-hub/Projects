@@ -47,6 +47,8 @@ assert.equal(context.feedCategoryName('Softwares_%26_Licences-CREATE_BO_FEED.xml
 assert.equal(context.looksLikeFeed('<?xml version="1.0"?><rss><channel/></rss>'), true);
 assert.equal(context.looksLikeFeed('<rss version="2.0">'), true);
 assert.equal(context.looksLikeFeed('<!DOCTYPE html><html><body><img src="x"></body></html>'), false);
+// The GeBIZ error page is XHTML: an XML prolog followed by html.
+assert.equal(context.looksLikeFeed('<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml"><body><img src="x"></body></html>'), false);
 assert.equal(context.looksLikeFeed(''), false);
 assert.equal(context.briefError(new Error('x'.repeat(400))).length, 140);
 

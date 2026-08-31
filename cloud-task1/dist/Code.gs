@@ -147,17 +147,17 @@ function readCadence(folder, now, latestDate) {
 function resolveFeeds(run) {
   const feeds = [];
   const known = {};
-  const add = (filename, bucket, discovered) => {
+  const add = (filename, bucket, confirmed, discovered) => {
     const key = String(filename).toLowerCase();
     if (known[key]) return;
     known[key] = true;
     const category = feedCategoryName(filename);
-    feeds.push({ category, bucket: bucket || (SER_PATTERN.test(category) ? 'EPU/SER/34' : 'EPU/CMP/10'), filename });
+    feeds.push({ category, bucket: bucket || (SER_PATTERN.test(category) ? 'EPU/SER/34' : 'EPU/CMP/10'), filename, confirmed });
     if (discovered) run.feedsDiscovered.push(category);
   };
 
-  CONFIG.feeds.forEach(([, bucket, filename]) => add(filename, bucket));
-  CONFIG.feedCandidates.forEach(filename => add(filename));
+  CONFIG.feeds.forEach(([, bucket, filename]) => add(filename, bucket, true));
+  CONFIG.feedCandidates.forEach(filename => add(filename, null, false));
 
   // Anything the index page lists is taken as-is. Every feed GeBIZ publishes
   // is in scope; routing decides which tab it lands in, nothing is screened out.
@@ -165,7 +165,7 @@ function resolveFeeds(run) {
     try {
       const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
       if (response.getResponseCode() !== 200) return;
-      extractFeedNames(response.getContentText()).forEach(filename => add(filename, null, true));
+      extractFeedNames(response.getContentText()).forEach(filename => add(filename, null, false, true));
     } catch (_) {
       // An unreachable index page is never fatal; the named feeds still run.
     }
@@ -208,6 +208,7 @@ function fetchGebiz(run) {
       });
       run.feedCounts.push(`${feed.category} ${items.length}`);
     } catch (error) {
+      if (!feed.confirmed) { run.feedsUnavailable.push(feed.category); return; }
       run.feedsFailed.push(`${feed.category}: ${briefError(error)}`);
     }
   });
@@ -608,10 +609,13 @@ function expandDayMonth(value, referenceDate, kind) {
   return `${String(match[1]).padStart(2, '0')} ${match[2]} ${year}${match[3] || ''}`.trim();
 }
 
-// GeBIZ answers an unknown feed name with HTTP 200 and an HTML error page,
-// not a 404, so the response body is the only reliable check.
+// GeBIZ answers an unknown feed name with HTTP 200 and its XHTML error page,
+// not a 404. That page opens with an XML prolog, so testing the first tag is
+// not enough — require an actual feed root element and reject any HTML.
 function looksLikeFeed(text) {
-  return /^\s*(?:<\?xml|<rss[\s>]|<feed[\s>])/i.test(String(text || '').slice(0, 500));
+  const head = String(text || '').slice(0, 2000);
+  if (/<html[\s>]/i.test(head)) return false;
+  return /<(?:rss|feed|rdf:RDF)[\s>]/i.test(head);
 }
 
 // Keep one failure from filling a ledger cell with a stack trace.
