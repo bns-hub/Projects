@@ -30,7 +30,12 @@ Every item returned by an in-scope GeBIZ RSS feed, by the TenderBoard handoff CS
 
 `CONFIG.feeds` covers all IT&Telecommunication sub-categories (IT Services & Software Development, Softwares & Licences, Desktop Computers, Computer Accessories, Notebooks, Servers, Telecommunication, Others) plus Services ⇒ Professional Services. A feed that returns HTTP 404 is reported under "GeBIZ feeds unavailable" in Coverage & Method and does not fail the run.
 
-Each run also scans the GeBIZ RSS index pages in `CONFIG.feedIndexUrls` for `*-CREATE_BO_FEED.xml` names that are not in `CONFIG.feeds`, and adopts any whose category looks IT/telecom/professional-services shaped. An unreachable index page is silent.
+GeBIZ names the feed files itself, so a category can only be fetched if its exact filename is known — there is no "all categories" feed. Two mechanisms cover the ones not in `CONFIG.feeds`:
+
+- **Index scraping.** Each run scrapes the pages in `CONFIG.feedIndexUrls` (GeBIZ's Business Alerts, RSS FAQ, RSS terms and opportunity listing) for `*-CREATE_BO_FEED.xml` names and adopts every one it finds, unfiltered. An unreachable page is skipped silently. Coverage & Method lists the filenames found — pin any new ones into `CONFIG.feeds` so they no longer depend on scraping.
+- **Candidate probing.** `CONFIG.feedCandidates` holds unconfirmed spellings. A name GeBIZ does not publish costs one request and is counted quietly, so the list can grow without risk.
+
+A confirmed feed that breaks is reported as an error; an unconfirmed name that fails is only reported as a count.
 
 ## MANUAL_TENDERS backfill
 

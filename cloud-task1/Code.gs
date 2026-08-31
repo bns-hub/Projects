@@ -18,15 +18,19 @@ const CONFIG = Object.freeze({
   // single failed run can no longer drop a whole day of tenders on the floor.
   runHours: [11, 23],
   manualFile: 'MANUAL_TENDERS',
-  // Optional index pages scanned for RSS feed names we do not know about yet.
-  // A miss is silent: the fixed list below is always used regardless.
+  // GeBIZ publishes one RSS feed per procurement category and names the files
+  // itself, so a category can only be fetched if its exact filename is known.
+  // Rather than guess, scrape the pages that link to those feeds and adopt
+  // whatever they list. These are GeBIZ's real RSS/alerts pages. A page that
+  // is unreachable or lists nothing is skipped silently; the named feeds below
+  // always run regardless.
   feedIndexUrls: [
+    'https://www.gebiz.gov.sg/business-alerts.html',
+    'https://www.gebiz.gov.sg/scripts/rss/faq.html',
+    'https://www.gebiz.gov.sg/rss-terms-of-use.html',
+    'https://www.gebiz.gov.sg/ptn/opportunity/BOListing.xhtml?origin=opportunities',
     'https://www.gebiz.gov.sg/',
     'https://www.gebiz.gov.sg/rss/',
-    'https://www.gebiz.gov.sg/rss.html',
-    'https://www.gebiz.gov.sg/ptn/rss/rssFeed.xhtml',
-    'https://www.gebiz.gov.sg/ptn/rss/rssFeeds.xhtml',
-    'https://www.gebiz.gov.sg/ptn/opportunity/opportunityListing.xhtml',
   ],
   // Confirmed live on 31 Aug 2026: each of these returned a parseable feed.
   feeds: [
@@ -153,7 +157,7 @@ function resolveFeeds(run) {
     known[key] = true;
     const category = feedCategoryName(filename);
     feeds.push({ category, bucket: bucket || (SER_PATTERN.test(category) ? 'EPU/SER/34' : 'EPU/CMP/10'), filename, confirmed });
-    if (discovered) run.feedsDiscovered.push(category);
+    if (discovered) run.feedsDiscovered.push(filename);
   };
 
   CONFIG.feeds.forEach(([, bucket, filename]) => add(filename, bucket, true));
@@ -424,7 +428,7 @@ function writeTracker(ss, state, run, cadence, previousFile) {
     `GeBIZ RSS: ${run.gebizStatus}`,
     `GeBIZ feeds scanned (${run.feedCounts.length}): ${run.feedCounts.join('; ') || 'none'}`,
     `GeBIZ names probed that are not published as feeds: ${run.feedsUnavailable.length} (${run.feedsUnavailable.slice(0, 12).join('; ') || 'none'})`,
-    `GeBIZ feeds discovered from index: ${run.feedsDiscovered.join('; ') || 'none'}`,
+    `GeBIZ feeds discovered from index (${run.feedsDiscovered.length}): ${run.feedsDiscovered.join(' ') || 'none'}`,
     `TenderBoard: ${run.tbStatus}`,
     `TenderBoard Archive: ${run.tbArchive || 'NOT CREATED'}`,
     `Manual backfill (${CONFIG.manualFile}): ${run.manualStatus} | new this run ${run.newManual}`,
