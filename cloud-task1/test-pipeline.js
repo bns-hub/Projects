@@ -232,8 +232,8 @@ console.log('\n8. runNow captures, and defers review when there is no key');
   check('a failing source does not stop the chain', () => {
     assert.ok(/Done in \d+s/.test(summary), summary);
   });
-  check('the shortlist tab exists after a manual run', () => {
-    assert.notEqual(ss.getSheetByName('TECQ Shortlist'), null);
+  check('there is no TECQ Shortlist tab', () => {
+    assert.equal(ss.getSheetByName('TECQ Shortlist'), null);
   });
 }
 

@@ -67,7 +67,7 @@ Review is semantic judgment, so it needs a model. There are two places it can ru
 
 The merge **fills blanks only**. A row that already carries a verdict — judged earlier, or corrected by hand in the sheet — is never touched, and the reviewer is told to skip those rows too, so it does not spend tokens re-judging them. Each filled row is fingerprinted on the way in, so it is not queued again unless its facts change.
 
-**Optional — inside Apps Script (with an API key).** Set `ANTHROPIC_API_KEY` under **Project Settings → Script Properties** (a key from <https://console.anthropic.com/settings/keys>). `setupCloudTask` then installs the Wednesday/Friday review triggers, and verdicts are written back into the tracker's own `TECQ Review` / `Why` columns, so they persist per row and drive the built-in `TECQ Shortlist` tab. Roughly cents per run: only new or changed rows are sent, batched 12 at a time.
+**Optional — inside Apps Script (with an API key).** Set `ANTHROPIC_API_KEY` under **Project Settings → Script Properties** (a key from <https://console.anthropic.com/settings/keys>). `setupCloudTask` then installs the Wednesday/Friday review triggers, and verdicts are written back into the tracker's own `TECQ Review` / `Why` columns, so they persist per row. Roughly cents per run: only new or changed rows are sent, batched 12 at a time.
 
 **There is deliberately no keyword fallback in either mode.** A keyword rule presented as a review looks authoritative and is not.
 
@@ -94,9 +94,9 @@ The judgment is on the primary deliverable purchased. Words like *system*, *deve
 
 **`Not relevant` rows are never deleted or hidden.** They stay on their EPU tab, greyed, with the reason recorded, so a disagreement is visible and correctable.
 
-## TECQ Shortlist
+## Finding the rows to look at
 
-The first tab. Open `Look at` and `Possible` rows only, `Look at` first, then closing date ascending. It is a **view**, rebuilt from the EPU tabs on every collection and every review — never edit it, and never treat it as a second source of truth.
+There is no separate shortlist tab — filter `TECQ Review` on `EPU/CMP/10` and `EPU/SER/34` directly (every tender tab carries a header filter, see below) for `Look at` and `Possible`. Coverage & Method reports the count.
 
 ## Cloud sequence
 
@@ -163,7 +163,7 @@ Every tender tab carries a **filter** over its header row, so columns can be sor
 
 ## Tabs
 
-`TECQ Shortlist`, `EPU/CMP/10`, `EPU/SER/34`, `Closed Tenders`, `Awarded (Intel)`, `Run Ledger`, `Coverage & Method`. All tender tabs carry `Procurement Category` and `Category Group`.
+`EPU/CMP/10`, `EPU/SER/34`, `Closed Tenders`, `Awarded (Intel)`, `Run Ledger`, `Coverage & Method`. All tender tabs carry `Procurement Category` and `Category Group`. No `Scope Summary` column — removed to keep the tabs to the fields actually used.
 
 Rows found in a legacy `Review (Unsure)` tab are re-routed into the two EPU tabs on load. A legacy `TECQ Recommendation` of "Advise to look at" migrates to **`Possible`**, not `Look at` — it was applied by a keyword rule, not a judgment, so it is queued for a real review rather than trusted.
 

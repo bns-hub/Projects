@@ -49,7 +49,7 @@ const env = createEnvironment({
 
 const ss = env.SpreadsheetApp.openById('demo-tracker');
 const row = over => Object.assign({
-  Agency: 'Some Agency', 'Category Group': 'IT&Telecommunication', Source: 'GeBIZ', 'Scope Summary': '',
+  Agency: 'Some Agency', 'Category Group': 'IT&Telecommunication', Source: 'GeBIZ',
   'Publish Date/Time': '28/08/2026', Status: 'Open', Link: '',
 }, over);
 
@@ -70,8 +70,8 @@ rule('STEP 2 — the Wednesday/Friday reviewer runs headlessly');
 console.log(env.runWeeklyReview(true));
 show(env, ss, 'EPU/CMP/10', ['Title', 'TECQ Review', 'Why']);
 
-rule('STEP 3 — the shortlist, which is a view over those verdicts');
-show(env, ss, 'TECQ Shortlist', ['TECQ Review', 'Closing Date/Time', 'Title', 'Why']);
+rule('STEP 3 — filter TECQ Review on the EPU tabs for the shortlist view');
+console.log('(TECQ Shortlist tab removed — filter TECQ Review = Look at / Possible on EPU/CMP/10 and EPU/SER/34 instead)');
 
 rule('STEP 4 — a second collector refresh rebuilds every row from source');
 const before = env.readObjects(ss, 'EPU/CMP/10');

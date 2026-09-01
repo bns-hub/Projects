@@ -41,7 +41,7 @@ function runNow() {
   }
 
   const seconds = Math.round((new Date() - started) / 1000);
-  lines.push('', `Done in ${seconds}s. Open the TECQ Shortlist tab.`);
+  lines.push('', `Done in ${seconds}s.`);
   const summary = lines.join('\n');
   console.log(summary);
   return summary;
@@ -208,12 +208,11 @@ const CONFIG = Object.freeze({
   ],
 });
 
-const OPEN_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Publish Date/Time','Closing Date/Time','Status','TECQ Review','Why','Reviewed On','Review Fingerprint','Link'];
-const SHORTLIST_HEADERS = ['TECQ Review','Closing Date/Time','Title','Agency','Procurement Category','Category Group','Source','Why','Tender/Ref No.','EPU Tab','Link'];
-const CLOSED_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Scope Summary','Closing Date/Time','Move Date','TECQ Review','Why','Link'];
+const OPEN_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Publish Date/Time','Closing Date/Time','Status','TECQ Review','Why','Reviewed On','Review Fingerprint','Link'];
+const CLOSED_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Closing Date/Time','Move Date','TECQ Review','Why','Link'];
 const AWARD_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Category Group','Source','Awarded To','Award Value','Award Date','Link'];
 const LEDGER_HEADERS = ['Date','GeBIZ','TenderBoard','New (GeBIZ)','New (TB)','Notes'];
-const TAB_NAMES = ['TECQ Shortlist','EPU/CMP/10','EPU/SER/34','Closed Tenders','Awarded (Intel)','Run Ledger','Coverage & Method'];
+const TAB_NAMES = ['EPU/CMP/10','EPU/SER/34','Closed Tenders','Awarded (Intel)','Run Ledger','Coverage & Method'];
 
 
 // ---------------------------------------------------------------------------
@@ -300,10 +299,7 @@ function runWeeklyReview(forceRun) {
     buckets.forEach(name => {
       writeTable(ss, name, OPEN_HEADERS, rowsByTab[name].sort(sortPublishDesc));
     });
-    const shortlist = buildShortlist(rowsByTab['EPU/CMP/10'].concat(rowsByTab['EPU/SER/34']))
-      .map(row => Object.assign({}, row, { 'EPU Tab': row._bucket }));
-    writeTable(ss, 'TECQ Shortlist', SHORTLIST_HEADERS, shortlist,
-      'Nothing shortlisted. Rows appear here once the Wednesday/Friday review marks them Look at or Possible.');
+    const shortlist = buildShortlist(rowsByTab['EPU/CMP/10'].concat(rowsByTab['EPU/SER/34']));
     SpreadsheetApp.flush();
 
     const status = `${run.failures.length ? 'PARTIAL' : 'OK'} — ${run.reviewed} reviewed, ${run.skipped} returned no verdict, ${run.batches} batch(es), ${run.details} detail page(s) fetched${run.failures.length ? '; ' + run.failures.join('; ') : ''}`;
@@ -337,14 +333,14 @@ function runWeeklyReview(forceRun) {
 // have no detail page we are allowed to fetch, so they stay listing-only.
 function enrichScopes(rows, run) {
   const targets = rows.filter(row => cleanText(row.Source) === 'GeBIZ' && cleanText(row.Link)
-    && !cleanText(row['Scope Summary'])).slice(0, CONFIG.reviewDetailFetches);
+    && !row._scope).slice(0, CONFIG.reviewDetailFetches);
   if (!targets.length) return;
   const responses = UrlFetchApp.fetchAll(targets.map(row => ({ url: row.Link, muteHttpExceptions: true })));
   responses.forEach((response, index) => {
     if (response.getResponseCode() !== 200) return;
     const scope = extractScope(response.getContentText());
     if (!scope) return;
-    targets[index]['Scope Summary'] = scope;
+    targets[index]._scope = scope;
     run.details += 1;
   });
 }
@@ -411,7 +407,6 @@ function writeSnapshot(trackerFolder, trackerFile, now) {
 
 // Accessors so tests can reference the schemas without duplicating them.
 function openHeaders() { return OPEN_HEADERS; }
-function shortlistHeaders() { return SHORTLIST_HEADERS; }
 function closedHeaders() { return CLOSED_HEADERS; }
 function tabNames() { return TAB_NAMES; }
 function reviewFields() { return REVIEW_FIELDS; }
@@ -669,7 +664,7 @@ function fetchGebiz(run) {
         const row = {
           'Tender/Ref No.': refMatch ? decodeURIComponent(refMatch[1]) : '', Title: title,
           Agency: details.agency, 'Procurement Category': feed.category, Source: 'GeBIZ',
-          'Scope Summary': '', 'Publish Date/Time': details.publish, 'Closing Date/Time': details.closing || 'Unknown',
+          'Publish Date/Time': details.publish, 'Closing Date/Time': details.closing || 'Unknown',
           Status: 'Open', Link: link,
         };
         row['Procurement Category'] = normalizeCategory(row);
@@ -993,10 +988,7 @@ function writeTracker(ss, state, run, cadence) {
   const ser = state.active.filter(r => r._bucket === 'EPU/SER/34').sort(sortPublishDesc);
   state.closed.sort((a, b) => cleanText(a['Closing Date/Time']).localeCompare(cleanText(b['Closing Date/Time'])));
   state.awards.sort((a, b) => cleanText(b['Award Date']).localeCompare(cleanText(a['Award Date'])));
-  const shortlist = buildShortlist(cmp.concat(ser)).map(row => Object.assign({}, row, { 'EPU Tab': row._bucket }));
-  run.shortlistCount = shortlist.length;
-  writeTable(ss, 'TECQ Shortlist', SHORTLIST_HEADERS, shortlist,
-    'Nothing shortlisted. Rows appear here once the Wednesday/Friday review marks them Look at or Possible.');
+  run.shortlistCount = buildShortlist(cmp.concat(ser)).length;
   writeTable(ss, 'EPU/CMP/10', OPEN_HEADERS, cmp);
   writeTable(ss, 'EPU/SER/34', OPEN_HEADERS, ser);
   writeTable(ss, 'Closed Tenders', CLOSED_HEADERS, state.closed);
@@ -1025,7 +1017,7 @@ function writeTracker(ss, state, run, cadence) {
     `Review: ${scriptProperty('lastReviewStatus') || 'handled outside Apps Script'}`,
     `External verdicts (${CONFIG.reviewFile}): ${run.reviewFileStatus} | applied to ${run.reviewsApplied} row(s) this run`,
     `Reviewed: ${countReviews(cmp.concat(ser))} of ${cmp.length + ser.length} open rows | awaiting review ${cmp.concat(ser).filter(needsReview).length} | reviews carried across this refresh ${run.reviewsRestored}`,
-    `TECQ Shortlist: ${run.shortlistCount} open row(s) marked ${REVIEW_LOOK} or ${REVIEW_POSSIBLE}`,
+    `Look at / Possible open rows: ${run.shortlistCount} (filter TECQ Review on EPU/CMP/10 and EPU/SER/34)`,
     `Friday snapshot: ${scriptProperty('lastSnapshot') || 'none yet'}`,
     `Update: permanent sheet updated in place; verified ${TAB_NAMES.length} tabs and row counts`,
     `Errors: ${run.errors.join(' | ') || 'None'}`,
@@ -1111,8 +1103,6 @@ function writeTable(ss, name, headers, rows, emptyMessage) {
     }
   }
   sheet.autoResizeColumns(1, headers.length);
-  const scopeCol = headers.indexOf('Scope Summary') + 1;
-  if (scopeCol) sheet.setColumnWidth(scopeCol, 420);
   const whyCol = headers.indexOf('Why') + 1;
   if (whyCol) sheet.setColumnWidth(whyCol, 380);
   const fingerprintCol = headers.indexOf('Review Fingerprint') + 1;
