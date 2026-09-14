@@ -1,0 +1,23 @@
+{
+  "name": "tender-bid",
+  "version": "0.1.0",
+  "description": "Evidence-based tender bid decisions and historical award research for TOPPAN Ecquaria.",
+  "author": {
+    "name": "TOPPAN Ecquaria"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Tender Bid",
+    "shortDescription": "Assess bids and research tender awards.",
+    "longDescription": "Assess live tender opportunities, pricing and win prospects, or research historical tender awards with clear evidence and source checks.",
+    "developerName": "TOPPAN Ecquaria",
+    "category": "Productivity",
+    "capabilities": ["Research", "Analysis"],
+    "defaultPrompt": [
+      "Assess this tender and recommend whether we should bid.",
+      "Research who won this tender and the awarded value.",
+      "Review this bid pricing against historical benchmarks."
+    ]
+  }
+}
+
