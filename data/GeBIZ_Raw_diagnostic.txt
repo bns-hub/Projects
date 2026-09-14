@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-13T09:43:40+08:00
+GeBIZ crawl OK — 2026-09-14T09:43:46+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 240 across 24 page(s) (stopped at the 7-day window)
+Rows: 230 across 23 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=DST000ETQ26000064
+[1] ref=ITE000ETQ26000108
     type=Quotation  status=OPEN
-    title=PURCHASE OF IT HARDWARE FOR SOFTWARE DEVELOPMENT
-    agency=Defence Science and Technology Agency
-    category=IT&Telecommunication ⇒ Notebooks
-    published=11 Sep 2026 05:50 PM
-    closing=24 Sep 2026 01:00PM
+    title=(R) E26a-00664_HS2_ITQ Nursing Consumables and Equipment 2026
+    agency=Institute of Technical Education
+    category=Dental, Medical & Laboratory ⇒ Laboratory Equipment & Supplies
+    published=14 Sep 2026 09:20 AM
+    closing=23 Sep 2026 01:00PM
 
-[2] ref=NPB000ETT26000102
-    type=Tender  status=OPEN
-    title=PROVISION OF MAINTENANCE AND SUPPORT SERVICES FOR NATIONAL PARKS BOARD (NPARKS) APPLICATIONS FOR FIVE (5) YEARS
-    agency=National Parks Board
-    category=IT&Telecommunication ⇒ IT Services & Software Development
-    published=11 Sep 2026 05:05 PM
-    closing=06 Oct 2026 04:00PM
-
-[3] ref=IMD000ETT26000015
-    type=Tender  status=OPEN
-    title=Provision of testing services to validate local operators' implementations of voice call services
-    agency=Info-communications Media Development Authority
-    category=IT&Telecommunication ⇒ Others
-    published=11 Sep 2026 05:05 PM
-    closing=06 Oct 2026 04:00PM
-
-[4] ref=SDC000ETQ26000043
+[2] ref=MOESCHETQ26003724
     type=Quotation  status=OPEN
-    title=ITQ - Sentosa Wifi Location Analytics Renewal
-    agency=Sentosa Development Corporation
-    category=IT&Telecommunication ⇒ Others
-    published=11 Sep 2026 05:05 PM
-    closing=21 Sep 2026 01:00PM
+    title=Supply of 2 instructors for Modern Dance CCA for base year 2027 & option year 2028
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=14 Sep 2026 09:20 AM
+    closing=23 Sep 2026 01:00PM
 
-[5] ref=HLTHQ0ETT26000037
+[3] ref=NLB000ETT26000030
     type=Tender  status=OPEN
-    title=ITT For NSC Works for Design, Supply and Installation of Pneumatic Tube System for the Proposed Development of Tengah General and Community Hospital
-    agency=Ministry of Health-Ministry Headquarter
-    category=Construction ⇒ Others
-    published=11 Sep 2026 04:20 PM
+    title=INVITATION TO TENDER FOR DESIGN AND BUILD OF INTERACTIVE MULTIMEDIA EXPERIENCES
+    agency=National Library Board
+    category=Services ⇒ Professional Services
+    published=14 Sep 2026 12:05 AM
     closing=12 Oct 2026 04:00PM
+
+[4] ref=DEFNGPP7126101625
+    type=  status=OPEN
+    title=Supply of Ship Spares
+    agency=Ministry of Defence 6
+    category=Miscellaneous ⇒ Others
+    published=14 Sep 2026 12:05 AM
+    closing=05 Oct 2026 04:00PM
+
+[5] ref=NYP000ETQ26000150
+    type=Quotation  status=OPEN
+    title=Renewal of a Two-Years Subscription for Deep Freeze Cloud Ultimate (500 licenses) with Support Services
+    agency=Nanyang Polytechnic
+    category=IT&Telecommunication ⇒ Softwares & Licences
+    published=14 Sep 2026 12:05 AM
+    closing=23 Sep 2026 01:00PM
