@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tender Bid"
+  short_description: "Assess bids and research tender awards"
+  default_prompt: "Use $tender-bid to assess this tender and recommend whether we should bid."
+
