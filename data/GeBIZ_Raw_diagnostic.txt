@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-14T09:43:46+08:00
+GeBIZ crawl OK — 2026-09-15T09:44:36+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 230 across 23 page(s) (stopped at the 7-day window)
+Rows: 60 across 6 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=ITE000ETQ26000108
-    type=Quotation  status=OPEN
-    title=(R) E26a-00664_HS2_ITQ Nursing Consumables and Equipment 2026
-    agency=Institute of Technical Education
-    category=Dental, Medical & Laboratory ⇒ Laboratory Equipment & Supplies
-    published=14 Sep 2026 09:20 AM
-    closing=23 Sep 2026 01:00PM
+[1] ref=HDB000ETT26000163
+    type=Tender  status=OPEN
+    title=SITE PREPARATION WORKS & CONSTRUCTION OF ROAD RELATED FACILITIES AT BUKIT BATOK N3 & TENGAH TOWN
+    agency=Housing and Development Board
+    category=Construction ⇒ Civil Engineering
+    published=15 Sep 2026 09:20 AM
+    closing=30 Sep 2026 04:00PM
 
-[2] ref=MOESCHETQ26003724
+[2] ref=MOESCHETQ26003847
     type=Quotation  status=OPEN
-    title=Supply of 2 instructors for Modern Dance CCA for base year 2027 & option year 2028
+    title=Pei Tong Primary School - Design, Supply & Renovation of Conference Room
+    agency=Ministry of Education - Schools
+    category=Construction ⇒ Renovation Supplies & Services
+    published=15 Sep 2026 09:05 AM
+    closing=29 Sep 2026 01:00PM
+
+[3] ref=MOESCHETQ26003848
+    type=Quotation  status=OPEN
+    title=Supply of Instructors for SwimSafer 2.0 Programme and Singapore Swimming Proficiency Award (SSPA) 2027 to Pri 4 in AIPS
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=15 Sep 2026 09:05 AM
+    closing=24 Sep 2026 01:00PM
+
+[4] ref=MOESCHETQ26003792
+    type=Quotation  status=OPEN
+    title=Supply of Manpower Services for Environmental Education and Day-to-Day Maintenance of the School Green Spaces
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=14 Sep 2026 09:20 AM
-    closing=23 Sep 2026 01:00PM
+    published=15 Sep 2026 08:20 AM
+    closing=24 Sep 2026 01:00PM
 
-[3] ref=NLB000ETT26000030
-    type=Tender  status=OPEN
-    title=INVITATION TO TENDER FOR DESIGN AND BUILD OF INTERACTIVE MULTIMEDIA EXPERIENCES
-    agency=National Library Board
-    category=Services ⇒ Professional Services
-    published=14 Sep 2026 12:05 AM
-    closing=12 Oct 2026 04:00PM
-
-[4] ref=DEFNGPP7126101625
-    type=  status=OPEN
-    title=Supply of Ship Spares
-    agency=Ministry of Defence 6
-    category=Miscellaneous ⇒ Others
-    published=14 Sep 2026 12:05 AM
-    closing=05 Oct 2026 04:00PM
-
-[5] ref=NYP000ETQ26000150
+[5] ref=MOESCHETQ26003791
     type=Quotation  status=OPEN
-    title=Renewal of a Two-Years Subscription for Deep Freeze Cloud Ultimate (500 licenses) with Support Services
-    agency=Nanyang Polytechnic
-    category=IT&Telecommunication ⇒ Softwares & Licences
-    published=14 Sep 2026 12:05 AM
-    closing=23 Sep 2026 01:00PM
+    title=To provide the Services by deploying two (2) competent personnel to support the Student Management functions of the Authority.
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Professional Services
+    published=15 Sep 2026 08:20 AM
+    closing=24 Sep 2026 01:00PM
