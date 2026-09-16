@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-15T09:44:36+08:00
+GeBIZ crawl OK — 2026-09-16T09:43:29+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 60 across 6 page(s)
+Rows: 260 across 26 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=HDB000ETT26000163
+[1] ref=DEFNGPP7126101695
+    type=  status=OPEN
+    title=Supplementary Pre-Qualification Exercise To Tender For Mindef Construction Projects (2nd Half-Yearly Exercise For Year 2026)
+    agency=Ministry of Defence 6
+    category=Miscellaneous ⇒ Others
+    published=16 Sep 2026 12:05 AM
+    closing=15 Mar 2027 04:00PM
+
+[2] ref=NEA000ETT26000045
     type=Tender  status=OPEN
-    title=SITE PREPARATION WORKS & CONSTRUCTION OF ROAD RELATED FACILITIES AT BUKIT BATOK N3 & TENGAH TOWN
-    agency=Housing and Development Board
-    category=Construction ⇒ Civil Engineering
-    published=15 Sep 2026 09:20 AM
-    closing=30 Sep 2026 04:00PM
+    title=Tender for Supply, Delivery, Installation and Commissioning of Safety Enhancement Features at Air Monitoring Stations
+    agency=National Environment Agency
+    category=Miscellaneous ⇒ Others
+    published=16 Sep 2026 12:05 AM
+    closing=14 Oct 2026 04:00PM
 
-[2] ref=MOESCHETQ26003847
-    type=Quotation  status=OPEN
-    title=Pei Tong Primary School - Design, Supply & Renovation of Conference Room
-    agency=Ministry of Education - Schools
-    category=Construction ⇒ Renovation Supplies & Services
-    published=15 Sep 2026 09:05 AM
-    closing=29 Sep 2026 01:00PM
+[3] ref=DEFNGPP7126101686
+    type=  status=OPEN
+    title=F-15 Aircraft Spares
+    agency=Ministry of Defence 6
+    category=Miscellaneous ⇒ Others
+    published=16 Sep 2026 12:05 AM
+    closing=28 Sep 2026 01:00PM
 
-[3] ref=MOESCHETQ26003848
+[4] ref=NEA000ETQ26000094
     type=Quotation  status=OPEN
-    title=Supply of Instructors for SwimSafer 2.0 Programme and Singapore Swimming Proficiency Award (SSPA) 2027 to Pri 4 in AIPS
+    title=Maintenance of Remote Generator Monitoring System in Tuas South Incineration Plant
+    agency=National Environment Agency
+    category=Facilities Management ⇒ Building, M&E Maintenance
+    published=16 Sep 2026 12:05 AM
+    closing=12 Oct 2026 01:00PM
+
+[5] ref=MOESCHETQ26003858
+    type=Quotation  status=OPEN
+    title=Geylang Methodist School (Secondary) Artist in School Scheme Talent Development Vocal Performance Programme
     agency=Ministry of Education - Schools
     category=Administration & Training ⇒ Courses
-    published=15 Sep 2026 09:05 AM
-    closing=24 Sep 2026 01:00PM
-
-[4] ref=MOESCHETQ26003792
-    type=Quotation  status=OPEN
-    title=Supply of Manpower Services for Environmental Education and Day-to-Day Maintenance of the School Green Spaces
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=15 Sep 2026 08:20 AM
-    closing=24 Sep 2026 01:00PM
-
-[5] ref=MOESCHETQ26003791
-    type=Quotation  status=OPEN
-    title=To provide the Services by deploying two (2) competent personnel to support the Student Management functions of the Authority.
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Professional Services
-    published=15 Sep 2026 08:20 AM
-    closing=24 Sep 2026 01:00PM
+    published=16 Sep 2026 12:05 AM
+    closing=25 Sep 2026 01:00PM
