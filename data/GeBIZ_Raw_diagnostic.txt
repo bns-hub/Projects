@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-16T09:43:29+08:00
+GeBIZ crawl OK — 2026-09-17T09:44:00+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 260 across 26 page(s) (stopped at the 7-day window)
+Rows: 250 across 25 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=DEFNGPP7126101695
-    type=  status=OPEN
-    title=Supplementary Pre-Qualification Exercise To Tender For Mindef Construction Projects (2nd Half-Yearly Exercise For Year 2026)
-    agency=Ministry of Defence 6
-    category=Miscellaneous ⇒ Others
-    published=16 Sep 2026 12:05 AM
-    closing=15 Mar 2027 04:00PM
-
-[2] ref=NEA000ETT26000045
-    type=Tender  status=OPEN
-    title=Tender for Supply, Delivery, Installation and Commissioning of Safety Enhancement Features at Air Monitoring Stations
-    agency=National Environment Agency
-    category=Miscellaneous ⇒ Others
-    published=16 Sep 2026 12:05 AM
-    closing=14 Oct 2026 04:00PM
-
-[3] ref=DEFNGPP7126101686
-    type=  status=OPEN
-    title=F-15 Aircraft Spares
-    agency=Ministry of Defence 6
-    category=Miscellaneous ⇒ Others
-    published=16 Sep 2026 12:05 AM
+[1] ref=MOESCHETQ26003856
+    type=Quotation  status=OPEN
+    title=Conceptualization, Design, Production and Delivery of School Yearbook for Eunoia Junior College Yearbook (2025-2026)
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Publications & Periodicals
+    published=17 Sep 2026 09:20 AM
     closing=28 Sep 2026 01:00PM
 
-[4] ref=NEA000ETQ26000094
+[2] ref=HSA000ETQ26000087
     type=Quotation  status=OPEN
-    title=Maintenance of Remote Generator Monitoring System in Tuas South Incineration Plant
-    agency=National Environment Agency
-    category=Facilities Management ⇒ Building, M&E Maintenance
-    published=16 Sep 2026 12:05 AM
-    closing=12 Oct 2026 01:00PM
+    title=SUPPLY AND DELIVERY OF PORTABLE DNA SEQUENCING DEVICE
+    agency=Health Sciences Authority
+    category=Dental, Medical & Laboratory ⇒ Equipment Testing & Calibration Services
+    published=17 Sep 2026 09:05 AM
+    closing=28 Sep 2026 01:00PM
 
-[5] ref=MOESCHETQ26003858
+[3] ref=MOESCHETQ26003867
     type=Quotation  status=OPEN
-    title=Geylang Methodist School (Secondary) Artist in School Scheme Talent Development Vocal Performance Programme
+    title=SUPPLY OF MANPOWER SERVICES FOR NON-TEACHING ADMINISTRATIVE SUPPORT FOR MAHA BODHI SCHOOL IN 2027
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=16 Sep 2026 12:05 AM
-    closing=25 Sep 2026 01:00PM
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=17 Sep 2026 09:05 AM
+    closing=28 Sep 2026 01:00PM
+
+[4] ref=NAC000ETT26000012
+    type=Tender  status=OPEN
+    title=Invitation To Tender (ITT) For Digital Event Solution(s) Vendor For Singapore Art Week In 2027, With An Option To Extend Annually For 2028 And 2029
+    agency=National Arts Council
+    category=IT&Telecommunication ⇒ IT Services & Software Development
+    published=17 Sep 2026 08:35 AM
+    closing=30 Sep 2026 04:00PM
+
+[5] ref=MOESCHETQ26003912
+    type=Quotation  status=OPEN
+    title=Supply of instructor for Speech & Drama CCA Training Programme in Teck Whye Primary School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=17 Sep 2026 08:35 AM
+    closing=28 Sep 2026 01:00PM
