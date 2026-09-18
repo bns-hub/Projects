@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-17T09:44:00+08:00
+GeBIZ crawl OK — 2026-09-18T09:42:51+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 250 across 25 page(s) (stopped at the 7-day window)
+Rows: 280 across 28 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26003856
+[1] ref=INDNLSETQ26000024
     type=Quotation  status=OPEN
-    title=Conceptualization, Design, Production and Delivery of School Yearbook for Eunoia Junior College Yearbook (2025-2026)
-    agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Publications & Periodicals
-    published=17 Sep 2026 09:20 AM
-    closing=28 Sep 2026 01:00PM
-
-[2] ref=HSA000ETQ26000087
-    type=Quotation  status=OPEN
-    title=SUPPLY AND DELIVERY OF PORTABLE DNA SEQUENCING DEVICE
-    agency=Health Sciences Authority
-    category=Dental, Medical & Laboratory ⇒ Equipment Testing & Calibration Services
-    published=17 Sep 2026 09:05 AM
-    closing=28 Sep 2026 01:00PM
-
-[3] ref=MOESCHETQ26003867
-    type=Quotation  status=OPEN
-    title=SUPPLY OF MANPOWER SERVICES FOR NON-TEACHING ADMINISTRATIVE SUPPORT FOR MAHA BODHI SCHOOL IN 2027
-    agency=Ministry of Education - Schools
+    title=Supply of Instructor for Sepak Takraw CCA Training Programme in NorthLight school for Academic Years 2027 and 2028, with option to extend for Academic
+    agency=Northlight School
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=17 Sep 2026 09:05 AM
+    published=18 Sep 2026 09:20 AM
     closing=28 Sep 2026 01:00PM
 
-[4] ref=NAC000ETT26000012
+[2] ref=HDB000ETT26000166
     type=Tender  status=OPEN
-    title=Invitation To Tender (ITT) For Digital Event Solution(s) Vendor For Singapore Art Week In 2027, With An Option To Extend Annually For 2028 And 2029
-    agency=National Arts Council
+    title=MAINTENANCE OF THE ESTATE MANAGEMENT SYSTEM
+    agency=Housing and Development Board
     category=IT&Telecommunication ⇒ IT Services & Software Development
-    published=17 Sep 2026 08:35 AM
-    closing=30 Sep 2026 04:00PM
+    published=18 Sep 2026 08:50 AM
+    closing=16 Oct 2026 04:00PM
 
-[5] ref=MOESCHETQ26003912
+[3] ref=HDB000ETT26000167
+    type=Tender  status=OPEN
+    title=RENOVATION OF FRONTLINE SPACE AT HDB BUKIT BATOK BRANCH
+    agency=Housing and Development Board
+    category=Construction ⇒ Interior Decoration
+    published=18 Sep 2026 08:50 AM
+    closing=09 Oct 2026 04:00PM
+
+[4] ref=MOESCHETQ26003954
     type=Quotation  status=OPEN
-    title=Supply of instructor for Speech & Drama CCA Training Programme in Teck Whye Primary School
+    title=Supply of Instructor for Modern Dance CCA Training Programme in 2027, with the option to renew in 2028 in Dunman Secondary School
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=17 Sep 2026 08:35 AM
-    closing=28 Sep 2026 01:00PM
+    published=18 Sep 2026 08:35 AM
+    closing=29 Sep 2026 01:00PM
+
+[5] ref=MOESCHETQ26003953
+    type=Quotation  status=OPEN
+    title=Instructor Fee for Concert Band (Main and Assistant) for 2027 with option to extend for 1 year in 2028.
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=18 Sep 2026 08:35 AM
+    closing=29 Sep 2026 01:00PM
