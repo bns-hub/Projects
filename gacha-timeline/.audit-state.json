@@ -1,0 +1,113 @@
+{
+  "lastCheckedAt": "2026-09-19T10:35:35.434Z",
+  "sources": {
+    "hsr-official": {
+      "hash": "5d6b74e0",
+      "checkedAt": "2026-09-19T10:35:32.827Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "reader",
+      "snippet": "Title: Honkai: Star Rail official site — The brand-new Version 4.5 \"To Roll the Stars in Astropolis\" is now online! · Published Time: Tue, 25 Aug 2026 06:03:08 GMT · Markdown Content: · ![Image 8](https://act-webstatic.hoyoverse.com/puzzle/hkrpg/pz_0gxSMfsWEq/resource/puzzle/2026/08/03/f621265afadab8278b4bfe411c25d729_5468574178469197171.png?x-oss-process=image/format,webp/quality,Q_90)",
+      "auditedLines": 15
+    },
+    "hsr-hoyolab": {
+      "hash": "9f379b10",
+      "checkedAt": "2026-09-19T10:35:33.288Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "reader",
+      "snippet": "Published Time: Fri, 21 Aug 2026 07:33:43 GMT · Markdown Content: · Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · ![Image 6](https://upload-os-bbs.hoyolab.com/upload/2026/08/25/1773f3e0c8e58a3e55ca75145f98a06b_6008826033665684033.png?x-oss-process=image/auto-orient,0/interlace,1/format,webp/quality,q_70)",
+      "auditedLines": 7
+    },
+    "hsr-hoyolab-official": {
+      "hash": "9f379b10",
+      "checkedAt": "2026-09-19T10:35:33.725Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "reader",
+      "snippet": "Published Time: Fri, 21 Aug 2026 07:33:43 GMT · Markdown Content: · Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · ![Image 7](https://upload-os-bbs.hoyolab.com/upload/2026/08/25/1773f3e0c8e58a3e55ca75145f98a06b_6008826033665684033.png?x-oss-process=image/auto-orient,0/interlace,1/format,webp/quality,q_70)",
+      "auditedLines": 7
+    },
+    "re-official": {
+      "hash": "00e1577e",
+      "checkedAt": "2026-09-19T10:35:33.847Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "direct",
+      "snippet": "It was 23:59.December 31, 1999. Out of the gap between the two centuries, a\"Storm\" poured upwards into the sky. · It was 23:59. December 31, 1999. Out of the gap between the two centuries, a \"Storm\" poured upwards to the",
+      "auditedLines": 4
+    },
+    "re-steam": {
+      "hash": "eb74fa38",
+      "checkedAt": "2026-09-19T10:35:34.196Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "direct",
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Ver. 3.7 - 3rd Anniversary Special Version · Log in to Get Time-Limited 10 Summons for Free",
+      "auditedLines": 320
+    },
+    "re-steam-forum": {
+      "hash": "082f4116",
+      "checkedAt": "2026-09-19T10:35:34.543Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "direct",
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · 17 Sep @ 12:42am",
+      "auditedLines": 6
+    },
+    "czn-community": {
+      "hash": "6af04601",
+      "checkedAt": "2026-09-19T10:35:35.171Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "reader",
+      "snippet": "Title: Chaos Zero Nightmare · URL Source: https://page.onstove.com/chaoszeronightmare/en · Markdown Content: · [Notice] 09/15 (Tue) Patch Notice (Completed)",
+      "auditedLines": 10
+    },
+    "czn-brand": {
+      "hash": "83d6d77c",
+      "checkedAt": "2026-09-19T10:35:35.206Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "direct",
+      "snippet": "Chaos Zero Nightmare: Official Website · An unpredictable journey where survival and ruin are but a decision apart, Chaos Zero Nightmare! Log in now! · Download PC Version · Chaos Zero Nightmare is available on Google Play , App Store , and PC .",
+      "auditedLines": 3
+    },
+    "czn-arabella-rules": {
+      "hash": "a4a88b36",
+      "checkedAt": "2026-09-19T10:35:35.294Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "direct",
+      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026 · Nightmare Team",
+      "auditedLines": 57
+    },
+    "czn-licinia-rules": {
+      "hash": "579ef21f",
+      "checkedAt": "2026-09-19T10:35:35.345Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "direct",
+      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026 · Nightmare Team",
+      "auditedLines": 55
+    },
+    "czn-chizuru-rules": {
+      "hash": "e91e0093",
+      "checkedAt": "2026-09-19T10:35:35.392Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "direct",
+      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026 · Nightmare Team",
+      "auditedLines": 57
+    },
+    "czn-itsuku-rules": {
+      "hash": "af2d06ed",
+      "checkedAt": "2026-09-19T10:35:35.434Z",
+      "changed": false,
+      "firstBaseline": true,
+      "via": "direct",
+      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026 · Nightmare Team",
+      "auditedLines": 55
+    }
+  }
+}

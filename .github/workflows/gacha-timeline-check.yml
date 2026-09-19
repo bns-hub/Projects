@@ -1,0 +1,73 @@
+name: Gacha timeline weekly freshness check
+
+# Weekly automated check: re-fetches the official (non-manual) sources
+# listed in gacha-timeline/index.html's scheduleSources array, compares
+# each one's banner-relevant text against the last recorded snapshot,
+# and opens a draft PR only when a source's content genuinely changed.
+# No LLM / external API key required - see gacha-timeline/AUTOMATION.md
+# for the full design notes and its honest limitations.
+
+on:
+  schedule:
+    # Monday 09:00 SGT (01:00 UTC) - weekly, clear of the
+    # tenderboard/gebiz crawls earlier in the SGT morning.
+    - cron: "0 1 * * 1"
+      timezone: "Asia/Singapore"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: gacha-timeline-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run source freshness check
+        id: check
+        run: node gacha-timeline/scripts/check-sources.mjs
+
+      - name: Open draft PR if any source changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- gacha-timeline/.audit-state.json; then
+            echo "No source changes detected. Nothing to do."
+            exit 0
+          fi
+
+          changed_count=$(node -e "console.log(JSON.parse(require('fs').readFileSync('gacha-timeline/.last-check-summary.json','utf8')).changed.length)")
+          if [ "$changed_count" = "0" ]; then
+            echo "Audit state file drifted (timestamps etc.) but no source content actually changed. Not opening a PR."
+            git checkout -- gacha-timeline/.audit-state.json
+            exit 0
+          fi
+
+          date_tag=$(date -u +%Y-%m-%d)
+          branch="gacha-timeline-check/${date_tag}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add gacha-timeline/.audit-state.json
+          git commit -m "Gacha timeline: source snapshot update (${date_tag})"
+          git push origin "$branch"
+
+          node gacha-timeline/scripts/build-pr-body.mjs > /tmp/pr-body.md
+
+          gh pr create --draft --base main --head "$branch" \
+            --title "Gacha timeline: ${changed_count} source(s) changed (${date_tag})" \
+            --body-file /tmp/pr-body.md
