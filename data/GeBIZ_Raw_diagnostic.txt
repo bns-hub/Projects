@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-18T09:42:51+08:00
+GeBIZ crawl OK — 2026-09-19T09:43:54+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 280 across 28 page(s) (stopped at the 7-day window)
+Rows: 320 across 32 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=INDNLSETQ26000024
+[1] ref=FINCEDETQ26000007
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Sepak Takraw CCA Training Programme in NorthLight school for Academic Years 2027 and 2028, with option to extend for Academic
-    agency=Northlight School
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=18 Sep 2026 09:20 AM
+    title=INVITATION TO QUOTE FOR THE REPLACEMENT AND DISPOSAL OF NOTICES AND LIFE-SIZED HUMAN STANDEES (INCLUDING DESIGN, SUPPLY AND DELIVERY)
+    agency=Ministry of Finance - Singapore Customs
+    category=Construction ⇒ Signages
+    published=18 Sep 2026 09:35 PM
+    closing=30 Sep 2026 01:00PM
+
+[2] ref=MOESCHETQ26003850
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Badminton CCA Training Programme for Year 2027 with Option to Extend to Year 2028 in Manjusri Secondary School)
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=18 Sep 2026 06:20 PM
     closing=28 Sep 2026 01:00PM
 
-[2] ref=HDB000ETT26000166
-    type=Tender  status=OPEN
-    title=MAINTENANCE OF THE ESTATE MANAGEMENT SYSTEM
-    agency=Housing and Development Board
-    category=IT&Telecommunication ⇒ IT Services & Software Development
-    published=18 Sep 2026 08:50 AM
-    closing=16 Oct 2026 04:00PM
-
-[3] ref=HDB000ETT26000167
-    type=Tender  status=OPEN
-    title=RENOVATION OF FRONTLINE SPACE AT HDB BUKIT BATOK BRANCH
-    agency=Housing and Development Board
-    category=Construction ⇒ Interior Decoration
-    published=18 Sep 2026 08:50 AM
-    closing=09 Oct 2026 04:00PM
-
-[4] ref=MOESCHETQ26003954
+[3] ref=SDC000ETQ26000044
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Modern Dance CCA Training Programme in 2027, with the option to renew in 2028 in Dunman Secondary School
+    title=INVITATION TO QUOTE FOR HYDROGRAPHIC (BATHYMETRIC) SURVEY FOR NORTH COVE AND SOUTH COVE CANAL WATERWAY AT SENTOSA COVE (BATCH 2026)
+    agency=Sentosa Development Corporation
+    category=Miscellaneous ⇒ Others
+    published=18 Sep 2026 06:05 PM
+    closing=07 Oct 2026 01:00PM
+
+[4] ref=MOESCHETQ26003955
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Tennis CCA Training Programme in Catholic JC - Base Period (1 Jan to 31 Dec 2027) Option Period (1 Jan - 31 Dec 2028)
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=18 Sep 2026 08:35 AM
-    closing=29 Sep 2026 01:00PM
+    published=18 Sep 2026 05:50 PM
+    closing=28 Sep 2026 01:00PM
 
-[5] ref=MOESCHETQ26003953
+[5] ref=MOESCHETQ26004011
     type=Quotation  status=OPEN
-    title=Instructor Fee for Concert Band (Main and Assistant) for 2027 with option to extend for 1 year in 2028.
+    title=Supply of Instructor for Dance Ensemble CCA Training Programme in Marymount Convent School
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=18 Sep 2026 08:35 AM
-    closing=29 Sep 2026 01:00PM
+    published=18 Sep 2026 05:35 PM
+    closing=28 Sep 2026 01:00PM
