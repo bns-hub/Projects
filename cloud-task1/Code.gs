@@ -17,8 +17,8 @@ const CONFIG = Object.freeze({
   ],
 });
 
-const OPEN_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Source','Scope Summary','Publish Date/Time','Closing Date/Time','Status','TECQ Recommendation','Link'];
-const CLOSED_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Source','Scope Summary','Closing Date/Time','Move Date','TECQ Recommendation','Link'];
+const OPEN_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Source','Scope Summary','Publish Date/Time','Closing Date/Time','Status','TECQ Recommendation','TECQ Review','Link'];
+const CLOSED_HEADERS = ['Tender/Ref No.','Title','Agency','Procurement Category','Source','Scope Summary','Closing Date/Time','Move Date','TECQ Recommendation','TECQ Review','Link'];
 const REVIEW_HEADERS = OPEN_HEADERS.slice(0, -1).concat(['Why Unsure','Link']);
 const AWARD_HEADERS = ['Tender/Ref No.','Title','Agency','Source','Awarded To','Award Value','Award Date','Link'];
 const LEDGER_HEADERS = ['Date','GeBIZ','TenderBoard','New (GeBIZ)','New (TB)','Notes'];
