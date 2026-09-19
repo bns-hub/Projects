@@ -15,10 +15,8 @@ deliberately more conservative design:
 - `check-sources.mjs` ports the exact change-detection algorithm
   already built into `index.html`'s own "⟳ Check all banner info"
   button (`fastHash`, `compactSourceText`, `extractBannerAuditLines`,
-  the `BANNER_AUDIT_FIELDS` keyword taxonomy, and the direct-fetch +
-  Jina Reader relay fallback for sites that block or don't render for
-  a plain fetch). Same logic, running headless on a schedule instead
-  of waiting for someone to click the button.
+  the `BANNER_AUDIT_FIELDS` keyword taxonomy). Same logic, running on
+  a schedule instead of waiting for someone to click the button.
 - It can reliably answer "did this official source's banner-relevant
   text change since last time?" without any reasoning model, because
   that's a hash comparison, not a comprehension task.
@@ -43,6 +41,48 @@ So the loop is:
 
 This trades "fully hands-off" for "zero ongoing cost and zero new
 credential" - the explicit tradeoff the owner asked for.
+
+## Fetch strategy: three tiers, cheapest first
+
+For each auto-checkable source, `check-sources.mjs` tries, in order:
+
+1. **A source-specific override** (`CUSTOM_FETCHERS`) - calls a site's
+   own public JSON API directly when one's been found, e.g. `re-news`.
+   Fastest and most precise, but has to be discovered per-site, so it
+   only exists where someone's actually gone and found the API.
+2. **A plain HTTP fetch** of the official URL - works for ordinary
+   server-rendered pages (most Steam pages, `czn-news`,
+   `re-official`, the CZN probability mirrors, etc).
+3. **A real headless-Chromium render** (via Playwright) - the
+   fallback for pages whose content only exists after client-side JS
+   runs. This replaced an earlier Jina Reader (public third-party
+   relay) fallback, which repeatedly proved unable to reliably render
+   these specific sites - confirmed live, not assumed: it returned an
+   empty site shell for `hsr-news` even with an extended render
+   timeout and an explicit wait-for-selector hint. A real browser
+   fixes this at the root instead of chasing it site by site.
+   Confirmed live: this is what actually surfaced the real
+   **HSR Version 4.6 "Dance With the Beast Before Moonrise" Special
+   Program** announcement from HoYoLAB the first time this ran with
+   it - see the "Known limitations" section below for what's still
+   weak even with a real browser.
+
+The browser is launched **lazily and once per run** (only if some
+source actually needs it), and each source gets its own page rather
+than its own browser, to keep the run fast. A couple of sources need
+extra help beyond "load the page and read it" - see `RENDER_HINTS` in
+the script (currently just `hsr-hoyolab`, which needs a few
+scroll-and-wait cycles to trigger its infinite-scroll loader).
+
+**This is a real trade-off, not a free upgrade:** the script went from
+zero dependencies to one (`playwright`, MIT-licensed, no paid service
+or new secret involved), and the CI job now installs a ~200MB Chromium
+binary (cached across runs via `actions/cache`, keyed on
+`package-lock.json`, so only the first run after a version bump pays
+the download) and spends several more seconds per source that needs a
+real render. Still comfortably inside the job's timeout (raised to 20
+minutes as a safety margin), but it is a heavier job than the original
+~10-second, dependency-free script.
 
 ## Required secrets
 
@@ -75,27 +115,25 @@ not just approval.
 ## Known limitations (found by actually running this against the real
 sources, not assumed)
 
-- **Some official pages are JS-rendered SPAs** (confirmed: HSR's
-  official site and HoYoLAB return an near-empty bootstrap shell to a
-  plain fetch - same content hash regardless of real page content).
-  The script detects this (no banner-audit-relevant text survives tag
-  stripping) and falls back to the Jina Reader public relay, which
-  renders headlessly. HoYoLAB's community feed (`hsr-hoyolab`) still
-  comes back mostly empty even through the relay - it's an
-  infinite-scroll feed that doesn't finish loading in time. Its
-  snapshot is saved anyway so a genuine future change can still be
-  seen, but don't expect it to reliably catch everything.
-- **`hsr-news` still has weak automated coverage.**
-  `hsr-news` (`hsr.hoyoverse.com/en-us/news?type=news_all`) is a
-  client-rendered Nuxt app with no embedded data in its initial HTML
-  (confirmed: the raw response is a fixed shell regardless of what's
-  posted) and no discoverable public JSON API behind it (checked its
-  network traffic directly - the article list is fetched via a call
-  this session couldn't identify). The Jina Reader relay only gets the
-  shell too, not the rendered list. It's kept in `scheduleSources` as
-  a manual link and its snapshot can still catch the rare case where
-  the shell itself changes, but don't rely on it to catch a real news
-  article by itself.
+- **`hsr-official`, `hsr-news`, `hsr-hoyolab`, and `hsr-hoyolab-official`
+  are all JS-rendered and needed the headless-render fallback to work
+  at all** (confirmed: a plain fetch of any of them returns a
+  near-empty bootstrap shell - same content hash regardless of real
+  page content). All four now fall back to a real headless-Chromium
+  render and get real content - confirmed live, with a stable hash
+  across back-to-back runs. `hsr-hoyolab` specifically needed the
+  extra `RENDER_HINTS` scroll-and-wait treatment for its
+  infinite-scroll feed; without it, it still came back mostly empty
+  even with a real browser attached.
+- **`hsr-news`'s real content is a news-listing page, not full article
+  bodies.** `hsr-news` (`hsr.hoyoverse.com/en-us/news?type=news_all`)
+  now reliably captures the titles/blurbs of the current news list
+  (confirmed: it correctly reflects e.g. "Version 4.5 ... Update
+  Details" as the current top article). It does not click into each
+  article, so a hash change here means "the news list changed" (a new
+  post appeared, or an old one dropped off) - reviewing the linked
+  page directly (or asking Claude Code to) is still the way to get the
+  actual patch/banner details out of a "changed" result.
 - **`re-news` was fixed with a source-specific override, not scraping.**
   `re-news` (`re1999.bluepoch.com/en/home/detail.html#news`) used to
   have the same weak coverage as `hsr-news` for a structural reason:

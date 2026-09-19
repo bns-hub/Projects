@@ -1,36 +1,36 @@
 {
-  "lastCheckedAt": "2026-09-19T11:29:22.665Z",
+  "lastCheckedAt": "2026-09-19T12:01:14.624Z",
   "sources": {
     "hsr-official": {
-      "hash": "5d6b74e0",
-      "checkedAt": "2026-09-19T11:29:19.545Z",
+      "hash": "c7a2f4b3",
+      "checkedAt": "2026-09-19T12:00:58.044Z",
       "changed": false,
       "firstBaseline": false,
-      "via": "reader",
-      "snippet": "Title: Honkai: Star Rail official site — The brand-new Version 4.5 \"To Roll the Stars in Astropolis\" is now online! · Published Time: Tue, 25 Aug 2026 06:03:08 GMT · Markdown Content: · ![Image 8](https://act-webstatic.hoyoverse.com/puzzle/hkrpg/pz_0gxSMfsWEq/resource/puzzle/2026/08/03/f621265afadab8278b4bfe411c25d729_5468574178469197171.png?x-oss-process=image/format,webp/quality,Q_90)",
-      "auditedLines": 15
+      "via": "headless",
+      "snippet": "Limited 5-Star Character · Limited 5-Star Character · Go to Version Highlights page to learn more · Go to Version Highlights page to learn more",
+      "auditedLines": 14
     },
     "hsr-hoyolab": {
-      "hash": "9f379b10",
-      "checkedAt": "2026-09-19T11:29:20.563Z",
+      "hash": "4b2210b6",
+      "checkedAt": "2026-09-19T12:01:08.560Z",
       "changed": false,
       "firstBaseline": false,
-      "via": "reader",
-      "snippet": "Published Time: Fri, 21 Aug 2026 07:33:43 GMT · Markdown Content: · Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · ![Image 6](https://upload-os-bbs.hoyolab.com/upload/2026/08/25/1773f3e0c8e58a3e55ca75145f98a06b_6008826033665684033.png?x-oss-process=image/auto-orient,0/interlace,1/format,webp/quality,q_70)",
+      "via": "headless",
+      "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · Himeko • Nova · We will recommend content based on your chosen interests",
       "auditedLines": 7
     },
     "hsr-hoyolab-official": {
-      "hash": "9f379b10",
-      "checkedAt": "2026-09-19T11:29:21.144Z",
+      "hash": "da303bb7",
+      "checkedAt": "2026-09-19T12:01:10.347Z",
       "changed": false,
       "firstBaseline": false,
-      "via": "reader",
-      "snippet": "Published Time: Fri, 21 Aug 2026 07:33:43 GMT · Markdown Content: · Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · ![Image 7](https://upload-os-bbs.hoyolab.com/upload/2026/08/25/1773f3e0c8e58a3e55ca75145f98a06b_6008826033665684033.png?x-oss-process=image/auto-orient,0/interlace,1/format,webp/quality,q_70)",
-      "auditedLines": 7
+      "via": "headless",
+      "snippet": "Honkai: Star Rail Version 4.6 \"Dance With the Beast Before Moonrise\" Special Program · [Rewarded Event] Aventurine • Waveflair Spotlight! · 【Rewarded Event】Aventurine • Waveflair Strategy Discussion Event · \"Minuscule Great Adventure\" Event Introduction",
+      "auditedLines": 12
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-09-19T11:29:21.251Z",
+      "checkedAt": "2026-09-19T12:01:10.572Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -39,7 +39,7 @@
     },
     "re-steam": {
       "hash": "eb74fa38",
-      "checkedAt": "2026-09-19T11:29:21.605Z",
+      "checkedAt": "2026-09-19T12:01:11.125Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -48,7 +48,7 @@
     },
     "re-steam-forum": {
       "hash": "082f4116",
-      "checkedAt": "2026-09-19T11:29:21.869Z",
+      "checkedAt": "2026-09-19T12:01:11.857Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -56,17 +56,17 @@
       "auditedLines": 6
     },
     "czn-community": {
-      "hash": "6af04601",
-      "checkedAt": "2026-09-19T11:29:22.390Z",
+      "hash": "76461c55",
+      "checkedAt": "2026-09-19T12:01:14.374Z",
       "changed": false,
       "firstBaseline": false,
-      "via": "reader",
-      "snippet": "Title: Chaos Zero Nightmare · URL Source: https://page.onstove.com/chaoszeronightmare/en · Markdown Content: · [Notice] 09/15 (Tue) Patch Notice (Completed)",
-      "auditedLines": 10
+      "via": "headless",
+      "snippet": "",
+      "auditedLines": 2
     },
     "czn-brand": {
       "hash": "83d6d77c",
-      "checkedAt": "2026-09-19T11:29:22.414Z",
+      "checkedAt": "2026-09-19T12:01:14.400Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -75,7 +75,7 @@
     },
     "czn-arabella-rules": {
       "hash": "a4a88b36",
-      "checkedAt": "2026-09-19T11:29:22.476Z",
+      "checkedAt": "2026-09-19T12:01:14.452Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -84,7 +84,7 @@
     },
     "czn-licinia-rules": {
       "hash": "579ef21f",
-      "checkedAt": "2026-09-19T11:29:22.529Z",
+      "checkedAt": "2026-09-19T12:01:14.497Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -93,7 +93,7 @@
     },
     "czn-chizuru-rules": {
       "hash": "e91e0093",
-      "checkedAt": "2026-09-19T11:29:22.593Z",
+      "checkedAt": "2026-09-19T12:01:14.554Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -102,7 +102,7 @@
     },
     "czn-itsuku-rules": {
       "hash": "af2d06ed",
-      "checkedAt": "2026-09-19T11:29:22.665Z",
+      "checkedAt": "2026-09-19T12:01:14.595Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -110,17 +110,17 @@
       "auditedLines": 55
     },
     "hsr-news": {
-      "hash": "f5cdc50b",
-      "checkedAt": "2026-09-19T11:29:19.983Z",
+      "hash": "8e761e02",
+      "checkedAt": "2026-09-19T12:01:00.661Z",
       "changed": false,
       "firstBaseline": false,
-      "via": "reader",
-      "snippet": "Title: Honkai: Star Rail official website | May this journey lead us starward · Published Time: Tue, 25 Aug 2026 22:57:39 GMT · Markdown Content: · ![Image 5](blob:https://hsr.hoyoverse.com/6b0c20130982c02ac690ee33f153a879)![Image 6](https://hsr.hoyoverse.com/)![Image 7](blob:https://hsr.hoyoverse.com/074dfd7244c691461957609b99b527cd)",
-      "auditedLines": 1
+      "via": "headless",
+      "snippet": "Version 4.5 \"To Roll the Stars in Astropolis\" Update Details · Subscribe to Pom-Pom's official Star Rail news to stay up to date with the latest information, character intel, and limited-time event rewards. · I agree for my personal data to be collected and used to receive event invitations and other game info. Read details >> · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc.",
+      "auditedLines": 4
     },
     "re-news": {
       "hash": "d49130f7",
-      "checkedAt": "2026-09-19T11:29:21.308Z",
+      "checkedAt": "2026-09-19T12:01:10.848Z",
       "changed": false,
       "firstBaseline": false,
       "via": "api",
@@ -129,7 +129,7 @@
     },
     "czn-news": {
       "hash": "350ec3b4",
-      "checkedAt": "2026-09-19T11:29:21.943Z",
+      "checkedAt": "2026-09-19T12:01:11.924Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
