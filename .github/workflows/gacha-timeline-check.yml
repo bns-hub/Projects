@@ -1,0 +1,104 @@
+name: Gacha timeline weekly freshness check
+
+# Weekly automated check: re-reads the official sources listed in
+# gacha-timeline/index.html's scheduleSources array, compares them against
+# the banner data in that file's games array, and opens a draft PR only if
+# something genuinely changed. See gacha-timeline/AUTOMATION.md for the
+# full design notes.
+
+on:
+  schedule:
+    # Monday 09:00 SGT (01:00 UTC) - once a week, well clear of the
+    # tenderboard/gebiz crawls which run earlier in the SGT morning.
+    - cron: "0 1 * * 1"
+      timezone: "Asia/Singapore"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: gacha-timeline-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run freshness check with Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: |
+            --allowedTools "Read,Edit,WebFetch,Bash(git:*),Bash(gh pr:*),Bash(gh auth:*),Bash(date:*)"
+          prompt: |
+            REPO: ${{ github.repository }}
+            TARGET FILE: gacha-timeline/index.html (do not touch any other file or folder in this repo)
+
+            You are doing a weekly freshness check for a self-contained gacha
+            banner timeline page. Follow these steps exactly.
+
+            1. Read gacha-timeline/index.html. Inside its <script> block find:
+               - the `scheduleSources` array: one entry per official/community
+                 source, per game (HSR, RE1999, CZN).
+               - the `games` array: the actual timeline data you are
+                 verifying (patch names/dates, banner names/dates, lineups,
+                 pity/guarantee/rule text, patch association).
+
+            2. Build the list of sources to fetch: every entry in
+               `scheduleSources` EXCEPT any whose `url` host is
+               reddit.com, x.com, twitter.com, or youtube.com, and except
+               any entry with `unofficial:true`. Those are player-run or
+               known to block automated fetches; never fetch them and never
+               treat their content as a source of truth. If you notice the
+               source list uses different flags than described here, follow
+               what the data actually contains rather than assuming.
+
+            3. For each remaining source, use WebFetch to read the live
+               page. Compare what you find against the corresponding
+               game's entries in the `games` array: banner/patch names,
+               start/end dates (the site normalizes everything to
+               Singapore time, UTC+8 - convert accordingly), featured
+               lineup, and pity/guarantee/carry-over/rerun rule text.
+
+            4. Only when a source clearly and confirmably shows a real
+               change (a new/updated banner, a corrected date, a lineup
+               change, a rewritten pity/guarantee rule, a different patch
+               association), edit the relevant entry in the `games` array
+               in gacha-timeline/index.html to match. Make the smallest
+               edit that fixes the entry - do not reformat, reorder, or
+               rewrite anything else in the file, and do not touch the
+               `scheduleSources` array, CSS, or any HTML/JS outside the
+               `games` data.
+
+            5. If a source cannot be confirmed (fetch fails, page is
+               unreadable, content is ambiguous), leave the existing entry
+               exactly as-is. Never invent, guess, or fill in banner data
+               that you could not actually confirm from a fetched source.
+
+            6. If, after checking every source, nothing in `games` needed
+               to change: do nothing further. Do not create a branch,
+               commit, or PR. End your run by stating clearly "No changes
+               found" and which sources you checked.
+
+            7. If you made changes: create a new branch named
+               gacha-timeline-check/<YYYY-MM-DD> off main, commit only
+               gacha-timeline/index.html with a clear message, push it,
+               and open a **draft** pull request against main using
+               `gh pr create --draft`. Never push to main directly. Never
+               merge or mark the PR ready for review yourself.
+
+               The PR description must list, for every change you made:
+               - which banner/patch entry changed
+               - exactly what changed (old value -> new value)
+               - which source URL you confirmed it from
+
+               If you found nothing to fix, skip this step entirely - an
+               empty or "just in case" PR is worse than no PR.
