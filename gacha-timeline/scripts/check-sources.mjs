@@ -188,15 +188,18 @@ function fastHash(text) {
   return (h >>> 0).toString(16).padStart(8, "0");
 }
 
-async function fetchWithTimeout(url, timeout = 12000) {
+async function fetchWithTimeout(url, timeout = 12000, init = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
   try {
     const response = await fetch(url, {
       signal: controller.signal,
+      method: init.method || "GET",
+      body: init.body,
       headers: {
         Accept: "text/plain,text/html,*/*",
-        "User-Agent": "Mozilla/5.0 (compatible; gacha-timeline-check/1.0; +https://github.com/bns-hub/Projects)"
+        "User-Agent": "Mozilla/5.0 (compatible; gacha-timeline-check/1.0; +https://github.com/bns-hub/Projects)",
+        ...(init.headers || {})
       }
     });
     if (!response.ok) throw new Error("HTTP " + response.status);
@@ -205,6 +208,45 @@ async function fetchWithTimeout(url, timeout = 12000) {
     clearTimeout(timer);
   }
 }
+
+// Per-source overrides for sources where scraping the rendered page is
+// unreliable but the site's own JSON API is public and stable. Each
+// override must return plain text - the normal compactSourceText /
+// extractBannerAuditLines / fastHash pipeline handles the rest exactly
+// as it does for a direct/relay fetch.
+const CUSTOM_FETCHERS = {
+  // re1999.bluepoch.com's news tab is client-rendered and its content
+  // never reaches a plain fetch or the Jina Reader relay (confirmed
+  // live: the `#news` part of its URL is a hash fragment, never sent
+  // to the server, and neither a direct fetch nor a relayed render
+  // picks up the client-side article list). The page's own front-end
+  // (js/api.js) pulls that list from this public JSON endpoint with
+  // gameId 60001 - calling it directly is both more reliable and
+  // avoids needing a headless browser. Confirmed live: returns the
+  // real current news list (e.g. the Ver. 3.8 preview article) with
+  // no auth required.
+  async "re-news"() {
+    const body = JSON.stringify({ gameId: 60001, current: 1, pageSize: 10 });
+    const raw = await fetchWithTimeout(
+      "https://re1999.bluepoch.com/activity/official/websites/information/query",
+      9000,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body }
+    );
+    const parsed = JSON.parse(raw);
+    const items = parsed?.data?.pageData;
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new Error("re-news API returned no pageData");
+    }
+    return items
+      .map((item) => {
+        const date = (item.onlineTime || "").slice(0, 10);
+        const title = item.title || "";
+        const content = stripHtmlNoise(item.content || "");
+        return `${date} - ${title}\n${content}`;
+      })
+      .join("\n\n---\n\n");
+  }
+};
 
 function hasReadableContent(rawText) {
   // A JS-rendered SPA shell (Nuxt/Next/React bootstrap HTML) can easily
@@ -221,6 +263,11 @@ function hasReadableContent(rawText) {
 }
 
 async function fetchSourceText(source) {
+  // 0) A source-specific override (its own JSON API) beats scraping.
+  if (CUSTOM_FETCHERS[source.id]) {
+    return { text: await CUSTOM_FETCHERS[source.id](), via: "api" };
+  }
+
   // 1) Direct official source first.
   // 2) If it blocks the fetch, errors, or turns out to be an empty
   //    client-side-rendered shell with no readable content, fall back
