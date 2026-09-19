@@ -1,2 +1,6 @@
 # Regenerated every workflow run; not meant to be versioned.
 .last-check-summary.json
+
+# Installed by `npm install` / the CI workflow; scripts/package-lock.json
+# pins versions, this directory is just the local install.
+scripts/node_modules/

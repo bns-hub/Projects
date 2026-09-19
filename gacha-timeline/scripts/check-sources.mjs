@@ -3,13 +3,24 @@
   Weekly source freshness check - no LLM, no external API key.
 
   Ports the exact "Check all banner info" logic already built into
-  index.html (fastHash / compactSourceText / extractBannerAuditLines /
-  fetchSourceText with the Jina Reader CORS fallback) so the unattended
-  weekly run behaves identically to a manual in-browser check. It can
-  only detect that an official source's banner-relevant text changed
-  since the last check - it does not (and, without an LLM, safely
-  cannot) decide *how* to edit the `games` array itself. See
-  gacha-timeline/AUTOMATION.md for the full design rationale.
+  index.html (fastHash / compactSourceText / extractBannerAuditLines)
+  so the unattended weekly run behaves identically to a manual
+  in-browser check. It can only detect that an official source's
+  banner-relevant text changed since the last check - it does not
+  (and, without an LLM, safely cannot) decide *how* to edit the
+  `games` array itself. See gacha-timeline/AUTOMATION.md for the full
+  design rationale.
+
+  Fetch strategy per source (fastest/most-precise first):
+    0) A source-specific override (CUSTOM_FETCHERS) - calls a site's
+       own public JSON API directly when one is known, e.g. re-news.
+    1) A plain HTTP fetch of the official URL - works for ordinary
+       server-rendered pages.
+    2) A real headless-Chromium render (Playwright) - the fallback for
+       pages that only work as-tested here, without the LLM-based
+       approach). Replaces this script's original Jina Reader relay
+       fallback, which proved unable to reliably render several of
+       these sites' client-side content (see AUTOMATION.md).
 
   Exit behaviour:
     - Writes/updates gacha-timeline/.audit-state.json in place.
@@ -22,6 +33,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { chromium } from "playwright";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
@@ -262,32 +274,67 @@ function hasReadableContent(rawText) {
   return extractBannerAuditLines(text).length > 0;
 }
 
-async function fetchSourceText(source) {
+// Per-source rendering hints for the headless-browser fallback. Most
+// SPAs just need `waitUntil: "networkidle"` (the default below), but a
+// few need something extra - e.g. HoYoLAB's community feed is an
+// infinite-scroll list that doesn't finish loading on its own
+// (confirmed live: it's still mostly empty after a plain networkidle
+// wait), so it gets a few scroll-and-wait cycles first.
+const RENDER_HINTS = {
+  "hsr-hoyolab": { scrollCycles: 4, scrollWaitMs: 1200 }
+};
+
+async function renderWithBrowser(getBrowser, source) {
+  const browser = await getBrowser();
+  const hints = RENDER_HINTS[source.id] || {};
+  const page = await browser.newPage({
+    userAgent: "Mozilla/5.0 (compatible; gacha-timeline-check/1.0; +https://github.com/bns-hub/Projects)"
+  });
+  try {
+    await page.goto(source.url, { waitUntil: "networkidle", timeout: 20000 }).catch(() => {
+      // Some sites never go fully idle (background polling, analytics
+      // beacons); fall through and read whatever rendered so far.
+    });
+
+    for (let i = 0; i < (hints.scrollCycles || 0); i++) {
+      await page.mouse.wheel(0, 2000);
+      await page.waitForTimeout(hints.scrollWaitMs || 1000);
+    }
+
+    const text = await page.evaluate(() => document.body?.innerText || "");
+    return text;
+  } finally {
+    await page.close();
+  }
+}
+
+async function fetchSourceText(source, getBrowser) {
   // 0) A source-specific override (its own JSON API) beats scraping.
   if (CUSTOM_FETCHERS[source.id]) {
     return { text: await CUSTOM_FETCHERS[source.id](), via: "api" };
   }
 
-  // 1) Direct official source first.
+  // 1) Direct official source first - works fine for ordinary
+  //    server-rendered pages and is far cheaper than a browser launch.
   // 2) If it blocks the fetch, errors, or turns out to be an empty
   //    client-side-rendered shell with no readable content, fall back
-  //    to the Jina Reader public text relay (which renders headlessly)
-  //    - same two-step approach the in-page checker uses, extended to
-  //    also catch "fetched fine but there's nothing here" SPA shells.
+  //    to a real headless-Chromium render, which can execute the
+  //    page's own JS instead of guessing at its output. The browser
+  //    itself is launched lazily (see getBrowser) so a run where every
+  //    source succeeds via a direct fetch never pays the launch cost.
   try {
     const direct = await fetchWithTimeout(source.url, 9000);
     const stripped = direct ? stripHtmlNoise(direct) : "";
     if (stripped && hasReadableContent(stripped)) return { text: stripped, via: "direct" };
   } catch {
-    // fall through to relay
+    // fall through to headless render
   }
 
-  const readerUrl = "https://r.jina.ai/" + source.url;
-  const relayed = await fetchWithTimeout(readerUrl, 14000);
-  if (!relayed || relayed.length < 250) {
-    throw new Error("No readable public response");
+  const rendered = await renderWithBrowser(getBrowser, source);
+  if (!rendered || rendered.trim().length < 250) {
+    throw new Error("No readable content after headless render");
   }
-  return { text: relayed, via: "reader" };
+  return { text: rendered, via: "headless" };
 }
 
 function extractScheduleSources(html) {
@@ -325,10 +372,19 @@ async function main() {
   const changedSummaries = [];
   const failedSummaries = [];
 
+  // One browser instance for the whole run (launched lazily, only if a
+  // source actually needs it) - a new page per source, not a new
+  // browser, keeps this fast and light on CI resources.
+  let browser = null;
+  async function getBrowser() {
+    if (!browser) browser = await chromium.launch();
+    return browser;
+  }
+
   for (const source of toCheck) {
     const previous = previousState.sources[source.id];
     try {
-      const fetched = await fetchSourceText(source);
+      const fetched = await fetchSourceText(source, getBrowser);
       const text = compactSourceText(fetched.text);
       const scheduleLines = extractScheduleLines(text);
       const bannerAuditLines = extractBannerAuditLines(text);
@@ -379,6 +435,8 @@ async function main() {
       console.log(`FAILED   ${source.game.padEnd(8)} ${source.id}: ${message}`);
     }
   }
+
+  if (browser) await browser.close();
 
   const nextState = {
     lastCheckedAt: new Date().toISOString(),

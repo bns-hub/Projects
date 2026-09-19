@@ -1,0 +1,9 @@
+{
+  "name": "gacha-timeline-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Weekly source freshness checker for the gacha timeline page. See ../AUTOMATION.md.",
+  "dependencies": {
+    "playwright": "^1.47.0"
+  }
+}
