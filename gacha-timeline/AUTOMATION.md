@@ -1,54 +1,99 @@
 # Weekly freshness check - how it works
 
 Workflow: `.github/workflows/gacha-timeline-check.yml`
+Script: `gacha-timeline/scripts/check-sources.mjs`
 
-## Mechanism
+## Mechanism - and why it changed from an LLM-based checker
 
-The "read the official sources and decide what actually changed" step
-needs real reading comprehension, not regex/diff matching against raw
-HTML (source pages change markup constantly, and the meaningful signal -
-"did the pity rule text change", "did this banner's date move" - is
-semantic, not textual).
+The first version of this automation used an LLM agent
+(`anthropics/claude-code-action`) to read each official source and edit
+`games` directly. That needed an `ANTHROPIC_API_KEY` (or a Claude
+subscription's OAuth token) added as a repo secret. The owner asked for
+a solution that runs with **no external API key at all**, so this is a
+deliberately more conservative design:
 
-This uses the official [`anthropics/claude-code-action`](https://github.com/anthropics/claude-code-action)
-(`@v1`) GitHub Action: a scheduled job gives a Claude Code agent a fixed
-prompt, `Read`/`Edit`/`WebFetch`/`git`/`gh` tool access scoped to this repo,
-and lets it fetch each source, compare it against the `games` data in
-`index.html`, make the minimal edit if something genuinely changed, and
-open a draft PR describing the diff and its source. If nothing changed,
-it does nothing - no forced PR.
+- `check-sources.mjs` ports the exact change-detection algorithm
+  already built into `index.html`'s own "⟳ Check all banner info"
+  button (`fastHash`, `compactSourceText`, `extractBannerAuditLines`,
+  the `BANNER_AUDIT_FIELDS` keyword taxonomy, and the direct-fetch +
+  Jina Reader relay fallback for sites that block or don't render for
+  a plain fetch). Same logic, running headless on a schedule instead
+  of waiting for someone to click the button.
+- It can reliably answer "did this official source's banner-relevant
+  text change since last time?" without any reasoning model, because
+  that's a hash comparison, not a comprehension task.
+- It **cannot** reliably answer "so what exactly should `games` say
+  now?" without a reasoning model - turning "the pity-rule paragraph
+  changed" into a correct edit needs real reading comprehension. Per
+  the original brief's own constraint ("must not hardcode or fake
+  banner data to fill gaps"), this script does not attempt that step.
+  It only ever touches `gacha-timeline/.audit-state.json`.
 
-Why this over a hand-written Node/Python scraper-and-diff script:
-- The comparison target is prose (rule text, lineup names, patch
-  associations), which benefits from an LLM's reading comprehension over
-  brittle string/regex matching against sources whose markup we don't
-  control.
-- It runs entirely on GitHub's hosted runners on a cron trigger, so it
-  doesn't depend on anyone's computer being on.
-- It reuses a maintained, documented action rather than a bespoke
-  fetch/compare pipeline this repo would have to keep working against
-  every source site's markup changes.
+So the loop is:
 
-## Required secret
+1. **Automatic, weekly, free:** fetch each non-manual source, compare
+   against the last snapshot, and open a **draft PR** if (and only if)
+   something changed. The PR touches only `.audit-state.json` and
+   describes what changed and where.
+2. **Manual, on demand, still free (uses the owner's own Claude Code
+   access, not a metered API key):** open that PR and ask Claude Code
+   to read it and reconcile `games` in `index.html` accordingly, the
+   same way this automation itself was built. This step is a
+   conversation, not a scheduled job.
 
-`ANTHROPIC_API_KEY` must be added to this repo's Actions secrets
-(Settings -> Secrets and variables -> Actions) for the workflow to run.
-Nothing else is needed - `github_token` uses the workflow's own
-auto-generated `GITHUB_TOKEN` (granted `contents: write` and
-`pull-requests: write` by the workflow's `permissions:` block), the same
-pattern `tenderboard-actions-test`'s crawlers use to write back to this
-repo.
+This trades "fully hands-off" for "zero ongoing cost and zero new
+credential" - the explicit tradeoff the owner asked for.
+
+## Required secrets
+
+None. The workflow only uses the GitHub Actions-provided `GITHUB_TOKEN`
+(granted `contents: write` + `pull-requests: write` by the workflow's
+own `permissions:` block) to push its branch and open the PR - the same
+pattern `tenderboard-actions-test`'s crawlers already use.
+
+One repo setting *was* required and has been enabled (see the session
+notes / PR for the exact change): **Settings -> Actions -> General ->
+Workflow permissions -> "Allow GitHub Actions to create and approve
+pull requests."** Without it, `gh pr create` inside the workflow fails
+even with a correctly-scoped `GITHUB_TOKEN` - confirmed against
+GitHub's own docs, which describe this setting as gating PR *creation*,
+not just approval.
 
 ## What it will and won't do
 
 - Only fetches the sources in `scheduleSources` that are NOT Reddit, X/
-  Twitter, or YouTube, and not flagged `unofficial:true` - those are
-  either player-run or known to block automated fetches (confirmed in
-  the source notes already in this file).
-- Never edits `scheduleSources`, styling, or anything outside the
-  `games` array's data.
+  Twitter, or YouTube, and not flagged `unofficial:true`.
+- Never edits `scheduleSources`, styling, or the `games` array itself -
+  only `.audit-state.json` (its own change-tracking snapshot) and, via
+  the build script, the PR body.
 - Never pushes to `main` directly and never merges or marks its own PR
-  ready for review - it only opens a draft PR, same as the standing rule
-  for all code changes in this repo.
-- Never fabricates a value it couldn't confirm from a fetched source -
-  an unconfirmed entry is left as-is, not guessed at.
+  ready for review - draft PR only, same as the standing rule for all
+  code changes in this repo.
+- Never fabricates a banner-data value. A source that fails to fetch is
+  recorded as failed and surfaced in the PR/log, not guessed at.
+
+## Known limitations (found by actually running this against the real
+sources, not assumed)
+
+- **Some official pages are JS-rendered SPAs** (confirmed: HSR's
+  official site and HoYoLAB return an near-empty bootstrap shell to a
+  plain fetch - same content hash regardless of real page content).
+  The script detects this (no banner-audit-relevant text survives tag
+  stripping) and falls back to the Jina Reader public relay, which
+  renders headlessly. HoYoLAB's community feed (`hsr-hoyolab`) still
+  comes back mostly empty even through the relay - it's an
+  infinite-scroll feed that doesn't finish loading in time. Its
+  snapshot is saved anyway so a genuine future change can still be
+  seen, but don't expect it to reliably catch everything.
+- **Raw HTML pages can carry noise unrelated to content**, e.g. a
+  random per-request DOM element id (confirmed live on Steam's
+  announcements page: a `<select>` widget's id changed on every single
+  fetch). The script strips HTML tags/attributes down to visible text
+  before hashing specifically to avoid this; if a *new* site introduces
+  a different kind of per-request noise, expect an occasional
+  false-positive "changed" PR until that's noticed and filtered too.
+- A "changed" PR means "this source's text changed since last check" -
+  it does not mean "a banner date changed." Cosmetic rewrites, added
+  unrelated announcements, or a genuinely new banner all trigger it.
+  Reviewing the PR's snippet/link before editing `games` is still
+  necessary either way.
