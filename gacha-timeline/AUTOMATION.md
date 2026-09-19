@@ -85,23 +85,33 @@ sources, not assumed)
   infinite-scroll feed that doesn't finish loading in time. Its
   snapshot is saved anyway so a genuine future change can still be
   seen, but don't expect it to reliably catch everything.
-- **`hsr-news` and `re-news` have weak automated coverage** (confirmed
-  by inspecting their first real snapshot). `hsr-news`
-  (`hsr.hoyoverse.com/en-us/news?type=news_all`) falls back to the
-  Jina Reader relay and only gets the generic site shell/title, not
-  the rendered article list - the news content loads via client-side
-  JS after the relay's render window. `re-news`
-  (`re1999.bluepoch.com/en/home/detail.html#news`) is worse: the
-  `#news` part is a URL *hash fragment*, which browsers never send to
-  the server, so both a direct fetch and the reader relay just get
-  Bluepoch's default `detail.html` page content - there is no way for
-  an automated fetch to distinguish "on the news tab" from "on the
-  page." Both are kept in `scheduleSources` (useful as a manual link,
-  and the snapshot can still catch the rare case where the shell/base
-  page itself changes), but don't rely on either to catch a real news
-  article by itself - `czn-news` (`czn.gg/news/`), by contrast, is a
-  plain server-rendered page and got a full, real article listing on
-  its first check.
+- **`hsr-news` still has weak automated coverage.**
+  `hsr-news` (`hsr.hoyoverse.com/en-us/news?type=news_all`) is a
+  client-rendered Nuxt app with no embedded data in its initial HTML
+  (confirmed: the raw response is a fixed shell regardless of what's
+  posted) and no discoverable public JSON API behind it (checked its
+  network traffic directly - the article list is fetched via a call
+  this session couldn't identify). The Jina Reader relay only gets the
+  shell too, not the rendered list. It's kept in `scheduleSources` as
+  a manual link and its snapshot can still catch the rare case where
+  the shell itself changes, but don't rely on it to catch a real news
+  article by itself.
+- **`re-news` was fixed with a source-specific override, not scraping.**
+  `re-news` (`re1999.bluepoch.com/en/home/detail.html#news`) used to
+  have the same weak coverage as `hsr-news` for a structural reason:
+  the `#news` part is a URL *hash fragment*, which browsers never send
+  to the server, so both a direct fetch and the reader relay just got
+  Bluepoch's default `detail.html` page content, indistinguishable
+  from `re-official`. Fixed by calling the public JSON API that page's
+  own front-end uses internally
+  (`POST re1999.bluepoch.com/activity/official/websites/information/query`,
+  `gameId: 60001`, no auth) directly from `check-sources.mjs` - see
+  the `CUSTOM_FETCHERS` map. Confirmed live: it now returns the real,
+  current news list (article titles, dates, and full body text,
+  e.g. the Ver. 3.8 banner-replacement announcement) and the hash is
+  stable across back-to-back runs. `czn-news` (`czn.gg/news/`) never
+  needed this - it's a plain server-rendered page and got a full, real
+  article listing on its first check.
 - **Raw HTML pages can carry noise unrelated to content**, e.g. a
   random per-request DOM element id (confirmed live on Steam's
   announcements page: a `<select>` widget's id changed on every single

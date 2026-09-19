@@ -1,9 +1,9 @@
 {
-  "lastCheckedAt": "2026-09-19T11:13:16.787Z",
+  "lastCheckedAt": "2026-09-19T11:29:22.665Z",
   "sources": {
     "hsr-official": {
       "hash": "5d6b74e0",
-      "checkedAt": "2026-09-19T11:13:05.830Z",
+      "checkedAt": "2026-09-19T11:29:19.545Z",
       "changed": false,
       "firstBaseline": false,
       "via": "reader",
@@ -12,7 +12,7 @@
     },
     "hsr-hoyolab": {
       "hash": "9f379b10",
-      "checkedAt": "2026-09-19T11:13:12.491Z",
+      "checkedAt": "2026-09-19T11:29:20.563Z",
       "changed": false,
       "firstBaseline": false,
       "via": "reader",
@@ -21,7 +21,7 @@
     },
     "hsr-hoyolab-official": {
       "hash": "9f379b10",
-      "checkedAt": "2026-09-19T11:13:12.962Z",
+      "checkedAt": "2026-09-19T11:29:21.144Z",
       "changed": false,
       "firstBaseline": false,
       "via": "reader",
@@ -30,7 +30,7 @@
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-09-19T11:13:13.076Z",
+      "checkedAt": "2026-09-19T11:29:21.251Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -39,7 +39,7 @@
     },
     "re-steam": {
       "hash": "eb74fa38",
-      "checkedAt": "2026-09-19T11:13:15.158Z",
+      "checkedAt": "2026-09-19T11:29:21.605Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -48,7 +48,7 @@
     },
     "re-steam-forum": {
       "hash": "082f4116",
-      "checkedAt": "2026-09-19T11:13:15.411Z",
+      "checkedAt": "2026-09-19T11:29:21.869Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -57,7 +57,7 @@
     },
     "czn-community": {
       "hash": "6af04601",
-      "checkedAt": "2026-09-19T11:13:15.989Z",
+      "checkedAt": "2026-09-19T11:29:22.390Z",
       "changed": false,
       "firstBaseline": false,
       "via": "reader",
@@ -66,7 +66,7 @@
     },
     "czn-brand": {
       "hash": "83d6d77c",
-      "checkedAt": "2026-09-19T11:13:16.585Z",
+      "checkedAt": "2026-09-19T11:29:22.414Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -75,7 +75,7 @@
     },
     "czn-arabella-rules": {
       "hash": "a4a88b36",
-      "checkedAt": "2026-09-19T11:13:16.635Z",
+      "checkedAt": "2026-09-19T11:29:22.476Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -84,7 +84,7 @@
     },
     "czn-licinia-rules": {
       "hash": "579ef21f",
-      "checkedAt": "2026-09-19T11:13:16.697Z",
+      "checkedAt": "2026-09-19T11:29:22.529Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -93,7 +93,7 @@
     },
     "czn-chizuru-rules": {
       "hash": "e91e0093",
-      "checkedAt": "2026-09-19T11:13:16.745Z",
+      "checkedAt": "2026-09-19T11:29:22.593Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -102,7 +102,7 @@
     },
     "czn-itsuku-rules": {
       "hash": "af2d06ed",
-      "checkedAt": "2026-09-19T11:13:16.787Z",
+      "checkedAt": "2026-09-19T11:29:22.665Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -111,27 +111,27 @@
     },
     "hsr-news": {
       "hash": "f5cdc50b",
-      "checkedAt": "2026-09-19T11:13:11.950Z",
+      "checkedAt": "2026-09-19T11:29:19.983Z",
       "changed": false,
-      "firstBaseline": true,
+      "firstBaseline": false,
       "via": "reader",
       "snippet": "Title: Honkai: Star Rail official website | May this journey lead us starward · Published Time: Tue, 25 Aug 2026 22:57:39 GMT · Markdown Content: · ![Image 5](blob:https://hsr.hoyoverse.com/6b0c20130982c02ac690ee33f153a879)![Image 6](https://hsr.hoyoverse.com/)![Image 7](blob:https://hsr.hoyoverse.com/074dfd7244c691461957609b99b527cd)",
       "auditedLines": 1
     },
     "re-news": {
-      "hash": "6a362a0c",
-      "checkedAt": "2026-09-19T11:13:14.842Z",
+      "hash": "d49130f7",
+      "checkedAt": "2026-09-19T11:29:21.308Z",
       "changed": false,
-      "firstBaseline": true,
-      "via": "reader",
-      "snippet": "Published Time: Mon, 10 Aug 2026 02:30:07 GMT · Markdown Content:",
-      "auditedLines": 0
+      "firstBaseline": false,
+      "via": "api",
+      "snippet": "2026-09-13 - Ver. 3.8 [The Temporal Scale] Preview · [Event Time]: · After the version update on 2026-09-24 - 2026-11-02 04:59 (UTC-5) · 2026-10-01 05:00 - 2026-11-02 04:59 (UTC-5)",
+      "auditedLines": 320
     },
     "czn-news": {
       "hash": "350ec3b4",
-      "checkedAt": "2026-09-19T11:13:15.503Z",
+      "checkedAt": "2026-09-19T11:29:21.943Z",
       "changed": false,
-      "firstBaseline": true,
+      "firstBaseline": false,
       "via": "direct",
       "snippet": "News - Chaos Zero Nightmare (CZN) · Current Events · [Event] Notice on the Chaos Zero Nightmare x Epic Seven Collaboration Event · September 17, 2026",
       "auditedLines": 26
