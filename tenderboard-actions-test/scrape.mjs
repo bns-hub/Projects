@@ -5,28 +5,8 @@ const url = "https://www.tenderboard.biz/singaporetenders";
 const output = "TenderBoard_Raw_latest.csv";
 const statusOutput = "TenderBoard_Raw_status.json";
 const maxPages = 10;
-const maxAgeDays = 14;
 
 const csvCell = (value = "") => `"${String(value).replaceAll('"', '""')}"`;
-
-const monthIndex = new Map(
-  ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    .map((month, index) => [month.toLowerCase(), index])
-);
-
-const sgtNow = () => new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Singapore" }));
-const inferListingDate = (raw, now) => {
-  const match = String(raw).trim().match(/^(\d{1,2})\s+([A-Za-z]{3})$/);
-  if (!match) return null;
-  const month = monthIndex.get(match[2].toLowerCase());
-  if (month === undefined) return null;
-  let year = now.getFullYear();
-  let candidate = new Date(year, month, Number(match[1]));
-  if (candidate.getTime() > now.getTime() + 2 * 86_400_000) {
-    candidate = new Date(year - 1, month, Number(match[1]));
-  }
-  return candidate;
-};
 
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1200 } });
@@ -34,11 +14,12 @@ page.setDefaultTimeout(30_000);
 
 try {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
-  await page.locator("text=/Showing\\s+1\\s*-\\s*50\\s+of\\s+\\d+\\s+tenders/i").waitFor({ timeout: 30_000 });
+  const totalLabel = page.locator("text=/Showing\\s+1\\s*-\\s*\\d+\\s+of\\s+\\d+\\s+tenders/i").first();
+  await totalLabel.waitFor({ timeout: 30_000 });
+  const totalMatch = (await totalLabel.textContent() || "").match(/of\s+(\d+)\s+tenders/i);
+  const publicTotal = totalMatch ? Number(totalMatch[1]) : null;
 
   const records = [];
-  const now = sgtNow();
-  const cutoff = new Date(now.getTime() - maxAgeDays * 86_400_000);
   let pagesScanned = 0;
   for (let pageNumber = 1; pageNumber <= maxPages; pageNumber += 1) {
     await page.locator('a[class*="OpenDeals-viewLink"]').first().waitFor();
@@ -71,17 +52,7 @@ try {
     );
 
     pagesScanned = pageNumber;
-    let encounteredOldRecord = false;
-    for (const record of pageRecords) {
-      const publishedDate = inferListingDate(record.published, now);
-      if (publishedDate && publishedDate < cutoff) {
-        encounteredOldRecord = true;
-        continue;
-      }
-      records.push(record);
-    }
-
-    if (encounteredOldRecord) break;
+    records.push(...pageRecords);
 
     const nextPage = page.locator("a", { hasText: new RegExp(`^${pageNumber + 1}$`) }).first();
     if (pageNumber === maxPages || (await nextPage.count()) === 0) break;
@@ -99,6 +70,15 @@ try {
     [record.title, record.agency, record.published, record.closes].join("|"),
     record,
   ])).values());
+
+  // The page announces its live public total. A lower exported count means a
+  // page was skipped or the page structure changed, so fail instead of
+  // silently publishing an incomplete handoff.
+  if (publicTotal !== null && uniqueRecords.length !== publicTotal) {
+    throw new Error(
+      `TenderBoard announced ${publicTotal} public live tenders but ${uniqueRecords.length} were exported`
+    );
+  }
 
   const lines = [header.map(csvCell).join(",")];
   for (const record of uniqueRecords) {
@@ -119,8 +99,9 @@ try {
     success: true,
     generated_at_sgt: generatedAt,
     records: uniqueRecords.length,
+    public_total: publicTotal,
     pages_scanned: pagesScanned,
-    max_age_days: maxAgeDays,
+    coverage_check_passed: publicTotal === null ? null : uniqueRecords.length === publicTotal,
     source: url,
   };
   await writeFile(statusOutput, `${JSON.stringify(status, null, 2)}\n`, "utf8");

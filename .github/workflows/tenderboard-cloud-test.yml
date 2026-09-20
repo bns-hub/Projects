@@ -28,12 +28,16 @@ jobs:
         working-directory: tenderboard-actions-test
       - run: npm run crawl
         working-directory: tenderboard-actions-test
+      - run: npm run crawl:institutions
+        working-directory: tenderboard-actions-test
       - uses: actions/upload-artifact@v4
         with:
           name: tenderboard-raw
           path: |
             tenderboard-actions-test/TenderBoard_Raw_latest.csv
             tenderboard-actions-test/TenderBoard_Raw_status.json
+            tenderboard-actions-test/Institution_Raw_latest.csv
+            tenderboard-actions-test/Institution_Raw_status.json
           if-no-files-found: error
           retention-days: 1
       - name: Publish latest CSV on tenderboard-data branch
@@ -42,6 +46,8 @@ jobs:
           set -euo pipefail
           cp tenderboard-actions-test/TenderBoard_Raw_latest.csv "$RUNNER_TEMP/TenderBoard_Raw_latest.csv"
           cp tenderboard-actions-test/TenderBoard_Raw_status.json "$RUNNER_TEMP/TenderBoard_Raw_status.json"
+          cp tenderboard-actions-test/Institution_Raw_latest.csv "$RUNNER_TEMP/Institution_Raw_latest.csv"
+          cp tenderboard-actions-test/Institution_Raw_status.json "$RUNNER_TEMP/Institution_Raw_status.json"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if git ls-remote --exit-code origin refs/heads/tenderboard-data >/dev/null 2>&1; then
@@ -54,6 +60,8 @@ jobs:
           mkdir -p data
           cp "$RUNNER_TEMP/TenderBoard_Raw_latest.csv" data/TenderBoard_Raw_latest.csv
           cp "$RUNNER_TEMP/TenderBoard_Raw_status.json" data/TenderBoard_Raw_status.json
+          cp "$RUNNER_TEMP/Institution_Raw_latest.csv" data/Institution_Raw_latest.csv
+          cp "$RUNNER_TEMP/Institution_Raw_status.json" data/Institution_Raw_status.json
           git add data
           if git diff --cached --quiet; then
             echo "Published data is unchanged."

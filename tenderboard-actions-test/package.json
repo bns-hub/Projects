@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "crawl": "node scrape.mjs",
-    "crawl:gebiz": "node scrape-gebiz.mjs"
+    "crawl:gebiz": "node scrape-gebiz.mjs",
+    "crawl:institutions": "node scrape-institutions.mjs"
   },
   "dependencies": {
     "playwright": "1.55.0"
