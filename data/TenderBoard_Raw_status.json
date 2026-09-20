@@ -1,8 +1,9 @@
 {
   "success": true,
-  "generated_at_sgt": "2026-09-20T10:11:28+08:00",
-  "records": 160,
+  "generated_at_sgt": "2026-09-20T10:45:22+08:00",
+  "records": 187,
+  "public_total": 187,
   "pages_scanned": 4,
-  "max_age_days": 14,
+  "coverage_check_passed": true,
   "source": "https://www.tenderboard.biz/singaporetenders"
 }
