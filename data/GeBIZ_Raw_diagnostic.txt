@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-20T09:43:20+08:00
+GeBIZ crawl OK — 2026-09-21T09:44:13+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 320 across 32 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=FINCEDETQ26000007
+[1] ref=MOESCHETQ26004013
     type=Quotation  status=OPEN
-    title=INVITATION TO QUOTE FOR THE REPLACEMENT AND DISPOSAL OF NOTICES AND LIFE-SIZED HUMAN STANDEES (INCLUDING DESIGN, SUPPLY AND DELIVERY)
-    agency=Ministry of Finance - Singapore Customs
-    category=Construction ⇒ Signages
-    published=18 Sep 2026 09:35 PM
+    title=Supply of Instructor for Choir CCA Training Programme in Jurong West Primary School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=21 Sep 2026 09:20 AM
     closing=30 Sep 2026 01:00PM
 
-[2] ref=MOESCHETQ26003850
+[2] ref=MOESCHETQ26003906
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Badminton CCA Training Programme for Year 2027 with Option to Extend to Year 2028 in Manjusri Secondary School)
-    agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=18 Sep 2026 06:20 PM
-    closing=28 Sep 2026 01:00PM
-
-[3] ref=SDC000ETQ26000044
-    type=Quotation  status=OPEN
-    title=INVITATION TO QUOTE FOR HYDROGRAPHIC (BATHYMETRIC) SURVEY FOR NORTH COVE AND SOUTH COVE CANAL WATERWAY AT SENTOSA COVE (BATCH 2026)
-    agency=Sentosa Development Corporation
-    category=Miscellaneous ⇒ Others
-    published=18 Sep 2026 06:05 PM
-    closing=07 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26003955
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Tennis CCA Training Programme in Catholic JC - Base Period (1 Jan to 31 Dec 2027) Option Period (1 Jan - 31 Dec 2028)
+    title=Supply of Instructor for Basketball CCA Training Programme 2027
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=18 Sep 2026 05:50 PM
-    closing=28 Sep 2026 01:00PM
+    published=21 Sep 2026 09:05 AM
+    closing=30 Sep 2026 01:00PM
 
-[5] ref=MOESCHETQ26004011
+[3] ref=NYP000ETT26000015
+    type=Tender  status=OPEN
+    title=Tender for Proposed Additions & Alterations to Existing Nanyang Polytechnic Premises
+    agency=Nanyang Polytechnic
+    category=Construction ⇒ Civil Engineering
+    published=21 Sep 2026 08:50 AM
+    closing=16 Oct 2026 04:00PM
+
+[4] ref=MOESCHETQ26004007
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Dance Ensemble CCA Training Programme in Marymount Convent School
+    title=Provision of Ad-Hoc Bus Transport Services for St Hilda's Primary School
+    agency=Ministry of Education - Schools
+    category=Transportation ⇒ Bus Hire
+    published=21 Sep 2026 08:50 AM
+    closing=30 Sep 2026 01:00PM
+
+[5] ref=MOESCHETQ26003944
+    type=Quotation  status=OPEN
+    title=Supply of Netball CCA Training Programme in Pasir Ris Secondary School for 2027 and 2028 (Option Year)
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=18 Sep 2026 05:35 PM
-    closing=28 Sep 2026 01:00PM
+    published=21 Sep 2026 08:50 AM
+    closing=30 Sep 2026 01:00PM
