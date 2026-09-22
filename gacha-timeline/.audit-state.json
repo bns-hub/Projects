@@ -1,9 +1,9 @@
 {
-  "lastCheckedAt": "2026-09-19T12:01:14.624Z",
+  "lastCheckedAt": "2026-09-20T17:03:38.330Z",
   "sources": {
     "hsr-official": {
       "hash": "c7a2f4b3",
-      "checkedAt": "2026-09-19T12:00:58.044Z",
+      "checkedAt": "2026-09-20T17:03:05.799Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -11,26 +11,26 @@
       "auditedLines": 14
     },
     "hsr-hoyolab": {
-      "hash": "4b2210b6",
-      "checkedAt": "2026-09-19T12:01:08.560Z",
-      "changed": false,
+      "hash": "5d972abb",
+      "checkedAt": "2026-09-20T17:03:21.360Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · Himeko • Nova · We will recommend content based on your chosen interests",
-      "auditedLines": 7
+      "snippet": "Click the video and watch the Special Program for 10 seconds to unlock the redemption feature~ · Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · We will recommend content based on your chosen interests",
+      "auditedLines": 9
     },
     "hsr-hoyolab-official": {
-      "hash": "da303bb7",
-      "checkedAt": "2026-09-19T12:01:10.347Z",
-      "changed": false,
+      "hash": "5414a536",
+      "checkedAt": "2026-09-20T17:03:26.850Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Honkai: Star Rail Version 4.6 \"Dance With the Beast Before Moonrise\" Special Program · [Rewarded Event] Aventurine • Waveflair Spotlight! · 【Rewarded Event】Aventurine • Waveflair Strategy Discussion Event · \"Minuscule Great Adventure\" Event Introduction",
-      "auditedLines": 12
+      "snippet": "Version 4.6 \"Dance With the Beast Before Moonrise\" Highlights Page Is Now Online · A Brief on the Version 4.6 Special Program · Store Update | V4.6 Dance With the Beast Before Moonrise · Version 4.6 Trailer: \"Dance With the Beast Before Moonrise\" | Honkai: Star Rail",
+      "auditedLines": 16
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-09-19T12:01:10.572Z",
+      "checkedAt": "2026-09-20T17:03:29.012Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -38,9 +38,9 @@
       "auditedLines": 4
     },
     "re-steam": {
-      "hash": "eb74fa38",
-      "checkedAt": "2026-09-19T12:01:11.125Z",
-      "changed": false,
+      "hash": "85fc54b7",
+      "checkedAt": "2026-09-20T17:03:31.008Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Ver. 3.7 - 3rd Anniversary Special Version · Log in to Get Time-Limited 10 Summons for Free",
@@ -48,16 +48,16 @@
     },
     "re-steam-forum": {
       "hash": "082f4116",
-      "checkedAt": "2026-09-19T12:01:11.857Z",
+      "checkedAt": "2026-09-20T17:03:31.188Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · 17 Sep @ 12:42am",
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Sep 17 @ 12:42am",
       "auditedLines": 6
     },
     "czn-community": {
       "hash": "76461c55",
-      "checkedAt": "2026-09-19T12:01:14.374Z",
+      "checkedAt": "2026-09-20T17:03:36.827Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -66,7 +66,7 @@
     },
     "czn-brand": {
       "hash": "83d6d77c",
-      "checkedAt": "2026-09-19T12:01:14.400Z",
+      "checkedAt": "2026-09-20T17:03:37.863Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -75,7 +75,7 @@
     },
     "czn-arabella-rules": {
       "hash": "a4a88b36",
-      "checkedAt": "2026-09-19T12:01:14.452Z",
+      "checkedAt": "2026-09-20T17:03:38.009Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -84,7 +84,7 @@
     },
     "czn-licinia-rules": {
       "hash": "579ef21f",
-      "checkedAt": "2026-09-19T12:01:14.497Z",
+      "checkedAt": "2026-09-20T17:03:38.114Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -93,7 +93,7 @@
     },
     "czn-chizuru-rules": {
       "hash": "e91e0093",
-      "checkedAt": "2026-09-19T12:01:14.554Z",
+      "checkedAt": "2026-09-20T17:03:38.210Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -102,7 +102,7 @@
     },
     "czn-itsuku-rules": {
       "hash": "af2d06ed",
-      "checkedAt": "2026-09-19T12:01:14.595Z",
+      "checkedAt": "2026-09-20T17:03:38.294Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -110,17 +110,17 @@
       "auditedLines": 55
     },
     "hsr-news": {
-      "hash": "8e761e02",
-      "checkedAt": "2026-09-19T12:01:00.661Z",
-      "changed": false,
+      "hash": "44dd1746",
+      "checkedAt": "2026-09-20T17:03:10.967Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Version 4.5 \"To Roll the Stars in Astropolis\" Update Details · Subscribe to Pom-Pom's official Star Rail news to stay up to date with the latest information, character intel, and limited-time event rewards. · I agree for my personal data to be collected and used to receive event invitations and other game info. Read details >> · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc.",
-      "auditedLines": 4
+      "snippet": "Version 4.6 Trailer: \"Dance With the Beast Before Moonrise\" | Honkai: Star Rail · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
+      "auditedLines": 3
     },
     "re-news": {
       "hash": "d49130f7",
-      "checkedAt": "2026-09-19T12:01:10.848Z",
+      "checkedAt": "2026-09-20T17:03:30.502Z",
       "changed": false,
       "firstBaseline": false,
       "via": "api",
@@ -129,7 +129,7 @@
     },
     "czn-news": {
       "hash": "350ec3b4",
-      "checkedAt": "2026-09-19T12:01:11.924Z",
+      "checkedAt": "2026-09-20T17:03:31.389Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",

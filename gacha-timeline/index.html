@@ -121,7 +121,6 @@ button,input{font:inherit}
 .control-btn.active{background:var(--gold);color:#17130a;border-color:var(--gold)}
 .control-btn.primary{background:var(--gold);color:#17130a;border-color:var(--gold)}
 .control-btn.today-btn{border-color:#7789a6}
-.control-btn.check-btn{border-color:#6585b1}
 .control-btn.checking{opacity:.72;cursor:wait}
 
 .game-jump-group{display:flex;gap:9px;flex-wrap:wrap}
@@ -176,9 +175,6 @@ button,input{font:inherit}
   white-space:nowrap
 }
 
-.schedule-status .status-pill.good{background:#143124;color:#9cdfaf}
-.schedule-status .status-pill.warn{background:#382d19;color:#f2cc79}
-.schedule-status .status-pill.bad{background:#3b2024;color:#f1a09b}
 
 .status-dot{
   width:8px;
@@ -251,14 +247,6 @@ button,input{font:inherit}
   font-size:13px
 }
 
-.source-card .mini-status{
-  font-size:11px;
-  padding:4px 7px;
-  border-radius:8px;
-  background:#1d2b40;
-  white-space:nowrap
-}
-
 .source-card p{
   margin:9px 0 0;
   color:#96a7bd;
@@ -283,73 +271,6 @@ button,input{font:inherit}
 }
 
 .source-links a:hover{background:#1d2b40}
-
-.coverage-bar{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:10px
-}
-
-.coverage-chip{
-  padding:4px 7px;
-  border-radius:999px;
-  background:#1a2940;
-  border:1px solid #33465f;
-  color:#b8c8da;
-  font-size:10px;
-  line-height:1
-}
-
-.rule-audit-summary{
-  margin-bottom:12px;
-  padding:12px;
-  border:1px solid #31445e;
-  border-radius:12px;
-  background:#101c2c
-}
-
-.rule-audit-summary h4{
-  margin:0 0 8px;
-  font-size:13px
-}
-
-.rule-audit-summary p{
-  margin:0;
-  color:#95a7bc;
-  font-size:11px;
-  line-height:1.55
-}
-
-.rule-audit-list{
-  display:grid;
-  gap:6px;
-  margin-top:10px
-}
-
-.rule-audit-item{
-  display:grid;
-  grid-template-columns:70px minmax(160px,1fr) auto;
-  gap:8px;
-  align-items:center;
-  padding:7px 8px;
-  border-radius:8px;
-  background:#152236;
-  font-size:11px
-}
-
-.rule-audit-item .audit-ok{color:#9cdfaf}
-.rule-audit-item .audit-warn{color:#f2cc79}
-.rule-audit-item .audit-bad{color:#f1a09b}
-
-.rule-source-note{
-  margin-top:12px;
-  padding-top:10px;
-  border-top:1px solid #2d3e56;
-  color:#8fa2ba;
-  font-size:11px;
-  line-height:1.5
-}
 
 /* =========================================================
    TIMELINE
@@ -1010,10 +931,6 @@ button,input{font:inherit}
         ↦ Jump to present
       </button>
 
-      <button class="control-btn check-btn" id="checkSchedulesBtn">
-        ⟳ Check all banner info
-      </button>
-
       <div class="game-jump-group" id="gameJumpButtons"></div>
     </div>
   </div>
@@ -1028,14 +945,13 @@ button,input{font:inherit}
   <div class="schedule-status" id="scheduleStatus">
     <span class="status-pill">
       <i class="status-dot"></i>
-      Full banner + rule audit ready · 6-month horizon
+      Source drift is checked weekly by GitHub Action, not by this page
     </span>
-    <span id="lastCheckText">No browser check has been run yet.</span>
+    <span>Every Monday 09:00 SGT a workflow hashes the pages below and opens a draft pull request if any has changed.</span>
     <button class="schedule-detail-toggle" id="scheduleDetailToggle">Show official sources</button>
   </div>
 
   <div class="schedule-check-panel" id="scheduleCheckPanel">
-    <div class="rule-audit-summary" id="ruleAuditSummary"></div>
     <div class="source-grid" id="sourceGrid"></div>
   </div>
 
@@ -1069,10 +985,15 @@ button,input{font:inherit}
     <div id="historySummaries"></div>
 
     <div class="schedule-note">
-      Display rule: HSR Fate collaboration banners are grouped into one timeline row; CZN matching Combatant + Partner banners are merged into one row. This affects presentation only, not in-game pity.\n\n      The browser checker is deliberately conservative: it scans banner information up to about 6 months ahead — dates, banner type, featured lineup, selector/change rules, pity, guarantee, carry-over/reset, pull cost/discount, rerun/limited status and patch association — and checks whether the configured official
-      news/community pages have changed since your last check and flags them for review. It does
-      not silently rewrite banner dates from arbitrary web text. Direct fetch is tried first; if
-      an official site blocks browser CORS, the checker falls back to a read-only public text relay.
+      Display rule: HSR Fate collaboration banners are grouped into one timeline row; CZN matching Combatant + Partner banners are merged into one row. This affects presentation only, not in-game pity.
+
+      This page no longer checks sources from your browser. That in-page checker was removed
+      because the sites it had to read block cross-origin browser requests, so it could not be
+      relied on. Source drift is now watched by a GitHub Action that runs every Monday at 09:00
+      Singapore time: it hashes the official and community pages listed under “Show official
+      sources” and opens a draft pull request when any of them changes, so a human reviews the
+      change before this timeline is edited. Entries that are not backed by an official notice
+      stay marked “Unofficial / community-estimated · verify against official post”.
       All timeline times remain normalized to Singapore time (UTC+8).
 
       <div class="legend">
@@ -1101,17 +1022,12 @@ const FUTURE_DAYS = 90;
   - timeline: 90 days forward
   - schedule scanner: 183 days (~6 months) forward
 */
-const SCAN_FUTURE_DAYS = 183;
-const SCAN_PAST_DAYS = 90;
 
 const TOTAL_DAYS = HISTORY_DAYS + FUTURE_DAYS + 1;
 const ROW_LABEL_PX = 118;
 
 const STATE_KEY = "gachaTimeline.v22.position";
-const CHECK_KEY = "gachaTimeline.v22.scheduleChecks";
 const SUMMARY_ARCHIVE_KEY = "gachaTimeline.v22.summaryArchive";
-const RULE_OVERRIDE_KEY = "gachaTimeline.v33.ruleOverrides";
-const AUTO_CHECK_HOURS = 12;
 
 document.documentElement.style.setProperty("--total-days", TOTAL_DAYS);
 
@@ -1270,6 +1186,13 @@ const images = {
   archer:avatarData("Archer","#704044","#bf7373"),
   rin:avatarData("Rin","#7a3540","#cf6e7c"),
   gilgamesh:avatarData("Gilgamesh","#8a6b2f","#d6bd6c"),
+  pearl:avatarData("Pearl","#5c4a7a","#a48fd0"),
+  evanescia:avatarData("Evanes.","#3f6a6a","#86bdb8"),
+  mortenax:avatarData("Mortenax","#5f3b3b","#b07a76"),
+  everecho:avatarData("Everecho","#3d5a78","#87aecd"),
+  cornerstone:avatarData("Cornerst.","#6b5a38","#c0a973"),
+  narja:avatarData("Narja","#7a4a2e","#cf9464"),
+  sereniel:avatarData("Sereniel","#3c5a86","#88abd8"),
   generic:avatarData("★","#32445f","#748aa8")
 };
 
@@ -1294,10 +1217,10 @@ const games = [
       status:"official"
     },
     {
-      name:"Next patch · awaiting official schedule",
-      start:"2026-09-29",
-      end:"2027-03-31",
-      rewards:"Reward summary will appear here once the next official patch notice is confirmed.",
+      name:'Version 4.6 · "Dance With the Beast Before Moonrise" · end date community-estimated',
+      start:"2026-09-28",
+      end:"2026-11-10",
+      rewards:"Official launch date is 28 Sep 2026. No official patch-reward tally has been published yet, so none is shown here. The end date drawn on this bar (10 Nov 2026) is a community estimate based on the usual patch length, NOT an official date - it must be corrected once HoYoverse publishes the Version 4.7 schedule.",
       status:"pending"
     }
   ],
@@ -1390,6 +1313,38 @@ const games = [
 
 
 
+    {type:"Banner",items:[{
+      category:"tentative",
+      title:"Pearl + Evanescia rerun · Version 4.6 Phase I",
+      subtitle:"Reported 28 Sep – 21 Oct · community-reported, not an official notice",
+      start:"2026-09-28",
+      end:"2026-10-21",
+      image:images.pearl,
+      details:{
+        title:"Pearl + Evanescia rerun · Version 4.6 Phase I",
+        dates:"Community-reported 28 Sep 2026 – 21 Oct 2026 · Singapore time. Version 4.6 itself launches 28 Sep 2026 officially; the phase split and the 21 Oct changeover are community-reported and have not been confirmed by an official banner notice.",
+        pullRules:"Expected to run as a standard Character Event Warp pair, but no official probability notice has been published for these banners yet, so no rule text is asserted here. If published as Character Event Warps, the established category rules apply: 5★ hard pity within 90 Warps, with the Character Event Warp count carried across other Character Event Warps and kept separate from other Warp types; Celestial Invitation permits 7 custom obtainable 5★ characters; the first 5★ uses the 50% featured check; every 10 Warps guarantees a 4★ or higher. Confirm the lineup, the phase dates and the rules against the official Version 4.6 banner post before relying on this row.",
+        lineup:["Pearl","Evanescia (rerun)"],
+        status:"Unofficial / community-estimated · verify against official post"
+      }
+    }]},
+
+    {type:"Banner",items:[{
+      category:"tentative",
+      title:"Pearl + Mortenax Blade rerun · Version 4.6 Phase II",
+      subtitle:"Reported 21 Oct – ~10 Nov · community-reported, end date estimated",
+      start:"2026-10-21",
+      end:"2026-11-10",
+      image:images.mortenax,
+      details:{
+        title:"Pearl + Mortenax Blade rerun · Version 4.6 Phase II",
+        dates:"Community-reported from 21 Oct 2026 · Singapore time. The end shown (10 Nov 2026) is the community estimate for the end of Version 4.6 and is not an official date. Both the phase lineup and these dates need checking against the official Version 4.6 banner post.",
+        pullRules:"No official probability notice has been published for this phase, so no rule text is asserted here. If published as Character Event Warps, the established category rules apply: 5★ hard pity within 90 Warps, Character Event Warp count carried across other Character Event Warps and separate from other Warp types, Celestial Invitation with 7 custom obtainable 5★ characters, a 50% featured check on the first 5★, and a 4★ or higher guaranteed every 10 Warps. Confirm lineup, dates and rules against the official post.",
+        lineup:["Pearl","Mortenax Blade (rerun)"],
+        status:"Unofficial / community-estimated · verify against official post"
+      }
+    }]},
+
     {type:"Event",items:[{
       category:"event",
       title:"Overdrive: Whirlwind Grand Prix",
@@ -1429,7 +1384,7 @@ const games = [
       name:'Version 3.8 · "The Temporal Scale"',
       start:"2026-09-24",
       end:"2026-11-05",
-      rewards:"From the official Ver. 3.8 preview (not full patch notes yet): all players who registered before the update and log in during 3.8 get Unitone [The First Drop of Rain] x30 by mail (guarantees at least one 6★ from that banner's refreshed pool); the sign-in event [The Temporal Scale] gives Unilog x14 total across its two parts; [Plumb Line] currency from the main event/Construction Blueprints/Concrete Tree feeds a shop with, among other rewards, a new 6★ Psychube [A Dream Beyond Light]. No official \"total summons\" tally has been published yet - refresh audit should update this once the full patch notes are out.",
+      rewards:"From the official Ver. 3.8 preview (not full patch notes yet): all players who registered before the update and log in during 3.8 get Unitone [The First Drop of Rain] x30 by mail (guarantees at least one 6★ from that banner's refreshed pool); the sign-in event [The Temporal Scale] gives Unilog x14 total across its two parts; [Plumb Line] currency from the main event/Construction Blueprints/Concrete Tree feeds a shop with, among other rewards, a new 6★ Psychube [A Dream Beyond Light]. Also confirmed by the pre-launch broadcast: 120 Clear Drops plus 1 Jar of Picrasma Candy for logging in through 23 Sep; Unilog x14 spread across the version's two banner phases; a second wave of 3rd Anniversary rewards from 1 Oct; a free Zoe with her Maniacal rework; and three new characters added to the beginner banner pool (Semmelweis, Mercuria and A Knight). No official \"total summons\" tally has been published yet - refresh audit should update this once the full patch notes are out.",
       status:"official"
     }
   ],
@@ -1578,6 +1533,38 @@ const games = [
       }
     }]},
 
+    {type:"Banner",items:[{
+      category:"tentative",
+      title:"Everecho · Version 3.8 Phase I",
+      subtitle:"From 24 Sep · end ~15 Oct estimated, not an official date",
+      start:"2026-09-24",
+      end:"2026-10-15",
+      image:images.everecho,
+      details:{
+        title:"Everecho · Version 3.8 Phase I",
+        dates:"Starts with the Version 3.8 update on 24 Sep 2026, which is official. The end shown here (15 Oct 2026) is an estimate for the Phase I/Phase II changeover and has not been published in an official notice.",
+        pullRules:"Version 3.8's two banner phases are confirmed by the official pre-launch broadcast, which gives Unilog x14 across them, but the individual phase dates and the per-banner probability notices have not been published. If Everecho runs as a normal Time-Limited Character Banner, that category's established rules apply: 6★ hard pity at 70 with soft pity after 60, a 50% featured check on an unguaranteed 6★ and the next 6★ guaranteed featured after an off-target result, guarantee shared with other Time-Limited Character Banners of the same type, and the first 10 summons guaranteeing at least one 5★ or higher. Confirm the banner category, lineup and dates against the official notice before relying on this row.",
+        lineup:["Lineup not yet published in an official notice"],
+        status:"Unofficial / community-estimated · verify against official post"
+      }
+    }]},
+
+    {type:"Banner",items:[{
+      category:"tentative",
+      title:"Cornerstone · Version 3.8 Phase II",
+      subtitle:"~15 Oct – ~29 Oct · both dates estimated, not official",
+      start:"2026-10-15",
+      end:"2026-10-29",
+      image:images.cornerstone,
+      details:{
+        title:"Cornerstone · Version 3.8 Phase II",
+        dates:"Both the start (15 Oct 2026) and the end (29 Oct 2026) are estimates for the second of Version 3.8's two banner phases. Neither has been published in an official notice.",
+        pullRules:"The existence of a second Version 3.8 banner phase is confirmed by the official pre-launch broadcast, which gives Unilog x14 across both phases, but no dates or probability notice have been published for this banner. If it runs as a normal Time-Limited Character Banner, that category's established rules apply: 6★ hard pity at 70 with soft pity after 60, a 50% featured check on an unguaranteed 6★ with the next 6★ guaranteed featured after an off-target result, guarantee shared within the same banner type, and the first 10 summons guaranteeing at least one 5★ or higher. Confirm category, lineup and dates against the official notice.",
+        lineup:["Lineup not yet published in an official notice"],
+        status:"Unofficial / community-estimated · verify against official post"
+      }
+    }]},
+
     {type:"Event",items:[{
       category:"event",
       title:"3rd Anniversary Special Mail",
@@ -1606,10 +1593,10 @@ const games = [
       status:"official"
     },
     {
-      name:"Next season / patch · awaiting official schedule",
+      name:"Season 5 · NOT yet announced as of 22 Sep 2026",
       start:"2026-10-01",
       end:"2027-03-31",
-      rewards:"Reward summary will appear here once the next official season notice is confirmed.",
+      rewards:"No official Season 5 announcement exists as of 22 Sep 2026. Nothing about a fifth season - name, dates, banners or rewards - should be treated as known. This bar is a placeholder for the period after Season 4 ends and will be replaced once an official season notice is published.",
       status:"pending"
     }
   ],
@@ -1674,6 +1661,38 @@ const games = [
 
 
 
+    {type:"Banner",items:[{
+      category:"tentative",
+      title:"Narja + Gaya · rerun (community tracker)",
+      subtitle:"Reported ~22 Sep – ~13 Oct · not an official notice",
+      start:"2026-09-22",
+      end:"2026-10-13",
+      image:images.narja,
+      details:{
+        title:"Narja + Gaya · rerun",
+        dates:"Community tracker (Prydwen) reports roughly 22 Sep 2026 – 13 Oct 2026, with Gaya as the paired Partner. No STOVE notice confirming this rerun or these dates has been published, so treat every date here as an estimate.",
+        pullRules:"No STOVE probability notice has been published for this rerun, so no rule text is asserted. If it is published as a Normal Combatant Rate-Up plus Normal Partner Rate-Up pair, the established category rules are: Combatant - 1% base 5★ rate, soft pity rising 4.5 percentage points per rescue from 58 to 69, a 5★ at rescue 70 with a 50% featured chance and the featured Combatant guaranteed by rescue 140 after a miss; Partner - 1% base 5★ rate, soft pity from rescue 58 and the featured Partner guaranteed at rescue 70. Combatant and Partner pity counters stay separate. Every 10 rescues gives a ★4 or higher, with a 50% rate-up check and the next ★4 guaranteed rate-up after a miss. Confirm against the official STOVE notice before relying on this row.",
+        lineup:["Combatant: Narja","Partner: Gaya"],
+        status:"Unofficial / community-estimated · verify against official post"
+      }
+    }]},
+
+    {type:"Banner",items:[{
+      category:"tentative",
+      title:"Sereniel + Peko · rerun (community tracker)",
+      subtitle:"Reported from ~30 Sep · end date NOT published, bar end is a placeholder",
+      start:"2026-09-30",
+      end:"2026-10-21",
+      image:images.sereniel,
+      details:{
+        title:"Sereniel + Peko · rerun",
+        dates:"Community tracker (Prydwen) reports a start of roughly 30 Sep 2026, with Peko as the paired Partner. No end date has been published anywhere. The 21 Oct 2026 end drawn on this bar is only a display placeholder so the row can be shown - it is not a reported or official date and must be replaced once a real end date appears.",
+        pullRules:"No STOVE probability notice has been published for this rerun, so no rule text is asserted. If it is published as a Normal Combatant Rate-Up plus Normal Partner Rate-Up pair, the established category rules are: Combatant - 1% base 5★ rate, soft pity rising 4.5 percentage points per rescue from 58 to 69, a 5★ at rescue 70 with a 50% featured chance and the featured Combatant guaranteed by rescue 140 after a miss; Partner - 1% base 5★ rate, soft pity from rescue 58 and the featured Partner guaranteed at rescue 70. Combatant and Partner pity counters stay separate. Every 10 rescues gives a ★4 or higher, with a 50% rate-up check and the next ★4 guaranteed rate-up after a miss. Confirm against the official STOVE notice before relying on this row.",
+        lineup:["Combatant: Sereniel","Partner: Peko"],
+        status:"Unofficial / community-estimated · verify against official post"
+      }
+    }]},
+
     {type:"Event",items:[]},
 
     {type:"Maintenance",items:[{
@@ -1689,361 +1708,13 @@ const games = [
 
 
 /* =========================================================
-   BANNER RULE ENGINE
-   - audits every loaded banner
-   - if a rule is blank, Refresh tries source discovery first
-   - if source discovery is insufficient, a verified category
-     template may be used only when the banner type is known
-   - runtime discoveries are persisted in localStorage, not
-     written back into the HTML file
-========================================================= */
-
-const VERIFIED_RULE_LIBRARY = {
-  hsrCharacter: `Character Event Warp: 5★ hard pity within 90 Warps; Character Event Warp count carries across other Character Event Warps and is independent of other Warp types. Celestial Invitation permits 7 custom obtainable 5★ characters. The first 5★ uses the current 50% featured check; other outcomes follow the currently displayed obtainable 5★ pool. Featured-guarantee state resets on obtaining the featured 5★. Every 10 Warps guarantees 4★ or higher.`,
-  hsrFate: `Fate[UBW] Character Collaboration Warp: featured collaboration 5★ plus Celestial Invitation 5★ selections are obtainable; first 5★ has the official 50% featured check; Celestial Invitation catalog mirrors Character Event Warp and updates with it. No featured 4★ rate-up characters — obtainable 4★ characters have equal rates. Collaboration Warp is long-term with no scheduled end date.`,
-  reTimeLimited: `Time-Limited Character Banner: normal Reverse 6★ hard pity at 70 with soft pity after 60; 50% featured 6★ on an unguaranteed 6★ and next 6★ guaranteed featured after an off-target result. Shares guarantee with other Time-Limited Character Banners of the same type. First 10 summons guarantee at least one 5★ or higher character.`,
-  reAnniversary: `Anniversary Limited Banner: guarantee category is independent from normal Time-Limited Character Banners/other event types and is cleared when the event ends. First 10 summons guarantee at least one 5★ or higher character. Anniversary-limited characters return only through later Anniversary Limited Banner events.`,
-  reAnniversaryRerun: `Anniversary Limited Rerun Banner: independent anniversary-rerun guarantee category; its guaranteed count is cleared when the event ends rather than carried into normal banners. First 10 summons guarantee at least one 5★ or higher character.`,
-  reRipples: `Ripples on the Water: select one eligible 6★ and change selection at any time. First 6★ obtained is guaranteed to be the selected 6★ once; subsequent 6★ results have a 50% selected chance and after a non-selected 6★ the next 6★ is guaranteed selected. First 10-pull costs 7 Unilogs. Guarantee is independent from other banner types but carries to future Ripples on the Water banners.`,
-  reLakeHeart: `From the Lake's Heart: select one eligible past limited 6★ and change the selected character at any time. The Limited Rerun Selection guaranteed count is calculated independently and does not share with other summon types. It is cleared when the event ends and does not carry over.`,
-  rePromise: `Promise of the Water: select one eligible Standard Pool 6★ for rate-up. A 6★ has a 50% chance to be the selected target; after an off-target 6★ the next 6★ is guaranteed selected. First 10-pull costs 5 Unilogs. Guarantee is independent and is cleared when the event ends. Current selector behavior: target may be changed before the selected 6★ is obtained; after obtaining the selected 6★, the selection is locked for the rest of the banner.`,
-  cznSeasonalPair: `CZN seasonal pair: Combatant and Partner are separate in-game. Combatant Rate-Up: 1% base 5★, soft pity +4.5 percentage points each rescue from 58–69, 5★ at 70 with 50% featured chance, featured guaranteed by 140 after a miss; category pity shares with the same Combatant Rate-Up category. Partner Rate-Up: 1% base 5★, soft pity from 58, featured 5★ Partner guaranteed at rescue 70; category pity shares with the same Partner Rate-Up category. Every 10 rescues gives ★4+; rate-up ★4 has a 50% check, with next ★4 guaranteed rate-up after a miss.`,
-  cznNormalPair: `CZN normal rerun pair: Normal Combatant and Normal Partner are separate in-game and have separate category counters. Combatant: 1% base 5★, soft pity from rescue 58, rescue 70 gives 5★ with 50% featured chance, featured guaranteed by rescue 140 after a miss. Partner: 1% base 5★, soft pity from 58, featured Partner guaranteed at rescue 70. Each category shares pity only with later banners of the same category. Every 10 rescues gives ★4+; rate-up ★4 has a 50% check and next ★4 is guaranteed rate-up after a miss.`
-};
-
-const RULE_AUDIT_REQUIREMENTS = {
-  hsrCharacter:[
-    ["pity",/(90|pity|guarantee)/i],
-    ["carry-over",/(carry|shared|shares|cumulative)/i],
-    ["featured",/(50%|featured)/i],
-    ["Celestial Invitation",/Celestial Invitation/i],
-    ["4★ guarantee",/(10 Warps|10-pull|every 10)/i]
-  ],
-  hsrFate:[
-    ["featured 5★",/(50%|featured)/i],
-    ["Celestial Invitation",/Celestial Invitation/i],
-    ["4★ rule",/(no featured 4|equal rates)/i],
-    ["duration",/(long-term|no scheduled end)/i]
-  ],
-  reTimeLimited:[
-    ["70 pity",/(70|hard pity)/i],
-    ["featured guarantee",/(50%|50\/50).*(next|guarantee)|off-target.*next/i],
-    ["same-type sharing",/(shares|shared).*(same type|Time-Limited)/i],
-    ["first 10",/(first 10|10 summons).*(5★|5-star)/i]
-  ],
-  reAnniversary:[
-    ["independent category",/(independent|does not share)/i],
-    ["clears at end",/(cleared|does not carry)/i],
-    ["first 10",/(first 10|10 summons)/i],
-    ["limited return",/(Anniversary Limited|return)/i]
-  ],
-  reAnniversaryRerun:[
-    ["independent category",/(independent|does not share)/i],
-    ["clears at end",/(cleared|does not carry)/i],
-    ["first 10",/(first 10|10 summons)/i]
-  ],
-  reRipples:[
-    ["selection change",/(change.*any time|changed at any time)/i],
-    ["first 6★ guaranteed",/(first 6★|first 6-star).*(guaranteed|selected)/i],
-    ["50% thereafter",/50%/i],
-    ["first 10 cost",/(7 Unilog|7 Unilogs)/i],
-    ["carry to Ripples",/(carry|not be cleared).*(Ripples|future)/i]
-  ],
-  reLakeHeart:[
-    ["selection change",/(change.*any time|changed at any time)/i],
-    ["independent",/(independent|does not share)/i],
-    ["clears at end",/(cleared|does not carry)/i]
-  ],
-  rePromise:[
-    ["50% selected",/50%/i],
-    ["off-target guarantee",/(off-target|not the selected).*(next|guarantee)/i],
-    ["first 10 cost",/(5 Unilog|5 Unilogs)/i],
-    ["independent",/(independent|does not share)/i],
-    ["clears at end",/(cleared|does not carry)/i],
-    ["selection lock",/(locked|cannot be changed).*(obtained|remainder)|after obtaining.*locked/i]
-  ],
-  cznSeasonalPair:[
-    ["Combatant 1%",/(Combatant).*(1%|base)/i],
-    ["Combatant 70/140",/(70).*(50%|Combatant).*(140)|140.*featured/i],
-    ["Partner 70 guaranteed",/(Partner).*(70).*(100%|guaranteed)/i],
-    ["soft pity",/(58|soft pity).*(4\.5|69)/i],
-    ["4★ every 10",/(10 rescues|every 10).*(4★|★4)/i],
-    ["separate counters",/(separate|own).*pity|pity.*separate/i]
-  ],
-  cznNormalPair:[
-    ["Combatant 70/140",/(Combatant).*(70).*(50%|140)|140.*Combatant/i],
-    ["Partner 70 guaranteed",/(Partner).*(70).*(guaranteed|100%)/i],
-    ["soft pity",/(58|soft pity).*(4\.5|69)/i],
-    ["category sharing",/(share|shares|category)/i],
-    ["separate counters",/(separate|own).*counter|counters.*separate/i]
-  ]
-};
-
-function inferRuleType(game,item){
-  const title = item.title || "";
-  if(game.id==="HSR"){
-    return /Fate\[UBW\]|Fate\/stay/i.test(title) ? "hsrFate" : "hsrCharacter";
-  }
-
-  if(game.id==="RE1999"){
-    if(/Ripples on the Water/i.test(title)) return "reRipples";
-    if(/From the Lake's Heart/i.test(title)) return "reLakeHeart";
-    if(/Promise of the Water/i.test(title)) return "rePromise";
-    if(/A Newly Hatched Chapter/i.test(title)) return "reAnniversary";
-    if(/Myth at Her Fingertips|Anniversary Limited Rerun/i.test(title)) return "reAnniversaryRerun";
-    return "reTimeLimited";
-  }
-
-  if(game.id==="CZN"){
-    if(/Chizuru|Itsuku/i.test(title)) return "cznNormalPair";
-    return "cznSeasonalPair";
-  }
-
-  return null;
-}
-
-function bannerRuleOverrideId(game,item){
-  return `${game.id}::${item.title}`;
-}
-
-function loadRuleOverrides(){
-  try{
-    return JSON.parse(localStorage.getItem(RULE_OVERRIDE_KEY) || "{}");
-  }catch{
-    return {};
-  }
-}
-
-function saveRuleOverrides(overrides){
-  localStorage.setItem(RULE_OVERRIDE_KEY,JSON.stringify(overrides));
-}
-
-function walkBannerItems(callback){
-  games.forEach(game=>{
-    game.rows.forEach(row=>{
-      if(row.type!=="Banner") return;
-      row.items.forEach(item=>callback(game,item));
-    });
-  });
-}
-
-function applyRuleOverrides(){
-  const overrides = loadRuleOverrides();
-  walkBannerItems((game,item)=>{
-    const override = overrides[bannerRuleOverrideId(game,item)];
-    if(override?.pullRules){
-      item.details = item.details || {};
-      item.details.pullRules = override.pullRules;
-      item.details.ruleSource = override.ruleSource || item.details.ruleSource;
-      item.details.ruleFilledByRefresh = true;
-    }
-  });
-}
-
-function auditOneBannerRule(game,item){
-  const type = inferRuleType(game,item);
-  const text = String(item.details?.pullRules || "").trim();
-  const requirements = RULE_AUDIT_REQUIREMENTS[type] || [];
-
-  if(!text){
-    return {
-      status:"blank",
-      type,
-      passed:0,
-      total:requirements.length,
-      missing:requirements.map(x=>x[0])
-    };
-  }
-
-  const missing = requirements
-    .filter(([,re])=>!re.test(text))
-    .map(([label])=>label);
-
-  return {
-    status:missing.length ? "review" : "pass",
-    type,
-    passed:requirements.length-missing.length,
-    total:requirements.length,
-    missing
-  };
-}
-
-function auditAllBannerRules(){
-  const audits = [];
-
-  walkBannerItems((game,item)=>{
-    audits.push({
-      game:game.id,
-      title:item.title,
-      ...auditOneBannerRule(game,item)
-    });
-  });
-
-  renderRuleAuditSummary(audits);
-  return audits;
-}
-
-function renderRuleAuditSummary(audits){
-  const box = document.getElementById("ruleAuditSummary");
-  if(!box) return;
-
-  const passed = audits.filter(a=>a.status==="pass").length;
-  const blank = audits.filter(a=>a.status==="blank").length;
-  const review = audits.filter(a=>a.status==="review").length;
-
-  box.innerHTML = `
-    <h4>Banner rule audit · ${passed}/${audits.length} passed</h4>
-    <p>
-      Every loaded Banner row is audited for the rule fields that matter to its banner type.
-      Blank rules are eligible for auto-discovery when you use <strong>Check all banner info</strong>.
-      ${blank ? `${blank} blank rule${blank===1?"":"s"} waiting for refresh. ` : ""}
-      ${review ? `${review} rule${review===1?"":"s"} need review for missing fields.` : ""}
-    </p>
-    <div class="rule-audit-list">
-      ${audits.map(a=>`
-        <div class="rule-audit-item">
-          <strong>${escapeHtml(a.game)}</strong>
-          <span>${escapeHtml(a.title)}</span>
-          <span class="${a.status==="pass"?"audit-ok":a.status==="blank"?"audit-bad":"audit-warn"}">
-            ${a.status==="pass"
-              ? `✓ ${a.passed}/${a.total}`
-              : a.status==="blank"
-                ? "Blank · refresh"
-                : `Review · ${escapeHtml(a.missing.join(", "))}
-              `}
-          </span>
-        </div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function meaningfulTitleTerms(item){
-  const stop = new Set([
-    "banner","rerun","phase","collaboration","season","limited","rate","up",
-    "the","of","a","an","and","on","in","heart","water","standard","selector",
-    "grouped","character","partner","combatant"
-  ]);
-
-  return String(item.title || "")
-    .replace(/[·+\/\[\]():]/g," ")
-    .split(/\s+/)
-    .map(x=>x.trim())
-    .filter(x=>x.length>=4 && !stop.has(x.toLowerCase()))
-    .slice(0,6);
-}
-
-function sourceWindowForBanner(item,text){
-  const lines = compactSourceText(text)
-    .split("\n")
-    .map(s=>s.trim())
-    .filter(Boolean);
-
-  const terms = meaningfulTitleTerms(item);
-
-  let bestIndex = -1;
-  let bestScore = 0;
-
-  lines.forEach((line,index)=>{
-    let score = 0;
-    terms.forEach(term=>{
-      if(line.toLowerCase().includes(term.toLowerCase())) score++;
-    });
-    if(score>bestScore){
-      bestScore=score;
-      bestIndex=index;
-    }
-  });
-
-  if(bestIndex<0 || bestScore===0) return [];
-
-  const from = Math.max(0,bestIndex-2);
-  const to = Math.min(lines.length,bestIndex+24);
-
-  return lines
-    .slice(from,to)
-    .filter(line =>
-      /(summon|warp|rescue|rate.?up|featured|select|selected|change|lock|pity|guarante|50%|70|90|140|carry|clear|Unilog|10|4★|5★|6★|limited|rerun|duration|event|pool|Celestial Invitation)/i.test(line)
-    )
-    .slice(0,12);
-}
-
-function normalizeDiscoveredRule(lines){
-  if(!lines.length) return "";
-  return lines
-    .map(line=>line.replace(/^[-•※ㆍ]\s*/,"").trim())
-    .filter(Boolean)
-    .join(" ")
-    .slice(0,1800);
-}
-
-function sourceTextsForGame(sourceTexts,gameId){
-  return (sourceTexts || [])
-    .filter(entry=>entry.game===gameId && entry.text)
-    .map(entry=>entry.text);
-}
-
-function autoFillBlankRulesFromRefresh(sourceTexts){
-  const overrides = loadRuleOverrides();
-  const filled = [];
-
-  walkBannerItems((game,item)=>{
-    item.details = item.details || {};
-    if(String(item.details.pullRules || "").trim()) return;
-
-    let discovered = "";
-    let sourceLabel = "";
-
-    for(const text of sourceTextsForGame(sourceTexts,game.id)){
-      const lines = sourceWindowForBanner(item,text);
-      const candidate = normalizeDiscoveredRule(lines);
-      if(candidate.length>discovered.length){
-        discovered = candidate;
-      }
-    }
-
-    const ruleType = inferRuleType(game,item);
-
-    if(discovered.length>=80){
-      item.details.pullRules = discovered;
-      sourceLabel = "Auto-discovered from refreshed banner source text";
-    }else if(ruleType && VERIFIED_RULE_LIBRARY[ruleType]){
-      /*
-        Source pages sometimes list the banner but hide Details behind JS.
-        After a successful refresh, use the pre-audited category template
-        rather than leaving the rule blank.
-      */
-      item.details.pullRules = VERIFIED_RULE_LIBRARY[ruleType];
-      sourceLabel = "Refresh fallback: verified banner-category rule library";
-    }
-
-    if(item.details.pullRules){
-      const id = bannerRuleOverrideId(game,item);
-      overrides[id] = {
-        pullRules:item.details.pullRules,
-        ruleSource:sourceLabel,
-        savedAt:new Date().toISOString()
-      };
-      item.details.ruleSource = sourceLabel;
-      item.details.ruleFilledByRefresh = true;
-      filled.push({game:game.id,title:item.title,source:sourceLabel});
-    }
-  });
-
-  saveRuleOverrides(overrides);
-  return filled;
-}
-
-/* =========================================================
-   OFFICIAL SOURCE CHECKER
-   - Checks banner dates AND banner-rule information
-   - Scans names/titles, type, start/end, featured lineup,
-     selector rules, target-change/lock rules, pity, guarantee,
-     carry-over/reset, discounted pulls/cost, rerun/limited
-     status and patch/version association
-   - Detects source changes conservatively
-   - Persists hashes in localStorage
-   - Auto-runs no more than once every 12 hours
+   OFFICIAL SOURCE LIST
+   - Static reference list only. Nothing here is fetched by
+     the browser.
+   - Source drift is watched weekly by the GitHub Action in
+     .github/workflows/gacha-timeline-check.yml, which hashes
+     these same pages and opens a draft pull request when one
+     of them changes.
 ========================================================= */
 
 const scheduleSources = [
@@ -2223,248 +1894,11 @@ const scheduleSources = [
   }
 ];
 
-function loadCheckState(){
-  try{
-    return JSON.parse(localStorage.getItem(CHECK_KEY) || '{"sources":{}}');
-  }catch{
-    return {sources:{}};
-  }
-}
-
-function saveCheckState(state){
-  localStorage.setItem(CHECK_KEY, JSON.stringify(state));
-}
-
-function fastHash(text){
-  let h = 2166136261;
-  for(let i=0;i<text.length;i++){
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0).toString(16).padStart(8,"0");
-}
-
-function compactSourceText(text){
-  return text
-    .replace(/\r/g,"")
-    .replace(/[ \t]+/g," ")
-    .replace(/\n{3,}/g,"\n\n")
-    .trim();
-}
-
-function scannerWindow(){
-  return {
-    start:addDays(TODAY_DATE,-SCAN_PAST_DAYS),
-    end:addDays(TODAY_DATE,SCAN_FUTURE_DAYS)
-  };
-}
-
-function monthNameToNumber(name){
-  const map = {
-    jan:0,january:0,
-    feb:1,february:1,
-    mar:2,march:2,
-    apr:3,april:3,
-    may:4,
-    jun:5,june:5,
-    jul:6,july:6,
-    aug:7,august:7,
-    sep:8,september:8,sept:8,
-    oct:9,october:9,
-    nov:10,november:10,
-    dec:11,december:11
-  };
-  return map[String(name).toLowerCase()];
-}
-
-function parseExplicitDatesFromLine(line){
-  const found = [];
-  const defaultYear = TODAY_DATE.getFullYear();
-
-  const iso = /\b(20\d{2})[-/](\d{1,2})[-/](\d{1,2})\b/g;
-  for(const m of line.matchAll(iso)){
-    const y=Number(m[1]), mo=Number(m[2])-1, d=Number(m[3]);
-    const dt=new Date(y,mo,d);
-    if(!Number.isNaN(dt.getTime())) found.push(dt);
-  }
-
-  const dmy = /\b(\d{1,2})\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)(?:\s+(20\d{2}))?\b/gi;
-  for(const m of line.matchAll(dmy)){
-    const d=Number(m[1]);
-    const mo=monthNameToNumber(m[2]);
-    const y=m[3] ? Number(m[3]) : defaultYear;
-    const dt=new Date(y,mo,d);
-    if(!Number.isNaN(dt.getTime())) found.push(dt);
-  }
-
-  const mdy = /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:,?\s+(20\d{2}))?\b/gi;
-  for(const m of line.matchAll(mdy)){
-    const mo=monthNameToNumber(m[1]);
-    const d=Number(m[2]);
-    const y=m[3] ? Number(m[3]) : defaultYear;
-    const dt=new Date(y,mo,d);
-    if(!Number.isNaN(dt.getTime())) found.push(dt);
-  }
-
-  return found;
-}
-
-function lineFallsInsideScannerHorizon(line){
-  const dates = parseExplicitDatesFromLine(line);
-
-  /*
-    Keep undated schedule lines because their date may be on a nearby line.
-  */
-  if(!dates.length) return true;
-
-  const {start,end} = scannerWindow();
-  return dates.some(date=>date>=start && date<=end);
-}
-
-
-const BANNER_AUDIT_FIELDS = [
-  {key:"title",label:"Name / title",re:/(banner|warp|rescue|summon|recruit|pickup|rate.?up)/i},
-  {key:"dates",label:"Start / end",re:/(duration|start|end|from|until|after the version update|maintenance)/i},
-  {key:"type",label:"Banner type",re:/(limited|time-limited|anniversary|rerun|selection|selector|standard|collaboration|partner|combatant)/i},
-  {key:"featured",label:"Featured lineup",re:/(featured|rate.?up|6-star|6★|5-star|5★|designated group|available characters|lineup)/i},
-  {key:"selector",label:"Selector rules",re:/(select|selected|chosen|choice|target|designated)/i},
-  {key:"selectionLock",label:"Selection change / lock",re:/(change|changed|lock|locked|cannot|can.?t|after obtaining|once obtained|after summon)/i},
-  {key:"pity",label:"Pity",re:/(pity|soft pity|hard pity|guaranteed count|summon count)/i},
-  {key:"guarantee",label:"Guarantee / 50-50",re:/(guarantee|guaranteed|50%|50\/50|probability)/i},
-  {key:"carryover",label:"Carry-over / reset",re:/(carry over|carry-over|cleared|reset|independently|not shared|shares the same guarantee)/i},
-  {key:"cost",label:"Pull cost / discount",re:/(unilog|pass|ticket|anchor|first summon|first 10|x10|×10|discount|free summon|free pull)/i},
-  {key:"patch",label:"Patch / version",re:/(version|patch|season|phase|update)/i},
-  {key:"availability",label:"Rerun / limited status",re:/(rerun|limited|permanent|long-term|available|exclusive)/i}
-];
-
-function extractBannerAuditLines(text){
-  const lines = text
-    .split("\n")
-    .map(s=>s.replace(/^#+\s*/,"").trim())
-    .filter(Boolean)
-    .filter(line=>line.length>8 && line.length<420)
-    .filter(lineFallsInsideScannerHorizon);
-
-  return lines.filter(line =>
-    BANNER_AUDIT_FIELDS.some(field=>field.re.test(line))
-  ).slice(0,320);
-}
-
-function auditCoverage(lines){
-  const joined = lines.join("\n");
-  const coverage = {};
-  for(const field of BANNER_AUDIT_FIELDS){
-    coverage[field.key] = field.re.test(joined);
-  }
-  return coverage;
-}
-
-function coverageLabels(coverage){
-  return BANNER_AUDIT_FIELDS
-    .filter(field=>coverage?.[field.key])
-    .map(field=>field.label);
-}
-
-function extractScheduleLines(text){
-  const dateWord = /(20\d{2}|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec|January|February|March|April|June|July|August|September|October|November|December)/i;
-  const scheduleWord = /(banner|warp|version|maintenance|update|rate.?up|rescue|event|phase|summon|limited|anniversary|season|patch|release|featured|6-star|6★|5-star|5★|designated group|select|selected|chosen|change|lock|pity|guarantee|carry over|cleared|unilog|ticket|pass|discount|50\/50|50%|probability|rerun|permanent|long-term)/i;
-
-  return text
-    .split("\n")
-    .map(s=>s.replace(/^#+\s*/,"").trim())
-    .filter(Boolean)
-    .filter(line=>dateWord.test(line) || scheduleWord.test(line))
-    .filter(line=>line.length>12 && line.length<240)
-    .filter(lineFallsInsideScannerHorizon)
-    .slice(0,160);
-}
-
-function extractScheduleSnippet(text){
-  return extractScheduleLines(text)
-    .slice(0,4)
-    .join(" · ")
-    .slice(0,620);
-}
-
-async function fetchWithTimeout(url, timeout=12000){
-  const controller = new AbortController();
-  const timer = setTimeout(()=>controller.abort(), timeout);
-
-  try{
-    const response = await fetch(url,{
-      cache:"no-store",
-      signal:controller.signal,
-      headers:{"Accept":"text/plain,text/html,*/*"}
-    });
-
-    if(!response.ok) throw new Error("HTTP " + response.status);
-    return await response.text();
-  }finally{
-    clearTimeout(timer);
-  }
-}
-
-async function fetchSourceText(source){
-  /*
-    1) Direct official source first.
-    2) If its CORS policy blocks a local/static page, use Jina Reader
-       only as a read-only relay of that public URL.
-  */
-  try{
-    const direct = await fetchWithTimeout(source.url, 9000);
-    if(direct && direct.length > 250) return {text:direct, via:"direct"};
-  }catch{}
-
-  const readerUrl = "https://r.jina.ai/" + source.url;
-  const relayed = await fetchWithTimeout(readerUrl, 14000);
-
-  if(!relayed || relayed.length < 250){
-    throw new Error("No readable public response");
-  }
-
-  return {text:relayed, via:"reader"};
-}
-
-function statusLabelFor(result){
-  if(!result) return "Not checked";
-  if(result.error) return "Could not check";
-  if(result.changed) return "Changed";
-  if(result.firstBaseline) return "Baseline saved";
-  return "No change";
-}
-
 function renderSourceCards(){
-  const state = loadCheckState();
   const grid = document.getElementById("sourceGrid");
+  if(!grid) return;
 
   grid.innerHTML = scheduleSources.map(source=>{
-    const result = state.sources?.[source.id];
-    const label = statusLabelFor(result);
-
-    let color = "#bdc9d8";
-    if(result?.changed) color = "#f2cc79";
-    if(result?.error) color = "#f1a09b";
-    if(result && !result.changed && !result.error) color = "#9cdfaf";
-
-    const snippet = result?.snippet
-      ? `<p>${escapeHtml(result.snippet)}</p>`
-      : `<p>${escapeHtml(source.note)}</p>`;
-
-    const coverage = coverageLabels(result?.coverage || {});
-    const coverageHtml = result
-      ? `
-        <div class="coverage-bar" title="Banner information categories found in this source">
-          ${coverage.length
-            ? coverage.map(name=>`<span class="coverage-chip">${escapeHtml(name)}</span>`).join("")
-            : `<span class="coverage-chip">No banner-rule fields detected</span>`
-          }
-        </div>
-        <p style="margin-top:8px;color:#76879e">
-          ${Number(result.auditedLines || 0)} banner-information line${Number(result.auditedLines || 0)===1?"":"s"} reviewed.
-        </p>
-      `
-      : "";
-
     const badgeHtml = source.unofficial
       ? `<span class="unofficial-badge">Unofficial community source${source.leaks ? " · may include leaks / unconfirmed rumours" : ""}</span>`
       : "";
@@ -2473,225 +1907,19 @@ function renderSourceCards(){
       <div class="source-card${source.unofficial ? " unofficial" : ""}">
         <div class="source-head">
           <div>
-            <h4>${source.game} · ${escapeHtml(source.label)}</h4>
+            <h4>${escapeHtml(source.game)} · ${escapeHtml(source.label)}</h4>
             ${badgeHtml}
           </div>
-          <span class="mini-status" style="color:${color}">${label}</span>
         </div>
 
-        ${snippet}
-        ${coverageHtml}
+        <p>${escapeHtml(source.note)}</p>
 
         <div class="source-links">
           <a href="${source.url}" target="_blank" rel="noopener">${source.unofficial ? "Open community source ↗" : "Open official source ↗"}</a>
-          ${result?.via ? `<span style="font-size:10px;color:#7f90a8;padding:5px 0">checked via ${result.via}</span>` : ""}
         </div>
       </div>
     `;
   }).join("");
-}
-
-function renderCheckSummary(){
-  const state = loadCheckState();
-  const status = document.getElementById("scheduleStatus");
-  const lastCheckText = document.getElementById("lastCheckText");
-
-  const results = Object.values(state.sources || {});
-  const changed = results.filter(x=>x?.changed).length;
-  const errors = results.filter(x=>x?.error).length;
-  const success = results.filter(x=>x && !x.error).length;
-
-  let pillClass = "";
-  let pillText = "Schedule checker ready";
-
-  if(state.lastCheckedAt){
-    if(changed){
-      pillClass = "warn";
-      pillText = `${changed} source${changed===1?"":"s"} changed`;
-    }else if(errors && !success){
-      pillClass = "bad";
-      pillText = "Checks unavailable";
-    }else if(errors){
-      pillClass = "warn";
-      pillText = `Checked · ${errors} source error${errors===1?"":"s"}`;
-    }else{
-      pillClass = "good";
-      pillText = "Sources unchanged";
-    }
-  }
-
-  status.querySelector(".status-pill").className = `status-pill ${pillClass}`.trim();
-  status.querySelector(".status-pill").innerHTML = `<i class="status-dot"></i>${pillText}`;
-
-  if(state.lastCheckedAt){
-    const dt = new Date(state.lastCheckedAt);
-    const horizonEnd = addDays(TODAY_DATE,SCAN_FUTURE_DAYS);
-
-    lastCheckText.textContent =
-      "Last browser source check: " +
-      new Intl.DateTimeFormat("en-SG",{
-        dateStyle:"medium",
-        timeStyle:"short",
-        timeZone:"Asia/Singapore"
-      }).format(dt) +
-      " SGT · scanning schedule dates through " +
-      new Intl.DateTimeFormat("en-SG",{
-        day:"numeric",
-        month:"short",
-        year:"numeric",
-        timeZone:"Asia/Singapore"
-      }).format(horizonEnd) +
-      ".";
-  }else{
-    lastCheckText.textContent = "No browser check has been run yet.";
-  }
-
-  renderSourceCards();
-}
-
-async function checkSchedules({automatic=false}={}){
-  const button = document.getElementById("checkSchedulesBtn");
-
-  if(!navigator.onLine){
-    renderTransientCheckMessage("Browser appears offline. Existing schedule data was left unchanged.","bad");
-    return;
-  }
-
-  button.disabled = true;
-  button.classList.add("checking");
-  button.textContent = "⟳ Checking…";
-
-  const state = loadCheckState();
-  state.sources = state.sources || {};
-
-  const results = await Promise.all(scheduleSources.map(async source=>{
-    const previous = state.sources[source.id];
-
-    try{
-      const fetched = await fetchSourceText(source);
-      const text = compactSourceText(fetched.text);
-      const scheduleLines = extractScheduleLines(text);
-      const bannerAuditLines = extractBannerAuditLines(text);
-
-      /*
-        Hash all banner-information lines, not just dates.
-        This means changes to pity wording, target selection rules,
-        featured characters, discounted pull cost, carry-over, etc.
-        can trigger a review even when the schedule dates stay unchanged.
-      */
-      const auditText =
-        bannerAuditLines.join("\n") ||
-        scheduleLines.join("\n") ||
-        text.slice(0,20000);
-
-      const hash = fastHash(auditText);
-      const snippet = extractScheduleSnippet(text);
-      const coverage = auditCoverage(bannerAuditLines);
-
-      return {
-        source,
-        fetchedText:text,
-        result:{
-          hash,
-          checkedAt:new Date().toISOString(),
-          changed:Boolean(previous?.hash && previous.hash !== hash),
-          firstBaseline:!previous?.hash,
-          via:fetched.via,
-          snippet,
-          coverage,
-          auditedLines:bannerAuditLines.length
-        }
-      };
-    }catch(error){
-      return {
-        source,
-        result:{
-          checkedAt:new Date().toISOString(),
-          error:String(error?.message || error),
-          changed:false,
-          firstBaseline:false
-        }
-      };
-    }
-  }));
-
-  for(const {source,result} of results){
-    state.sources[source.id] = result;
-  }
-
-  state.lastCheckedAt = new Date().toISOString();
-  saveCheckState(state);
-
-  const refreshedTexts = results
-    .filter(entry=>entry.fetchedText)
-    .map(entry=>({
-      game:entry.source.game,
-      sourceId:entry.source.id,
-      text:entry.fetchedText
-    }));
-
-  const autoFilledRules = autoFillBlankRulesFromRefresh(refreshedTexts);
-  const bannerAudits = auditAllBannerRules();
-
-  button.disabled = false;
-  button.classList.remove("checking");
-  button.textContent = "⟳ Check all banner info";
-
-  renderCheckSummary();
-
-  const changed = results.filter(x=>x.result.changed).length;
-  const failed = results.filter(x=>x.result.error).length;
-
-  if(!automatic){
-    if(changed){
-      const passedRules = bannerAudits.filter(a=>a.status==="pass").length;
-      renderTransientCheckMessage(
-        `${changed} configured source${changed===1?" has":"s have"} changed in banner-related information. Banner-rule audit: ${passedRules}/${bannerAudits.length} passed. ${autoFilledRules.length ? `${autoFilledRules.length} blank rule${autoFilledRules.length===1?" was":"s were"} auto-filled.` : ""} Review highlighted sources before accepting changed dates/lineups.`,
-        "warn"
-      );
-      document.getElementById("scheduleCheckPanel").classList.add("visible");
-      document.getElementById("scheduleDetailToggle").textContent = "Hide official sources";
-    }else if(failed === results.length){
-      renderTransientCheckMessage(
-        "The browser could not read the configured sources. Timeline data was not modified.",
-        "bad"
-      );
-    }else{
-      const passedRules = bannerAudits.filter(a=>a.status==="pass").length;
-      renderTransientCheckMessage(
-        `Check complete. ${passedRules}/${bannerAudits.length} loaded banner rules passed the rule audit. ${autoFilledRules.length ? `${autoFilledRules.length} blank rule${autoFilledRules.length===1?" was":"s were"} auto-filled during refresh.` : "No blank rules needed auto-fill."}`,
-        passedRules===bannerAudits.length ? "good" : "warn"
-      );
-    }
-  }
-}
-
-function renderTransientCheckMessage(message,type){
-  const status = document.getElementById("scheduleStatus");
-  const old = status.querySelector(".transient-message");
-  if(old) old.remove();
-
-  const span = document.createElement("span");
-  span.className = "transient-message";
-  span.style.color = type==="bad" ? "#f1a09b" : type==="warn" ? "#f2cc79" : "#9cdfaf";
-  span.textContent = message;
-  status.appendChild(span);
-
-  setTimeout(()=>span.remove(), 9000);
-}
-
-function maybeAutoCheck(){
-  const state = loadCheckState();
-
-  if(!state.lastCheckedAt){
-    checkSchedules({automatic:true});
-    return;
-  }
-
-  const hours = (Date.now() - new Date(state.lastCheckedAt).getTime()) / 36e5;
-  if(hours >= AUTO_CHECK_HOURS){
-    checkSchedules({automatic:true});
-  }
 }
 
 /* =========================================================
@@ -3147,10 +2375,8 @@ function showDetails(item){
   const panel = document.getElementById("detailsPanel");
   const d = item.details;
 
-  const statusClass =
-    d.status==="Scheduled"
-      ? "status scheduled"
-      : "status";
+  const provisional = /^(Scheduled|Unofficial)|estimate|pending/i.test(d.status || "");
+  const statusClass = provisional ? "status scheduled" : "status";
 
   panel.innerHTML = `
     <div class="details-top">
@@ -3167,7 +2393,7 @@ function showDetails(item){
     <div class="details-grid">
       <div>
         <h3>PULL RULES / SCHEDULE NOTE</h3>
-        <p>${escapeHtml(d.pullRules || "Rule information is blank. Use “Check all banner info” to auto-find and audit it.")}</p>
+        <p>${escapeHtml(d.pullRules || "No pull-rule text has been recorded for this entry yet.")}</p>
         ${d.ruleSource ? `<div class="rule-source-note">Rule source: ${escapeHtml(d.ruleSource)}</div>` : ""}
       </div>
 
@@ -3586,10 +2812,6 @@ document.getElementById("jumpTodayBtn").addEventListener("click",()=>{
   jumpToPresent({smooth:true,resetVertical:true});
 });
 
-document.getElementById("checkSchedulesBtn").addEventListener("click",()=>{
-  checkSchedules({automatic:false});
-});
-
 document.getElementById("scheduleDetailToggle").addEventListener("click",()=>{
   const panel = document.getElementById("scheduleCheckPanel");
   panel.classList.toggle("visible");
@@ -3628,20 +2850,15 @@ window.addEventListener("beforeunload",()=>{
    START
 ========================================================= */
 
-applyRuleOverrides();
 renderDates();
 renderGames();
-auditAllBannerRules();
 updateItemFollowerLabels();
 updatePatchFollowerLabels();
 updateGameHeaderFollowerLabels();
 renderGameJumpButtons();
 renderMonthlySummaries();
-renderCheckSummary();
+renderSourceCards();
 restorePositionState();
-
-/* auto-check only if last check is older than 12h */
-setTimeout(maybeAutoCheck,700);
 
 </script>
 </body>
