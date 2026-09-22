@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-21T09:44:13+08:00
+GeBIZ crawl OK — 2026-09-22T09:41:49+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 320 across 32 page(s) (stopped at the 7-day window)
+Rows: 10 across 1 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26004013
+[1] ref=NYP000ETQ26000156
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Choir CCA Training Programme in Jurong West Primary School
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=21 Sep 2026 09:20 AM
-    closing=30 Sep 2026 01:00PM
-
-[2] ref=MOESCHETQ26003906
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Basketball CCA Training Programme 2027
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=21 Sep 2026 09:05 AM
-    closing=30 Sep 2026 01:00PM
-
-[3] ref=NYP000ETT26000015
-    type=Tender  status=OPEN
-    title=Tender for Proposed Additions & Alterations to Existing Nanyang Polytechnic Premises
+    title=Renewal of Modeling Labs Software Licenses for a period of 1 year
     agency=Nanyang Polytechnic
-    category=Construction ⇒ Civil Engineering
-    published=21 Sep 2026 08:50 AM
-    closing=16 Oct 2026 04:00PM
+    category=IT&Telecommunication ⇒ Softwares & Licences
+    published=22 Sep 2026 09:20 AM
+    closing=01 Oct 2026 01:00PM
 
-[4] ref=MOESCHETQ26004007
+[2] ref=DST000ETQ26000066
     type=Quotation  status=OPEN
-    title=Provision of Ad-Hoc Bus Transport Services for St Hilda's Primary School
-    agency=Ministry of Education - Schools
-    category=Transportation ⇒ Bus Hire
-    published=21 Sep 2026 08:50 AM
-    closing=30 Sep 2026 01:00PM
+    title=Five-Day Physical Science and Technology Workshop
+    agency=Defence Science and Technology Agency
+    category=Administration & Training ⇒ Courses
+    published=22 Sep 2026 09:20 AM
+    closing=01 Oct 2026 01:00PM
 
-[5] ref=MOESCHETQ26003944
+[3] ref=MOESCHETQ26004051
     type=Quotation  status=OPEN
-    title=Supply of Netball CCA Training Programme in Pasir Ris Secondary School for 2027 and 2028 (Option Year)
+    title=Renovation of the Conference Room Including Cabinetry Works in Yio Chu Kang Primary School
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=21 Sep 2026 08:50 AM
-    closing=30 Sep 2026 01:00PM
+    category=Construction ⇒ Renovation Supplies & Services
+    published=22 Sep 2026 08:50 AM
+    closing=01 Oct 2026 01:00PM
+
+[4] ref=NYP000ETQ26000155
+    type=Quotation  status=OPEN
+    title=Provision of Technical Writing Services for the Development of the Code of Practice for Rice Warehousing and Storage
+    agency=Nanyang Polytechnic
+    category=Services ⇒ Professional Services
+    published=22 Sep 2026 07:50 AM
+    closing=01 Oct 2026 01:00PM
+
+[5] ref=LAWHQ0ETQ26000011
+    type=Quotation  status=OPEN
+    title=INVITATION TO QUOTE TO CONVERT OFFICE SPACE INTO WORKSTATIONS
+    agency=Ministry of Law-Ministry Headquarter
+    category=Construction ⇒ General Building & Minor Construction Works
+    published=22 Sep 2026 07:50 AM
+    closing=06 Oct 2026 01:00PM
