@@ -12,11 +12,14 @@ subscription's OAuth token) added as a repo secret. The owner asked for
 a solution that runs with **no external API key at all**, so this is a
 deliberately more conservative design:
 
-- `check-sources.mjs` ports the exact change-detection algorithm
-  already built into `index.html`'s own "⟳ Check all banner info"
-  button (`fastHash`, `compactSourceText`, `extractBannerAuditLines`,
-  the `BANNER_AUDIT_FIELDS` keyword taxonomy). Same logic, running on
-  a schedule instead of waiting for someone to click the button.
+- `check-sources.mjs` carries the change-detection algorithm that used
+  to sit inside `index.html` behind a "⟳ Check all banner info" button
+  (`fastHash`, `compactSourceText`, `extractBannerAuditLines`, the
+  `BANNER_AUDIT_FIELDS` keyword taxonomy). That in-page checker has
+  since been removed, because the sites it needed to read block
+  cross-origin browser requests and it could not be relied on. The same
+  logic now runs only here, on a schedule, in a headless browser that
+  is not subject to those restrictions.
 - It can reliably answer "did this official source's banner-relevant
   text change since last time?" without any reasoning model, because
   that's a hash comparison, not a comprehension task.
