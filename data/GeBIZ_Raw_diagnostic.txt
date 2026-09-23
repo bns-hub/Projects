@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-22T09:41:49+08:00
+GeBIZ crawl OK — 2026-09-23T09:41:27+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 10 across 1 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=NYP000ETQ26000156
-    type=Quotation  status=OPEN
-    title=Renewal of Modeling Labs Software Licenses for a period of 1 year
-    agency=Nanyang Polytechnic
-    category=IT&Telecommunication ⇒ Softwares & Licences
-    published=22 Sep 2026 09:20 AM
-    closing=01 Oct 2026 01:00PM
+[1] ref=SST000ETT26000003
+    type=Tender  status=OPEN
+    title=Supply, delivery and installation of Network Switches and Wireless Access Points (APs)
+    agency=School of Science and Technology, Singapore
+    category=IT&Telecommunication ⇒ Servers
+    published=23 Sep 2026 09:20 AM
+    closing=23 Oct 2026 04:00PM
 
-[2] ref=DST000ETQ26000066
-    type=Quotation  status=OPEN
-    title=Five-Day Physical Science and Technology Workshop
-    agency=Defence Science and Technology Agency
-    category=Administration & Training ⇒ Courses
-    published=22 Sep 2026 09:20 AM
-    closing=01 Oct 2026 01:00PM
-
-[3] ref=MOESCHETQ26004051
-    type=Quotation  status=OPEN
-    title=Renovation of the Conference Room Including Cabinetry Works in Yio Chu Kang Primary School
-    agency=Ministry of Education - Schools
-    category=Construction ⇒ Renovation Supplies & Services
-    published=22 Sep 2026 08:50 AM
-    closing=01 Oct 2026 01:00PM
-
-[4] ref=NYP000ETQ26000155
-    type=Quotation  status=OPEN
-    title=Provision of Technical Writing Services for the Development of the Code of Practice for Rice Warehousing and Storage
-    agency=Nanyang Polytechnic
+[2] ref=NPB000ERF26000005
+    type=  status=OPEN
+    title=Expression of Interest (EOI) for Multi-Disciplinary Consultancy Services for Enhancement Works in Existing Parks in Singapore
+    agency=National Parks Board
     category=Services ⇒ Professional Services
-    published=22 Sep 2026 07:50 AM
-    closing=01 Oct 2026 01:00PM
+    published=23 Sep 2026 09:20 AM
+    closing=06 Oct 2026 04:00PM
 
-[5] ref=LAWHQ0ETQ26000011
-    type=Quotation  status=OPEN
-    title=INVITATION TO QUOTE TO CONVERT OFFICE SPACE INTO WORKSTATIONS
-    agency=Ministry of Law-Ministry Headquarter
-    category=Construction ⇒ General Building & Minor Construction Works
-    published=22 Sep 2026 07:50 AM
-    closing=06 Oct 2026 01:00PM
+[3] ref=HDB000ETT26000169
+    type=Tender  status=OPEN
+    title=TERM CONTRACT FOR VECTOR CONTROL SERVICES TO HDB DEVELOPMENT SITES FOR A PERIOD OF TWENTY-FOUR MONTHS
+    agency=Housing and Development Board
+    category=Facilities Management ⇒ Pest Management Services
+    published=23 Sep 2026 08:50 AM
+    closing=14 Oct 2026 04:00PM
+
+[4] ref=MOMHQ0ETT26000017
+    type=Tender  status=OPEN
+    title=2nd stage - MULTI-DISCIPLINARY CONSULTANCY SERVICES FOR THE REDEVELOPMENT OF KAKI BUKIT RECREATION CENTRE
+    agency=Ministry of Manpower-Ministry Headquarter
+    category=Services ⇒ Professional Services
+    published=23 Sep 2026 07:50 AM
+    closing=23 Oct 2026 04:00PM
+
+[5] ref=DEFNGPP7126101400
+    type=  status=OPEN
+    title=Supply of Ship Spares
+    agency=Ministry of Defence 6
+    category=Miscellaneous ⇒ Others
+    published=23 Sep 2026 12:05 AM
+    closing=22 Oct 2026 04:00PM
