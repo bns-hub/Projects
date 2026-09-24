@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-23T09:41:27+08:00
+GeBIZ crawl OK — 2026-09-24T14:38:00+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 10 across 1 page(s)
+Rows: 360 across 36 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=SST000ETT26000003
-    type=Tender  status=OPEN
-    title=Supply, delivery and installation of Network Switches and Wireless Access Points (APs)
-    agency=School of Science and Technology, Singapore
-    category=IT&Telecommunication ⇒ Servers
-    published=23 Sep 2026 09:20 AM
-    closing=23 Oct 2026 04:00PM
+[1] ref=INDHCIETQ26000071
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Chinese Orchestra- Erhu, Gaohu, Zhonghu CCA Training Programme in Hwa Chong Institution
+    agency=Hwa Chong Institution
+    category=Administration & Training ⇒ Courses
+    published=24 Sep 2026 02:20 PM
+    closing=05 Oct 2026 01:00PM
 
-[2] ref=NPB000ERF26000005
-    type=  status=OPEN
-    title=Expression of Interest (EOI) for Multi-Disciplinary Consultancy Services for Enhancement Works in Existing Parks in Singapore
-    agency=National Parks Board
-    category=Services ⇒ Professional Services
-    published=23 Sep 2026 09:20 AM
-    closing=06 Oct 2026 04:00PM
+[2] ref=MOESCHETQ26004148
+    type=Quotation  status=OPEN
+    title=Provision of instructors for Chinese Orchestra CCA Training Programme for 2027 with option year for 2028 in Holy Innocents' High School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=24 Sep 2026 02:05 PM
+    closing=05 Oct 2026 01:00PM
 
-[3] ref=HDB000ETT26000169
-    type=Tender  status=OPEN
-    title=TERM CONTRACT FOR VECTOR CONTROL SERVICES TO HDB DEVELOPMENT SITES FOR A PERIOD OF TWENTY-FOUR MONTHS
-    agency=Housing and Development Board
-    category=Facilities Management ⇒ Pest Management Services
-    published=23 Sep 2026 08:50 AM
-    closing=14 Oct 2026 04:00PM
+[3] ref=MOESCHETQ26004168
+    type=Quotation  status=OPEN
+    title=CCA : Coaching fees for Concert Band CCA for 2027 with Option Year for 2028 for Holy Innocents' High School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=24 Sep 2026 02:05 PM
+    closing=05 Oct 2026 01:00PM
 
-[4] ref=MOMHQ0ETT26000017
-    type=Tender  status=OPEN
-    title=2nd stage - MULTI-DISCIPLINARY CONSULTANCY SERVICES FOR THE REDEVELOPMENT OF KAKI BUKIT RECREATION CENTRE
-    agency=Ministry of Manpower-Ministry Headquarter
-    category=Services ⇒ Professional Services
-    published=23 Sep 2026 07:50 AM
-    closing=23 Oct 2026 04:00PM
+[4] ref=MOESCHETQ26004080
+    type=Quotation  status=OPEN
+    title=Supply of 1 Instructor for Wordsmith's Club CCA Debate Training Programme in Fern Green Primary School
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=24 Sep 2026 02:05 PM
+    closing=05 Oct 2026 01:00PM
 
-[5] ref=DEFNGPP7126101400
-    type=  status=OPEN
-    title=Supply of Ship Spares
-    agency=Ministry of Defence 6
-    category=Miscellaneous ⇒ Others
-    published=23 Sep 2026 12:05 AM
-    closing=22 Oct 2026 04:00PM
+[5] ref=MOESCHETQ26004155
+    type=Quotation  status=OPEN
+    title=Provision of 2 Days 1 Night Primary 4 Residential Camp for North Spring Primary School
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=24 Sep 2026 01:50 PM
+    closing=05 Oct 2026 01:00PM
