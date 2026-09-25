@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-24T14:38:00+08:00
+GeBIZ crawl OK — 2026-09-25T14:31:03+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 360 across 36 page(s) (stopped at the 7-day window)
+Rows: 260 across 26 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=INDHCIETQ26000071
+[1] ref=MOESCHETQ26004227
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Chinese Orchestra- Erhu, Gaohu, Zhonghu CCA Training Programme in Hwa Chong Institution
-    agency=Hwa Chong Institution
-    category=Administration & Training ⇒ Courses
-    published=24 Sep 2026 02:20 PM
-    closing=05 Oct 2026 01:00PM
-
-[2] ref=MOESCHETQ26004148
-    type=Quotation  status=OPEN
-    title=Provision of instructors for Chinese Orchestra CCA Training Programme for 2027 with option year for 2028 in Holy Innocents' High School
+    title=Supply of Instructor for Chinese Dance CCA training programme in Jing Shan Primary School
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=24 Sep 2026 02:05 PM
+    published=25 Sep 2026 02:05 PM
     closing=05 Oct 2026 01:00PM
 
-[3] ref=MOESCHETQ26004168
+[2] ref=MOESCHETQ26004228
     type=Quotation  status=OPEN
-    title=CCA : Coaching fees for Concert Band CCA for 2027 with Option Year for 2028 for Holy Innocents' High School
+    title=Provision of ONE instructor for Softball CCA Training Programme in Riverside Secondary School.
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=24 Sep 2026 02:05 PM
+    published=25 Sep 2026 01:50 PM
     closing=05 Oct 2026 01:00PM
 
-[4] ref=MOESCHETQ26004080
+[3] ref=MOESCHETQ26004225
     type=Quotation  status=OPEN
-    title=Supply of 1 Instructor for Wordsmith's Club CCA Debate Training Programme in Fern Green Primary School
+    title=Supply, installation and Commissioning of CCTV at Jurongville Secondary School
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=24 Sep 2026 02:05 PM
+    category=Administration & Training ⇒ Music & Video
+    published=25 Sep 2026 01:35 PM
+    closing=12 Oct 2026 01:00PM
+
+[4] ref=MOE000ETQ26000231
+    type=Quotation  status=OPEN
+    title=Supply, deliver, installation, testing & commissioning of Electronic Key Management System
+    agency=Ministry of Education
+    category=IT&Telecommunication ⇒ IT Services & Software Development
+    published=25 Sep 2026 01:20 PM
     closing=05 Oct 2026 01:00PM
 
-[5] ref=MOESCHETQ26004155
+[5] ref=MOESCHETQ26004216
     type=Quotation  status=OPEN
-    title=Provision of 2 Days 1 Night Primary 4 Residential Camp for North Spring Primary School
+    title=PROVISION OF AD-HOC BUS TRANSPORT SERVICES FOR WHITE SANDS PRIMARY SCHOOL FOR 1 JAN 2027 TO 31 DEC 2027
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=24 Sep 2026 01:50 PM
+    category=Transportation ⇒ Bus Hire
+    published=25 Sep 2026 12:50 PM
     closing=05 Oct 2026 01:00PM
