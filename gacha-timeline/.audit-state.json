@@ -1,9 +1,9 @@
 {
-  "lastCheckedAt": "2026-09-20T17:03:38.330Z",
+  "lastCheckedAt": "2026-09-27T17:03:34.026Z",
   "sources": {
     "hsr-official": {
       "hash": "c7a2f4b3",
-      "checkedAt": "2026-09-20T17:03:05.799Z",
+      "checkedAt": "2026-09-27T17:03:00.192Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -11,26 +11,26 @@
       "auditedLines": 14
     },
     "hsr-hoyolab": {
-      "hash": "5d972abb",
-      "checkedAt": "2026-09-20T17:03:21.360Z",
+      "hash": "7de90118",
+      "checkedAt": "2026-09-27T17:03:16.581Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Click the video and watch the Special Program for 10 seconds to unlock the redemption feature~ · Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · We will recommend content based on your chosen interests",
-      "auditedLines": 9
+      "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · Himeko • Nova · We will recommend content based on your chosen interests",
+      "auditedLines": 7
     },
     "hsr-hoyolab-official": {
-      "hash": "5414a536",
-      "checkedAt": "2026-09-20T17:03:26.850Z",
+      "hash": "632ed3a9",
+      "checkedAt": "2026-09-27T17:03:22.127Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Version 4.6 \"Dance With the Beast Before Moonrise\" Highlights Page Is Now Online · A Brief on the Version 4.6 Special Program · Store Update | V4.6 Dance With the Beast Before Moonrise · Version 4.6 Trailer: \"Dance With the Beast Before Moonrise\" | Honkai: Star Rail",
-      "auditedLines": 16
+      "snippet": "\"Dance With the Beast Before Moonrise\" Version 4.6 Preview · Version 4.6 \"Dance With the Beast Before Moonrise\" Highlights Page Is Now Online · A Brief on the Version 4.6 Special Program · Store Update | V4.6 Dance With the Beast Before Moonrise",
+      "auditedLines": 14
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-09-20T17:03:29.012Z",
+      "checkedAt": "2026-09-27T17:03:24.248Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -38,26 +38,26 @@
       "auditedLines": 4
     },
     "re-steam": {
-      "hash": "85fc54b7",
-      "checkedAt": "2026-09-20T17:03:31.008Z",
+      "hash": "e8aa33dc",
+      "checkedAt": "2026-09-27T17:03:27.535Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Ver. 3.7 - 3rd Anniversary Special Version · Log in to Get Time-Limited 10 Summons for Free",
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · \\[The First Drop of Rain] Banner Update · \\[Event Time]:",
       "auditedLines": 320
     },
     "re-steam-forum": {
       "hash": "082f4116",
-      "checkedAt": "2026-09-20T17:03:31.188Z",
+      "checkedAt": "2026-09-27T17:03:27.710Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Sep 17 @ 12:42am",
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Sep 25 @ 3:56pm",
       "auditedLines": 6
     },
     "czn-community": {
       "hash": "76461c55",
-      "checkedAt": "2026-09-20T17:03:36.827Z",
+      "checkedAt": "2026-09-27T17:03:32.328Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -66,7 +66,7 @@
     },
     "czn-brand": {
       "hash": "83d6d77c",
-      "checkedAt": "2026-09-20T17:03:37.863Z",
+      "checkedAt": "2026-09-27T17:03:33.263Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -74,67 +74,67 @@
       "auditedLines": 3
     },
     "czn-arabella-rules": {
-      "hash": "a4a88b36",
-      "checkedAt": "2026-09-20T17:03:38.009Z",
-      "changed": false,
+      "hash": "8b79272f",
+      "checkedAt": "2026-09-27T17:03:33.445Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026 · Nightmare Team",
       "auditedLines": 57
     },
     "czn-licinia-rules": {
-      "hash": "579ef21f",
-      "checkedAt": "2026-09-20T17:03:38.114Z",
-      "changed": false,
+      "hash": "c1c3459c",
+      "checkedAt": "2026-09-27T17:03:33.564Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026 · Nightmare Team",
       "auditedLines": 55
     },
     "czn-chizuru-rules": {
-      "hash": "e91e0093",
-      "checkedAt": "2026-09-20T17:03:38.210Z",
-      "changed": false,
+      "hash": "d3dfe0f2",
+      "checkedAt": "2026-09-27T17:03:33.859Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026 · Nightmare Team",
       "auditedLines": 57
     },
     "czn-itsuku-rules": {
-      "hash": "af2d06ed",
-      "checkedAt": "2026-09-20T17:03:38.294Z",
-      "changed": false,
+      "hash": "3f31c99e",
+      "checkedAt": "2026-09-27T17:03:34.001Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026 · Nightmare Team",
       "auditedLines": 55
     },
     "hsr-news": {
-      "hash": "44dd1746",
-      "checkedAt": "2026-09-20T17:03:10.967Z",
+      "hash": "820cb854",
+      "checkedAt": "2026-09-27T17:03:05.647Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
       "snippet": "Version 4.6 Trailer: \"Dance With the Beast Before Moonrise\" | Honkai: Star Rail · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
-      "auditedLines": 3
+      "auditedLines": 2
     },
     "re-news": {
-      "hash": "d49130f7",
-      "checkedAt": "2026-09-20T17:03:30.502Z",
-      "changed": false,
+      "hash": "f394ca60",
+      "checkedAt": "2026-09-27T17:03:27.282Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "api",
-      "snippet": "2026-09-13 - Ver. 3.8 [The Temporal Scale] Preview · [Event Time]: · After the version update on 2026-09-24 - 2026-11-02 04:59 (UTC-5) · 2026-10-01 05:00 - 2026-11-02 04:59 (UTC-5)",
+      "snippet": "2026-09-26 - [Announcement of Results] Collaboration Special Creator Contest Winners · 2026-09-24 - Ver.3.8 \"The Temporal Scale\" Fanwork Event Open for Submission! · Share your Version 3.8-related creations for a chance to win cash prizes, Clear Drops, and exclusive merchandise! · Base your submission around Version 3.8, including but not limited to the new storyline, event characters, and garments.",
       "auditedLines": 320
     },
     "czn-news": {
-      "hash": "350ec3b4",
-      "checkedAt": "2026-09-20T17:03:31.389Z",
-      "changed": false,
+      "hash": "3e1b979c",
+      "checkedAt": "2026-09-27T17:03:27.938Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "News - Chaos Zero Nightmare (CZN) · Current Events · [Event] Notice on the Chaos Zero Nightmare x Epic Seven Collaboration Event · September 17, 2026",
-      "auditedLines": 26
+      "snippet": "News - Chaos Zero Nightmare (CZN) · September 23, 2026 · September 23, 2026 · September 23, 2026",
+      "auditedLines": 23
     }
   }
 }
