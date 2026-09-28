@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-27T14:59:02+08:00
+GeBIZ crawl OK — 2026-09-28T15:28:32+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 30 across 3 page(s)
+Rows: 350 across 35 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=DEFNGPP7126101479
-    type=  status=OPEN
-    title=Supply and Installation of Propeller Guards for Outboard Motors
-    agency=Ministry of Defence 6
-    category=Miscellaneous ⇒ Others
-    published=25 Sep 2026 09:05 PM
-    closing=19 Oct 2026 04:00PM
+[1] ref=MOESCHETQ26004273
+    type=Quotation  status=OPEN
+    title=Supply of Instructors for SwimSafer 2.0 Programme and Singapore Swimming Proficiency Award (SSPA) for Primary 4 Students in 2027
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=28 Sep 2026 03:05 PM
+    closing=07 Oct 2026 01:00PM
 
-[2] ref=PAS000ETT26000089
-    type=Tender  status=OPEN
-    title=Be My Movie Kaki Indoor/Outdoor Movie screening package
-    agency=People's Association
-    category=Event Organising, Food & Beverages ⇒ Event Organising
-    published=25 Sep 2026 09:05 PM
-    closing=08 Oct 2026 04:00PM
+[2] ref=MOESCHETQ26004270
+    type=Quotation  status=OPEN
+    title=FOR THE PROVISION OF IN-HOUSE PRINTING SERVICES (2027)
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Printing Services
+    published=28 Sep 2026 02:50 PM
+    closing=07 Oct 2026 01:00PM
 
-[3] ref=MHA00003000029470
-    type=  status=OPEN
-    title=PROCUREMENT AND MAINTENANCE OF SECURITY DETECTORS
-    agency=Ministry of Home Affairs - Ministry Headquarter 1
-    category=Miscellaneous ⇒ Others
-    published=25 Sep 2026 07:50 PM
-    closing=27 Oct 2026 04:00PM
+[3] ref=MOESCHETQ26004271
+    type=Quotation  status=OPEN
+    title=Design, Supply and Installation of STEM Room
+    agency=Ministry of Education - Schools
+    category=Construction ⇒ Renovation Supplies & Services
+    published=28 Sep 2026 02:20 PM
+    closing=13 Oct 2026 01:00PM
 
-[4] ref=DEFNGPP7126101735
-    type=  status=OPEN
-    title=Provision of Targeted Training Regimen
-    agency=Ministry of Defence 6
-    category=Miscellaneous ⇒ Others
-    published=25 Sep 2026 07:20 PM
-    closing=19 Oct 2026 04:00PM
+[4] ref=MOESCHETQ26004266
+    type=Quotation  status=OPEN
+    title=Provision of Outsourced Printing Services for Teaching and Learning Materials (worksheets) for Swiss Cottage Secondary School
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Publications & Periodicals
+    published=28 Sep 2026 02:05 PM
+    closing=07 Oct 2026 01:00PM
 
-[5] ref=SDC000ETT26000027
-    type=Tender  status=OPEN
-    title=PURCHASE & RENEWAL OF MICROSOFT LICENSES
-    agency=Sentosa Development Corporation
-    category=IT&Telecommunication ⇒ Softwares & Licences
-    published=25 Sep 2026 06:20 PM
-    closing=09 Oct 2026 04:00PM
+[5] ref=MOESCHETQ26004265
+    type=Quotation  status=OPEN
+    title=Swiss Cottage Sec Sch: Provision of Adhoc Bus Transportation services from 1 Jan 2027 to 31 Dec 2027
+    agency=Ministry of Education - Schools
+    category=Transportation ⇒ Bus Hire
+    published=28 Sep 2026 02:05 PM
+    closing=07 Oct 2026 01:00PM
