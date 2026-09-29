@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-28T15:28:32+08:00
+GeBIZ crawl OK — 2026-09-29T15:25:01+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 350 across 35 page(s) (stopped at the 7-day window)
+Rows: 370 across 37 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26004273
+[1] ref=MOESCHETQ26004321
     type=Quotation  status=OPEN
-    title=Supply of Instructors for SwimSafer 2.0 Programme and Singapore Swimming Proficiency Award (SSPA) for Primary 4 Students in 2027
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=28 Sep 2026 03:05 PM
-    closing=07 Oct 2026 01:00PM
-
-[2] ref=MOESCHETQ26004270
-    type=Quotation  status=OPEN
-    title=FOR THE PROVISION OF IN-HOUSE PRINTING SERVICES (2027)
-    agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Printing Services
-    published=28 Sep 2026 02:50 PM
-    closing=07 Oct 2026 01:00PM
-
-[3] ref=MOESCHETQ26004271
-    type=Quotation  status=OPEN
-    title=Design, Supply and Installation of STEM Room
-    agency=Ministry of Education - Schools
-    category=Construction ⇒ Renovation Supplies & Services
-    published=28 Sep 2026 02:20 PM
-    closing=13 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26004266
-    type=Quotation  status=OPEN
-    title=Provision of Outsourced Printing Services for Teaching and Learning Materials (worksheets) for Swiss Cottage Secondary School
-    agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Publications & Periodicals
-    published=28 Sep 2026 02:05 PM
-    closing=07 Oct 2026 01:00PM
-
-[5] ref=MOESCHETQ26004265
-    type=Quotation  status=OPEN
-    title=Swiss Cottage Sec Sch: Provision of Adhoc Bus Transportation services from 1 Jan 2027 to 31 Dec 2027
+    title=Provision of School Bus Service to Commonwealth Secondary School for School Activities for the Year 2027
     agency=Ministry of Education - Schools
     category=Transportation ⇒ Bus Hire
-    published=28 Sep 2026 02:05 PM
-    closing=07 Oct 2026 01:00PM
+    published=29 Sep 2026 02:50 PM
+    closing=08 Oct 2026 01:00PM
+
+[2] ref=MOESCHETQ26004279
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Choir CCA Training Programme 2027 & 2028
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=29 Sep 2026 02:35 PM
+    closing=08 Oct 2026 01:00PM
+
+[3] ref=MOESCHETQ26004286
+    type=Quotation  status=OPEN
+    title=Sport Climbing CCA Training Programme
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=29 Sep 2026 02:35 PM
+    closing=08 Oct 2026 01:00PM
+
+[4] ref=RGS000ETT26000007
+    type=Tender  status=OPEN
+    title=Provision of Human Resource System - 3rd ITT
+    agency=Raffles Girls' School (Secondary)
+    category=IT&Telecommunication ⇒ Others
+    published=29 Sep 2026 01:50 PM
+    closing=23 Oct 2026 04:00PM
+
+[5] ref=RGS000ETQ26000023
+    type=Quotation  status=OPEN
+    title=Provision of Design Project Manager for Biophilic Campus & Rewilding Initiative for Raffles Girls' School
+    agency=Raffles Girls' School (Secondary)
+    category=Administration & Training ⇒ Publications & Periodicals
+    published=29 Sep 2026 01:50 PM
+    closing=08 Oct 2026 01:00PM
