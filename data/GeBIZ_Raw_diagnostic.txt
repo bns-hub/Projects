@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-29T15:25:01+08:00
+GeBIZ crawl OK — 2026-09-30T15:15:07+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 370 across 37 page(s) (stopped at the 7-day window)
+Rows: 390 across 39 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26004321
+[1] ref=MOESCHETQ26004374
     type=Quotation  status=OPEN
-    title=Provision of School Bus Service to Commonwealth Secondary School for School Activities for the Year 2027
+    title=Provision of Ad-Hoc Bus Transport Services for Innova Primary School for Base Years 2027 and 2028
     agency=Ministry of Education - Schools
     category=Transportation ⇒ Bus Hire
-    published=29 Sep 2026 02:50 PM
-    closing=08 Oct 2026 01:00PM
+    published=30 Sep 2026 02:35 PM
+    closing=09 Oct 2026 01:00PM
 
-[2] ref=MOESCHETQ26004279
+[2] ref=DST000ETQ26000067
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Choir CCA Training Programme 2027 & 2028
+    title=Acquisition of the Supply of Tactical Soldier Peripherals
+    agency=Defence Science and Technology Agency
+    category=Furniture, Office Equipment & Audio-Visual ⇒ Containers & Storage Equipment
+    published=30 Sep 2026 02:35 PM
+    closing=13 Oct 2026 01:00PM
+
+[3] ref=MOE000ETT26000068
+    type=Tender  status=OPEN
+    title=PROVISION OF ENVIRONMENTAL QUALITY AUDIT TO SITES FOR A PERIOD OF THREE (3) YEARS WITH AN OPTION TO EXTEND FOR UP TO ANOTHER TWENTY-FOUR (24) MONTHS
+    agency=Ministry of Education
+    category=Services ⇒ Professional Services
+    published=30 Sep 2026 02:05 PM
+    closing=26 Oct 2026 04:00PM
+
+[4] ref=MOESCHETQ26004347
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Our Singapore Groove - Exploring The Multicultural Rhythms of our Nation in Yishun Secondary School.
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=29 Sep 2026 02:35 PM
-    closing=08 Oct 2026 01:00PM
+    published=30 Sep 2026 01:35 PM
+    closing=13 Oct 2026 01:00PM
 
-[3] ref=MOESCHETQ26004286
+[5] ref=MOESCHETQ26004363
     type=Quotation  status=OPEN
-    title=Sport Climbing CCA Training Programme
+    title=2-Day Servant Leadership for Secondary 2 and 3 Student Leaders
     agency=Ministry of Education - Schools
     category=Administration & Training ⇒ Courses
-    published=29 Sep 2026 02:35 PM
-    closing=08 Oct 2026 01:00PM
-
-[4] ref=RGS000ETT26000007
-    type=Tender  status=OPEN
-    title=Provision of Human Resource System - 3rd ITT
-    agency=Raffles Girls' School (Secondary)
-    category=IT&Telecommunication ⇒ Others
-    published=29 Sep 2026 01:50 PM
-    closing=23 Oct 2026 04:00PM
-
-[5] ref=RGS000ETQ26000023
-    type=Quotation  status=OPEN
-    title=Provision of Design Project Manager for Biophilic Campus & Rewilding Initiative for Raffles Girls' School
-    agency=Raffles Girls' School (Secondary)
-    category=Administration & Training ⇒ Publications & Periodicals
-    published=29 Sep 2026 01:50 PM
-    closing=08 Oct 2026 01:00PM
+    published=30 Sep 2026 01:05 PM
+    closing=09 Oct 2026 01:00PM
