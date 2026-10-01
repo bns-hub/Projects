@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-09-30T15:15:07+08:00
+GeBIZ crawl OK — 2026-10-01T15:39:23+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 390 across 39 page(s) (stopped at the 7-day window)
+Rows: 370 across 37 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26004374
+[1] ref=MOESCHETQ26004287
     type=Quotation  status=OPEN
-    title=Provision of Ad-Hoc Bus Transport Services for Innova Primary School for Base Years 2027 and 2028
+    title=Rulang Primary School is looking for a v.endor to provide and operate as on-site Bookshop from 2027 to 2029
     agency=Ministry of Education - Schools
-    category=Transportation ⇒ Bus Hire
-    published=30 Sep 2026 02:35 PM
-    closing=09 Oct 2026 01:00PM
+    category=Facilities Management ⇒ Management Services
+    published=01 Oct 2026 03:20 PM
+    closing=12 Oct 2026 01:00PM
 
-[2] ref=DST000ETQ26000067
+[2] ref=RPO000ETQ26000102
     type=Quotation  status=OPEN
-    title=Acquisition of the Supply of Tactical Soldier Peripherals
-    agency=Defence Science and Technology Agency
-    category=Furniture, Office Equipment & Audio-Visual ⇒ Containers & Storage Equipment
-    published=30 Sep 2026 02:35 PM
-    closing=13 Oct 2026 01:00PM
-
-[3] ref=MOE000ETT26000068
-    type=Tender  status=OPEN
-    title=PROVISION OF ENVIRONMENTAL QUALITY AUDIT TO SITES FOR A PERIOD OF THREE (3) YEARS WITH AN OPTION TO EXTEND FOR UP TO ANOTHER TWENTY-FOUR (24) MONTHS
-    agency=Ministry of Education
+    title=Quotation for the provision of Archery Trainer for Archery IG for OSG
+    agency=Republic Polytechnic
     category=Services ⇒ Professional Services
-    published=30 Sep 2026 02:05 PM
-    closing=26 Oct 2026 04:00PM
+    published=01 Oct 2026 03:05 PM
+    closing=12 Oct 2026 01:00PM
 
-[4] ref=MOESCHETQ26004347
+[3] ref=MOESCHETQ26004434
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Our Singapore Groove - Exploring The Multicultural Rhythms of our Nation in Yishun Secondary School.
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=30 Sep 2026 01:35 PM
-    closing=13 Oct 2026 01:00PM
-
-[5] ref=MOESCHETQ26004363
-    type=Quotation  status=OPEN
-    title=2-Day Servant Leadership for Secondary 2 and 3 Student Leaders
+    title=Dragon Boating Programme for Secondary Four Education for Life (EFL) Camp 2027
     agency=Ministry of Education - Schools
     category=Administration & Training ⇒ Courses
-    published=30 Sep 2026 01:05 PM
-    closing=09 Oct 2026 01:00PM
+    published=01 Oct 2026 03:05 PM
+    closing=12 Oct 2026 01:00PM
+
+[4] ref=MOESCHETQ26004380
+    type=Quotation  status=OPEN
+    title=PROVISION OF AD-HOC BUS TRANSPORT SERVICES FOR PEIYING PRIMARY SCHOOL YEAR 2027
+    agency=Ministry of Education - Schools
+    category=Transportation ⇒ Bus Hire
+    published=01 Oct 2026 02:50 PM
+    closing=12 Oct 2026 01:00PM
+
+[5] ref=MOESCHETQ26004427
+    type=Quotation  status=OPEN
+    title=Provision of In-House Printing Services in South View Primary School (1 Jan 2027 - 31 Dec 2027)
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=01 Oct 2026 02:35 PM
+    closing=12 Oct 2026 01:00PM
