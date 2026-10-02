@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-01T15:39:23+08:00
+GeBIZ crawl OK — 2026-10-02T15:26:33+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 370 across 37 page(s) (stopped at the 7-day window)
+Rows: 360 across 36 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26004287
+[1] ref=RGS000ETT26000008
+    type=Tender  status=OPEN
+    title=Provision of Design Development & Build for a Outdoor Learning Landscape (Site C) and Rewilding Planting Design (Site D, E, F, G) at RGS Campus
+    agency=Raffles Girls' School (Secondary)
+    category=Facilities Management ⇒ Horticulture Works
+    published=02 Oct 2026 03:05 PM
+    closing=05 Nov 2026 04:00PM
+
+[2] ref=INDACIETT26000005
+    type=Tender  status=OPEN
+    title=Replacement of the existing acoustic ceiling boards in Auditorium 2
+    agency=Anglo-Chinese School (Independent)
+    category=Construction ⇒ Interior Decoration
+    published=02 Oct 2026 03:05 PM
+    closing=23 Oct 2026 04:00PM
+
+[3] ref=INDACIETQ26000072
     type=Quotation  status=OPEN
-    title=Rulang Primary School is looking for a v.endor to provide and operate as on-site Bookshop from 2027 to 2029
-    agency=Ministry of Education - Schools
-    category=Facilities Management ⇒ Management Services
-    published=01 Oct 2026 03:20 PM
+    title=PROVISION OF STORAGE AREA FOR CANOES FOR YEAR 2027
+    agency=Anglo-Chinese School (Independent)
+    category=Services ⇒ Storage Services
+    published=02 Oct 2026 03:05 PM
     closing=12 Oct 2026 01:00PM
 
-[2] ref=RPO000ETQ26000102
-    type=Quotation  status=OPEN
-    title=Quotation for the provision of Archery Trainer for Archery IG for OSG
-    agency=Republic Polytechnic
-    category=Services ⇒ Professional Services
-    published=01 Oct 2026 03:05 PM
-    closing=12 Oct 2026 01:00PM
+[4] ref=HDB000ETT26000177
+    type=Tender  status=OPEN
+    title=TERM CONTRACT FOR PROVISION OF SERVICES FOR LABORATORY TESTING, OPERATION AND MAINTENANCE AT HDB ENGINEERING MATERIALS LABORATORY (BATCH 9)
+    agency=Housing and Development Board
+    category=Miscellaneous ⇒ Others
+    published=02 Oct 2026 02:50 PM
+    closing=02 Nov 2026 04:00PM
 
-[3] ref=MOESCHETQ26004434
-    type=Quotation  status=OPEN
-    title=Dragon Boating Programme for Secondary Four Education for Life (EFL) Camp 2027
-    agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=01 Oct 2026 03:05 PM
-    closing=12 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26004380
-    type=Quotation  status=OPEN
-    title=PROVISION OF AD-HOC BUS TRANSPORT SERVICES FOR PEIYING PRIMARY SCHOOL YEAR 2027
-    agency=Ministry of Education - Schools
-    category=Transportation ⇒ Bus Hire
-    published=01 Oct 2026 02:50 PM
-    closing=12 Oct 2026 01:00PM
-
-[5] ref=MOESCHETQ26004427
-    type=Quotation  status=OPEN
-    title=Provision of In-House Printing Services in South View Primary School (1 Jan 2027 - 31 Dec 2027)
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=01 Oct 2026 02:35 PM
-    closing=12 Oct 2026 01:00PM
+[5] ref=HDB000ETT26000180
+    type=Tender  status=OPEN
+    title=RENOVATION WORKS AT VARIOUS LEVELS OF THE MINISTRY OF NATIONAL DEVELOPMENT (MND) TOWER BLOCK AND ANNEXE A
+    agency=Housing and Development Board
+    category=Construction ⇒ Interior Decoration
+    published=02 Oct 2026 02:50 PM
+    closing=30 Oct 2026 04:00PM
