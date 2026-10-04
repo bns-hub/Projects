@@ -1,36 +1,36 @@
 {
-  "lastCheckedAt": "2026-09-27T17:03:34.026Z",
+  "lastCheckedAt": "2026-10-04T19:51:27.690Z",
   "sources": {
     "hsr-official": {
-      "hash": "c7a2f4b3",
-      "checkedAt": "2026-09-27T17:03:00.192Z",
-      "changed": false,
+      "hash": "b87af92e",
+      "checkedAt": "2026-10-04T19:50:55.873Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Limited 5-Star Character · Limited 5-Star Character · Go to Version Highlights page to learn more · Go to Version Highlights page to learn more",
-      "auditedLines": 14
+      "snippet": "Limited 5-Star Character · Go to Version Highlights page to learn more · Go to Version Highlights page to learn more · Trailblazers can claim daily rewards in the Travel Log by logging in to the game. The rewards will be unlocked in sequential order according to the Trailblazer's accrued login days.",
+      "auditedLines": 13
     },
     "hsr-hoyolab": {
-      "hash": "7de90118",
-      "checkedAt": "2026-09-27T17:03:16.581Z",
+      "hash": "f0e42815",
+      "checkedAt": "2026-10-04T19:51:12.052Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · Himeko • Nova · We will recommend content based on your chosen interests",
-      "auditedLines": 7
+      "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · We will recommend content based on your chosen interests",
+      "auditedLines": 6
     },
     "hsr-hoyolab-official": {
-      "hash": "632ed3a9",
-      "checkedAt": "2026-09-27T17:03:22.127Z",
+      "hash": "b4c956f6",
+      "checkedAt": "2026-10-04T19:51:17.535Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "\"Dance With the Beast Before Moonrise\" Version 4.6 Preview · Version 4.6 \"Dance With the Beast Before Moonrise\" Highlights Page Is Now Online · A Brief on the Version 4.6 Special Program · Store Update | V4.6 Dance With the Beast Before Moonrise",
-      "auditedLines": 14
+      "snippet": "\"The Laughter Outsmarts miHoYo\" Episode 1 | Chess · \"Astral Express Strategy Guide\" Website Update: Version 4.6 Strategy Guides Contest Event Is In Full Swing! · Rewarded Event] Pearl Spotlight - Reddit Event! · [Rewarded Event] Discord Trivia Event!",
+      "auditedLines": 10
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-09-27T17:03:24.248Z",
+      "checkedAt": "2026-10-04T19:51:20.385Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -38,26 +38,26 @@
       "auditedLines": 4
     },
     "re-steam": {
-      "hash": "e8aa33dc",
-      "checkedAt": "2026-09-27T17:03:27.535Z",
+      "hash": "57df8d56",
+      "checkedAt": "2026-10-04T19:51:21.953Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · \\[The First Drop of Rain] Banner Update · \\[Event Time]:",
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · 3rd Anniversary Sincere Gratitude · 2026-10-01 00:00 - 2026-11-05 04:59 (UTC-5)",
       "auditedLines": 320
     },
     "re-steam-forum": {
-      "hash": "082f4116",
-      "checkedAt": "2026-09-27T17:03:27.710Z",
-      "changed": false,
+      "hash": "d1236e90",
+      "checkedAt": "2026-10-04T19:51:22.272Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Sep 25 @ 3:56pm",
-      "auditedLines": 6
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 3 @ 7:01am",
+      "auditedLines": 4
     },
     "czn-community": {
       "hash": "76461c55",
-      "checkedAt": "2026-09-27T17:03:32.328Z",
+      "checkedAt": "2026-10-04T19:51:26.246Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -66,7 +66,7 @@
     },
     "czn-brand": {
       "hash": "83d6d77c",
-      "checkedAt": "2026-09-27T17:03:33.263Z",
+      "checkedAt": "2026-10-04T19:51:27.039Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -74,67 +74,67 @@
       "auditedLines": 3
     },
     "czn-arabella-rules": {
-      "hash": "8b79272f",
-      "checkedAt": "2026-09-27T17:03:33.445Z",
+      "hash": "dd76d5f3",
+      "checkedAt": "2026-10-04T19:51:27.329Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026 · Nightmare Team",
-      "auditedLines": 57
+      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026",
+      "auditedLines": 59
     },
     "czn-licinia-rules": {
-      "hash": "c1c3459c",
-      "checkedAt": "2026-09-27T17:03:33.564Z",
+      "hash": "855a7bc4",
+      "checkedAt": "2026-10-04T19:51:27.454Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026 · Nightmare Team",
-      "auditedLines": 55
-    },
-    "czn-chizuru-rules": {
-      "hash": "d3dfe0f2",
-      "checkedAt": "2026-09-27T17:03:33.859Z",
-      "changed": true,
-      "firstBaseline": false,
-      "via": "direct",
-      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026 · Nightmare Team",
+      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026",
       "auditedLines": 57
     },
-    "czn-itsuku-rules": {
-      "hash": "3f31c99e",
-      "checkedAt": "2026-09-27T17:03:34.001Z",
+    "czn-chizuru-rules": {
+      "hash": "1978f104",
+      "checkedAt": "2026-10-04T19:51:27.555Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026 · Nightmare Team",
-      "auditedLines": 55
+      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026",
+      "auditedLines": 59
+    },
+    "czn-itsuku-rules": {
+      "hash": "1a2a35d6",
+      "checkedAt": "2026-10-04T19:51:27.668Z",
+      "changed": true,
+      "firstBaseline": false,
+      "via": "direct",
+      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026",
+      "auditedLines": 57
     },
     "hsr-news": {
-      "hash": "820cb854",
-      "checkedAt": "2026-09-27T17:03:05.647Z",
+      "hash": "258af8d4",
+      "checkedAt": "2026-10-04T19:51:00.214Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Version 4.6 Trailer: \"Dance With the Beast Before Moonrise\" | Honkai: Star Rail · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
-      "auditedLines": 2
+      "snippet": "Version 4.6 \"Dance With the Beast Before Moonrise\" Update Details · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
+      "auditedLines": 1
     },
     "re-news": {
       "hash": "f394ca60",
-      "checkedAt": "2026-09-27T17:03:27.282Z",
-      "changed": true,
+      "checkedAt": "2026-10-04T19:51:21.524Z",
+      "changed": false,
       "firstBaseline": false,
       "via": "api",
       "snippet": "2026-09-26 - [Announcement of Results] Collaboration Special Creator Contest Winners · 2026-09-24 - Ver.3.8 \"The Temporal Scale\" Fanwork Event Open for Submission! · Share your Version 3.8-related creations for a chance to win cash prizes, Clear Drops, and exclusive merchandise! · Base your submission around Version 3.8, including but not limited to the new storyline, event characters, and garments.",
       "auditedLines": 320
     },
     "czn-news": {
-      "hash": "3e1b979c",
-      "checkedAt": "2026-09-27T17:03:27.938Z",
+      "hash": "0a387696",
+      "checkedAt": "2026-10-04T19:51:22.489Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "News - Chaos Zero Nightmare (CZN) · September 23, 2026 · September 23, 2026 · September 23, 2026",
-      "auditedLines": 23
+      "snippet": "News - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · October 2, 2026 · [Notice] 10/01 (Thu) Patch Notice (Completed)",
+      "auditedLines": 25
     }
   }
 }
