@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-04T15:20:09+08:00
+GeBIZ crawl OK — 2026-10-05T15:35:09+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 330 across 33 page(s)
+Rows: 340 across 34 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=PAS000ETT26000091
-    type=Tender  status=OPEN
-    title=PROVISION OF RENTAL OF SOUND AND LIGHTING EQUIPMENT, TECHNICAL RIGGING, LED SCREEN AND RELATED SERVICES FOR CHINGAY PARADE (1+1+1)
-    agency=People's Association
-    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
-    published=03 Oct 2026 12:50 PM
-    closing=20 Oct 2026 04:00PM
-
-[2] ref=MOESCHETQ26004323
+[1] ref=MOESCHETQ26004529
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Football CCA Training Programme for Year 2027 with Option to Extend to Year 2028 in Manjusri Secondary School
+    title=Supply of Instructors for Robotics CCA training programme in Jing Shan Primary School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=05 Oct 2026 03:05 PM
+    closing=14 Oct 2026 01:00PM
+
+[2] ref=MOESCHETQ26003694
+    type=Quotation  status=OPEN
+    title=Supply of Instructor (including conductor) for Chinese Orchestra CCA Training Programme in Zhonghua Secondary School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=05 Oct 2026 03:05 PM
+    closing=14 Oct 2026 01:00PM
+
+[3] ref=ITE000ETQ26000115
+    type=Quotation  status=OPEN
+    title=ITEa26-00739 CDE DPJ_Minor Renovation to Staff Offices at ITE College East
+    agency=Institute of Technical Education
+    category=Construction ⇒ Interior Decoration
+    published=05 Oct 2026 02:50 PM
+    closing=14 Oct 2026 01:00PM
+
+[4] ref=MOESCHETQ26004135
+    type=Quotation  status=OPEN
+    title=Supply of Instructors for Rugby CCA and LLP enrichment Training Programme in Anglo-Chinese School (Junior)
     agency=Ministry of Education - Schools
     category=Administration & Training ⇒ Courses
-    published=03 Oct 2026 10:35 AM
-    closing=12 Oct 2026 01:00PM
+    published=05 Oct 2026 02:20 PM
+    closing=14 Oct 2026 01:00PM
 
-[3] ref=ITE000ETQ26000105
+[5] ref=RGS000ETQ26000025
     type=Quotation  status=OPEN
-    title=ITEa26-00625 CDE ESV_INVITATION TO QUOTE FOR PROVISION OF POTABLE WATER QUALITY TESTING SERVICES FOR WATER DISPENSERS AND COOLERS AT ITE HQ & COLLEGES
-    agency=Institute of Technical Education
-    category=Miscellaneous ⇒ Others
-    published=02 Oct 2026 06:20 PM
-    closing=12 Oct 2026 01:00PM
-
-[4] ref=SCB000ETQ26000046
-    type=Quotation  status=OPEN
-    title=-TRENCH REPAIR / REPLACEMENT OF UNDERGROUND WATER PIPE AT EXTERNAL AREA OF OMNI-THEATRE BUILDING
-    agency=Science Centre Board
-    category=Facilities Management ⇒ Building, M&E Maintenance
-    published=02 Oct 2026 06:20 PM
-    closing=15 Oct 2026 01:00PM
-
-[5] ref=DEFNGPP7126101605
-    type=  status=OPEN
-    title=Supply and Installation of Batteries
-    agency=Ministry of Defence 6
-    category=Miscellaneous ⇒ Others
-    published=02 Oct 2026 06:05 PM
-    closing=13 Oct 2026 01:00PM
+    title=Provision of Drama Workshop for Year 3 and Year 4 Students
+    agency=Raffles Girls' School (Secondary)
+    category=Administration & Training ⇒ Courses
+    published=05 Oct 2026 02:20 PM
+    closing=14 Oct 2026 01:00PM
