@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-05T15:35:09+08:00
+GeBIZ crawl OK — 2026-10-06T16:01:39+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 340 across 34 page(s)
+Rows: 380 across 38 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26004529
+[1] ref=MOESCHETQ26004610
     type=Quotation  status=OPEN
-    title=Supply of Instructors for Robotics CCA training programme in Jing Shan Primary School
+    title=Supply of Instructor for Guzheng Ensemble CCA CCA Training Programme in Teck Ghee Primary School
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=05 Oct 2026 03:05 PM
-    closing=14 Oct 2026 01:00PM
+    published=06 Oct 2026 03:35 PM
+    closing=15 Oct 2026 01:00PM
 
-[2] ref=MOESCHETQ26003694
+[2] ref=HSA000ETQ26000097
     type=Quotation  status=OPEN
-    title=Supply of Instructor (including conductor) for Chinese Orchestra CCA Training Programme in Zhonghua Secondary School
+    title=SUPPLY AND DELIVERY OF URINE DETECTION KITS FOR 3 YEARS WITH OPTION TO PURCHASE FOR ANOTHER 2 YEARS
+    agency=Health Sciences Authority
+    category=Dental, Medical & Laboratory ⇒ Laboratory Equipment & Supplies
+    published=06 Oct 2026 03:20 PM
+    closing=20 Oct 2026 01:00PM
+
+[3] ref=RPO000ETQ26000107
+    type=Quotation  status=OPEN
+    title=Quotation for provision of NVIDIA DGX Systems Enterprise Support Services for SOI
+    agency=Republic Polytechnic
+    category=IT&Telecommunication ⇒ IT Services & Software Development
+    published=06 Oct 2026 03:20 PM
+    closing=16 Oct 2026 01:00PM
+
+[4] ref=MOESCHETQ26004609
+    type=Quotation  status=OPEN
+    title=Provision of In-house Printing Services for Xinmin Secondary School
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=05 Oct 2026 03:05 PM
-    closing=14 Oct 2026 01:00PM
+    category=Administration & Training ⇒ Printing Services
+    published=06 Oct 2026 03:20 PM
+    closing=15 Oct 2026 01:00PM
 
-[3] ref=ITE000ETQ26000115
+[5] ref=MOESCHETQ26004607
     type=Quotation  status=OPEN
-    title=ITEa26-00739 CDE DPJ_Minor Renovation to Staff Offices at ITE College East
-    agency=Institute of Technical Education
-    category=Construction ⇒ Interior Decoration
-    published=05 Oct 2026 02:50 PM
-    closing=14 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26004135
-    type=Quotation  status=OPEN
-    title=Supply of Instructors for Rugby CCA and LLP enrichment Training Programme in Anglo-Chinese School (Junior)
+    title=Provision and Supply for Ad-hoc Bus Transport Services for Xinmin Secondary School
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=05 Oct 2026 02:20 PM
-    closing=14 Oct 2026 01:00PM
-
-[5] ref=RGS000ETQ26000025
-    type=Quotation  status=OPEN
-    title=Provision of Drama Workshop for Year 3 and Year 4 Students
-    agency=Raffles Girls' School (Secondary)
-    category=Administration & Training ⇒ Courses
-    published=05 Oct 2026 02:20 PM
-    closing=14 Oct 2026 01:00PM
+    category=Transportation ⇒ Bus Hire
+    published=06 Oct 2026 03:05 PM
+    closing=15 Oct 2026 01:00PM
