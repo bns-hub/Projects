@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-07T15:39:25+08:00
+GeBIZ crawl OK — 2026-10-08T15:55:41+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 380 across 38 page(s) (stopped at the 7-day window)
+Rows: 390 across 39 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=EDB000ETT26000011
-    type=Tender  status=OPEN
-    title=Invitation to Tender (ITT) for the Quality Surveyor Consultancy Service for Workplace Design & Build Works at EDB HQ. OIC: Brenda Yeo (PR20261048)
-    agency=Economic Development Board
-    category=Services ⇒ Professional Services
-    published=07 Oct 2026 03:20 PM
-    closing=20 Oct 2026 04:00PM
-
-[2] ref=MOESCHETQ26004640
+[1] ref=MOESCHETQ26004719
     type=Quotation  status=OPEN
-    title=Provision of Discipline Support Officer for St Andrew's School (Secondary)
+    title=Supply of instructor for Sustainability STEM Innovator Programme 2027 in Edgefield Primary School
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=07 Oct 2026 03:20 PM
-    closing=16 Oct 2026 01:00PM
+    published=08 Oct 2026 03:35 PM
+    closing=19 Oct 2026 01:00PM
 
-[3] ref=MOESCHETQ26004639
+[2] ref=MOESCHETQ26004717
     type=Quotation  status=OPEN
-    title=Engagement of CCA Coaches & Instructors for 2027 - Track and Field - Coach & 2 Assistant Coaches
+    title=Supply of Instructors for Dance CCA in Casuarina Primary School for Base Year 2027 and Option Year 2028
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=07 Oct 2026 03:20 PM
-    closing=16 Oct 2026 01:00PM
+    published=08 Oct 2026 03:35 PM
+    closing=19 Oct 2026 01:00PM
 
-[4] ref=MOESCHETQ26004636
+[3] ref=MOESCHETQ26004645
     type=Quotation  status=OPEN
-    title=Provision of Part-time Corporate Support Officer for St Andrew's School (Secondary)
+    title=Provision of Manpower Services For Operations Support in Yio Chu Kang Secondary School
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=07 Oct 2026 03:20 PM
-    closing=16 Oct 2026 01:00PM
+    published=08 Oct 2026 03:35 PM
+    closing=19 Oct 2026 01:00PM
 
-[5] ref=SPO000ETQ26000126
+[4] ref=MOESCHETQ26004637
     type=Quotation  status=OPEN
-    title=SPO-REQ-2026-006527-CLS-Quotation for 1 unit full blood count analyser with the necessary accessories
-    agency=Singapore Polytechnic
-    category=Dental, Medical & Laboratory ⇒ Laboratory Equipment & Supplies
-    published=07 Oct 2026 03:20 PM
-    closing=16 Oct 2026 01:00PM
+    title=Provision of Ad-Hoc Bus Transport Services For Yio Chu Kang Secondary School
+    agency=Ministry of Education - Schools
+    category=Transportation ⇒ Bus Hire
+    published=08 Oct 2026 03:35 PM
+    closing=19 Oct 2026 01:00PM
+
+[5] ref=MOESCHETQ26004714
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Choir CCA in Casuarina Primary School for 2027 and Option Year 2028
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=08 Oct 2026 03:20 PM
+    closing=19 Oct 2026 01:00PM
