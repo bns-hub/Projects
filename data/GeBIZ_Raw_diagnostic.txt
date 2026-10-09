@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-08T15:55:41+08:00
+GeBIZ crawl OK — 2026-10-09T15:54:33+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 390 across 39 page(s) (stopped at the 7-day window)
+Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26004719
+[1] ref=LTA000ETT26000114
+    type=Tender  status=OPEN
+    title=Provision of Mobile Phones, Tablets and Subscription Plans
+    agency=Land Transport Authority
+    category=IT&Telecommunication ⇒ Telecommunication Devices
+    published=09 Oct 2026 03:35 PM
+    closing=03 Nov 2026 04:00PM
+
+[2] ref=SSC000ETT26000036
+    type=Tender  status=OPEN
+    title=Nominated Sub-Contract Works for Interior Fit-Out at the Library for an Integrated Development
+    agency=Singapore Sports Council (Sport Singapore)
+    category=Construction ⇒ Interior Decoration
+    published=09 Oct 2026 03:35 PM
+    closing=10 Nov 2026 04:00PM
+
+[3] ref=SSC000ERF26000008
+    type=  status=OPEN
+    title=EOI FOR THE PROVISION OF ARCHITECTUAL AND QUANTITY SURVEYING (AR-QS) CONSULTANCY SERVICES FOR PROPOSED D&B OF NEW COMMUNITY SPORT FACILITIES
+    agency=Singapore Sports Council (Sport Singapore)
+    category=Services ⇒ Professional Services
+    published=09 Oct 2026 03:35 PM
+    closing=22 Oct 2026 04:00PM
+
+[4] ref=MOESCHETQ26004777
     type=Quotation  status=OPEN
-    title=Supply of instructor for Sustainability STEM Innovator Programme 2027 in Edgefield Primary School
+    title=SUPPLY OF INSTRUCTOR FOR INDIAN DANCE CCA PROGRAMME FOR THE BASE YEAR OF 2027 WITH AN OPTION TO EXTEND ONE YEAR IN 2028 IN HOUGANG PRIMARY SCHOOL
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=08 Oct 2026 03:35 PM
+    published=09 Oct 2026 03:35 PM
     closing=19 Oct 2026 01:00PM
 
-[2] ref=MOESCHETQ26004717
+[5] ref=MOESCHETQ26004778
     type=Quotation  status=OPEN
-    title=Supply of Instructors for Dance CCA in Casuarina Primary School for Base Year 2027 and Option Year 2028
+    title=Supply of Coach and Bowling Lanes for CCA Ten Pin Bowling (Year 2027 + Option Year 2028)
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=08 Oct 2026 03:35 PM
-    closing=19 Oct 2026 01:00PM
-
-[3] ref=MOESCHETQ26004645
-    type=Quotation  status=OPEN
-    title=Provision of Manpower Services For Operations Support in Yio Chu Kang Secondary School
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=08 Oct 2026 03:35 PM
-    closing=19 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26004637
-    type=Quotation  status=OPEN
-    title=Provision of Ad-Hoc Bus Transport Services For Yio Chu Kang Secondary School
-    agency=Ministry of Education - Schools
-    category=Transportation ⇒ Bus Hire
-    published=08 Oct 2026 03:35 PM
-    closing=19 Oct 2026 01:00PM
-
-[5] ref=MOESCHETQ26004714
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Choir CCA in Casuarina Primary School for 2027 and Option Year 2028
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=08 Oct 2026 03:20 PM
+    published=09 Oct 2026 03:20 PM
     closing=19 Oct 2026 01:00PM
