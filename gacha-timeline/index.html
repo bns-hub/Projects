@@ -607,37 +607,69 @@ button,input{font:inherit}
   text-align:center
 }
 
+.past-list,
+.past-entry{box-sizing:border-box}
+
 .past-list{
   position:sticky;
   left:0;
-  width:min(calc(100vw - 48px),760px);
+  width:min(calc(100vw - 16px),760px);
   display:grid;
+  grid-template-columns:minmax(0,1fr);
   gap:6px;
   padding:2px 13px 14px
 }
 
 .past-entry{
   display:flex;
-  flex-wrap:wrap;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:4px 14px;
-  min-height:44px;
-  padding:9px 12px;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  min-width:0;
+  min-height:40px;
+  padding:6px 12px;
   border:1px solid #2b394d;
   border-radius:8px;
   background:#111b29;
   color:#d8e4f5;
   font:inherit;
   font-size:13px;
-  text-align:left
+  text-align:left;
+  white-space:nowrap
 }
 
 button.past-entry{cursor:pointer}
 button.past-entry:hover{border-color:#ffe49b}
 
-.past-entry-title{font-weight:700}
-.past-entry-dates{color:#94a4bb;font-size:12px}
+.past-entry-type{
+  flex:none;
+  min-width:44px;
+  padding:1px 6px;
+  border-radius:5px;
+  background:#22344d;
+  color:#aab7c8;
+  font-size:10px;
+  font-weight:800;
+  text-align:center;
+  text-transform:uppercase;
+  letter-spacing:.03em
+}
+
+.past-entry-type.banner{color:#ffe49b}
+
+.past-entry-title{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-weight:700
+}
+
+.past-entry-dates{
+  flex:none;
+  color:#94a4bb;
+  font-size:12px
+}
 
 .row-track{
   position:relative;
@@ -2284,26 +2316,29 @@ function updatePatchFollowerLabels(){
   });
 }
 
-function isPastBannerRow(row){
-  return row.type==="Banner" &&
-    row.items.length>0 &&
-    row.items.every(item=>item.end && item.end < TODAY_ISO);
+/* An item is "past" once its end date is before today (Singapore date). */
+function isPastItem(item){
+  return Boolean(item.end) && item.end < TODAY_ISO;
 }
 
-function latestEnd(row){
-  return row.items.map(item=>item.end || "").sort().pop() || "";
-}
+const PAST_TYPE_LABEL = {Banner:"Banner",Event:"Event",Maintenance:"Maint."};
 
 function formatPastRange(startISO,endISO){
-  const fmt = new Intl.DateTimeFormat("en-SG",{
+  if(!startISO || !endISO) return "";
+  const toDate = iso=>new Date(iso + "T00:00:00+08:00");
+  const part = (iso,withYear)=>new Intl.DateTimeFormat("en-SG",{
     day:"numeric",
     month:"short",
-    year:"numeric",
+    ...(withYear ? {year:"numeric"} : {}),
     timeZone:"Asia/Singapore"
-  });
-  const toDate = iso=>new Date(iso + "T00:00:00+08:00");
-  if(!startISO || !endISO) return "";
-  return `${fmt.format(toDate(startISO))} – ${fmt.format(toDate(endISO))}`;
+  }).format(toDate(iso));
+
+  const crossesYears = startISO.slice(0,4) !== endISO.slice(0,4);
+  const showYear = crossesYears || endISO.slice(0,4) !== TODAY_ISO.slice(0,4);
+
+  return startISO===endISO
+    ? part(endISO,showYear)
+    : `${part(startISO,crossesYears)} – ${part(endISO,showYear)}`;
 }
 
 function buildTimelineRow(row){
@@ -2373,39 +2408,59 @@ function renderGames(){
 
     renderPatchTracks(section,game);
 
-    /* Banner rows whose items have ALL ended before today are archived into a
-       closed "Past banners" dropdown. The data is untouched (history is kept in
-       the games array) and the archived rows use the same date axis. */
-    const pastRows = game.rows
-      .filter(isPastBannerRow)
-      .sort((a,b)=>latestEnd(b).localeCompare(latestEnd(a)));
-    const activeRows = game.rows.filter(row=>!isPastBannerRow(row));
+    /* Every banner, event and maintenance item that ended before today is
+       archived into one closed "Past banners" dropdown, one line each. The data
+       is untouched (history is kept in the games array). A row keeps only its
+       current and upcoming items. */
+    const archived = [];
+    const activeRows = [];
 
-    const archivedItems = [];
-    pastRows.forEach(row=>row.items.forEach(item=>archivedItems.push(item)));
-    archivedItems.sort((a,b)=>(b.end||"").localeCompare(a.end||""));
+    game.rows.forEach(row=>{
+      const keep = [];
+      row.items.forEach(item=>{
+        if(isPastItem(item)) archived.push({item,type:row.type});
+        else keep.push(item);
+      });
 
-    if(archivedItems.length>0){
+      if(keep.length>0 || row.items.length===0){
+        activeRows.push(keep.length===row.items.length ? row : {...row,items:keep});
+      }
+    });
+
+    /* Keep one empty Event / Maintenance lane so its "none loaded" note still shows. */
+    const typeOrder = [...new Set(game.rows.map(row=>row.type))];
+    ["Event","Maintenance"].forEach(type=>{
+      if(typeOrder.includes(type) && !activeRows.some(row=>row.type===type)){
+        activeRows.push({type,items:[]});
+      }
+    });
+    activeRows.sort((a,b)=>typeOrder.indexOf(a.type)-typeOrder.indexOf(b.type));
+
+    archived.sort((a,b)=>(b.item.end||"").localeCompare(a.item.end||""));
+
+    if(archived.length>0){
       const archive = document.createElement("details");
       archive.className = "past-banners";
       archive.innerHTML = `
         <summary>
           <span class="past-banners-title">Past banners</span>
-          <span class="past-banners-count">${archivedItems.length}</span>
+          <span class="past-banners-count">${archived.length}</span>
         </summary>
       `;
 
       const list = document.createElement("div");
       list.className = "past-list";
 
-      archivedItems.forEach(item=>{
+      archived.forEach(({item,type})=>{
         const entry = document.createElement(item.details ? "button" : "div");
         entry.className = "past-entry";
+        entry.title = item.title;
         if(item.details){
           entry.type = "button";
           entry.addEventListener("click",()=>showDetails(item));
         }
         entry.innerHTML = `
+          <span class="past-entry-type ${escapeHtml(type.toLowerCase())}">${escapeHtml(PAST_TYPE_LABEL[type] || type)}</span>
           <span class="past-entry-title">${escapeHtml(item.title)}</span>
           <span class="past-entry-dates">${escapeHtml(formatPastRange(item.start,item.end))}</span>
         `;
