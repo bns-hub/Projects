@@ -564,6 +564,118 @@ button,input{font:inherit}
 
 .row-name.banner-label{color:#ffe49b}
 
+.past-banners{
+  border-bottom:1px solid var(--border);
+  background:#0d1621
+}
+
+.past-banners > summary{
+  position:sticky;
+  left:0;
+  z-index:16;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  min-height:44px;
+  padding:0 13px;
+  cursor:pointer;
+  color:#aab7c8;
+  font-size:13px;
+  font-weight:800;
+  list-style:none;
+  user-select:none
+}
+
+.past-banners > summary::-webkit-details-marker{display:none}
+
+.past-banners > summary::before{
+  content:"▸";
+  display:inline-block;
+  transition:transform .15s;
+  color:#ffe49b
+}
+
+.past-banners[open] > summary::before{transform:rotate(90deg)}
+
+.past-banners-count{
+  min-width:22px;
+  padding:1px 7px;
+  border-radius:999px;
+  background:#22344d;
+  color:#d8e4f5;
+  font-size:11px;
+  text-align:center
+}
+
+.past-list,
+.past-entry{box-sizing:border-box}
+
+.past-list{
+  position:sticky;
+  left:0;
+  width:min(calc(100vw - 16px),760px);
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:6px;
+  padding:2px 13px 14px;
+  /* 4 entries (4 x 40px + 3 x 6px gaps) plus the list padding, then scroll */
+  max-height:194px;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:#3a4d68 transparent
+}
+
+.past-entry{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  min-width:0;
+  min-height:40px;
+  padding:6px 12px;
+  border:1px solid #2b394d;
+  border-radius:8px;
+  background:#111b29;
+  color:#d8e4f5;
+  font:inherit;
+  font-size:13px;
+  text-align:left;
+  white-space:nowrap
+}
+
+button.past-entry{cursor:pointer}
+button.past-entry:hover{border-color:#ffe49b}
+
+.past-entry-type{
+  flex:none;
+  min-width:44px;
+  padding:1px 6px;
+  border-radius:5px;
+  background:#22344d;
+  color:#aab7c8;
+  font-size:10px;
+  font-weight:800;
+  text-align:center;
+  text-transform:uppercase;
+  letter-spacing:.03em
+}
+
+.past-entry-type.banner{color:#ffe49b}
+
+.past-entry-title{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-weight:700
+}
+
+.past-entry-dates{
+  flex:none;
+  color:#94a4bb;
+  font-size:12px
+}
+
 .row-track{
   position:relative;
   height:84px;
@@ -921,8 +1033,8 @@ button,input{font:inherit}
     </div>
 
     <div class="controls">
-      <button class="control-btn active" data-days="7">1 week</button>
-      <button class="control-btn" data-days="14">2 weeks</button>
+      <button class="control-btn" data-days="7">1 week</button>
+      <button class="control-btn active" data-days="14">2 weeks</button>
       <button class="control-btn" data-days="21">3 weeks</button>
       <button class="control-btn" data-days="30">1 month</button>
       <button class="control-btn" data-days="90">3 months</button>
@@ -1026,7 +1138,7 @@ const FUTURE_DAYS = 90;
 const TOTAL_DAYS = HISTORY_DAYS + FUTURE_DAYS + 1;
 const ROW_LABEL_PX = 118;
 
-const STATE_KEY = "gachaTimeline.v22.position";
+const STATE_KEY = "gachaTimeline.v23.position";
 const SUMMARY_ARCHIVE_KEY = "gachaTimeline.v22.summaryArchive";
 
 document.documentElement.style.setProperty("--total-days", TOTAL_DAYS);
@@ -2209,6 +2321,66 @@ function updatePatchFollowerLabels(){
   });
 }
 
+/* An item is "past" once its end date is before today (Singapore date). */
+function isPastItem(item){
+  return Boolean(item.end) && item.end < TODAY_ISO;
+}
+
+const PAST_TYPE_LABEL = {Banner:"Banner",Event:"Event",Maintenance:"Maint."};
+
+function formatPastRange(startISO,endISO){
+  if(!startISO || !endISO) return "";
+  const toDate = iso=>new Date(iso + "T00:00:00+08:00");
+  const part = (iso,withYear)=>new Intl.DateTimeFormat("en-SG",{
+    day:"numeric",
+    month:"short",
+    ...(withYear ? {year:"numeric"} : {}),
+    timeZone:"Asia/Singapore"
+  }).format(toDate(iso));
+
+  const crossesYears = startISO.slice(0,4) !== endISO.slice(0,4);
+  const showYear = crossesYears || endISO.slice(0,4) !== TODAY_ISO.slice(0,4);
+
+  return startISO===endISO
+    ? part(endISO,showYear)
+    : `${part(startISO,crossesYears)} – ${part(endISO,showYear)}`;
+}
+
+function buildTimelineRow(row){
+  const rowEl = document.createElement("div");
+  rowEl.className = "timeline-row";
+
+  rowEl.innerHTML = `
+    <div class="row-name ${row.type==="Banner" ? "banner-label" : ""}">
+      ${escapeHtml(row.type)}
+    </div>
+    <div class="row-track"></div>
+  `;
+
+  const track = rowEl.querySelector(".row-track");
+  let rendered = 0;
+
+  row.items.forEach(item=>{
+    const node = createItem(item);
+    if(node){
+      track.appendChild(node);
+      rendered++;
+    }
+  });
+
+  if(rendered===0){
+    const note = document.createElement("div");
+    note.className = "empty-note";
+    note.textContent =
+      row.type==="Maintenance"
+        ? "No confirmed maintenance currently inside this retained window."
+        : "No confirmed timed event currently loaded.";
+    track.appendChild(note);
+  }
+
+  return {rowEl,rendered};
+}
+
 function renderGames(){
   const container = document.getElementById("gamesContainer");
   container.innerHTML = "";
@@ -2241,39 +2413,71 @@ function renderGames(){
 
     renderPatchTracks(section,game);
 
+    /* Every banner, event and maintenance item that ended before today is
+       archived into one closed "Past banners" dropdown, one line each. The data
+       is untouched (history is kept in the games array). A row keeps only its
+       current and upcoming items. */
+    const archived = [];
+    const activeRows = [];
+
     game.rows.forEach(row=>{
-      const rowEl = document.createElement("div");
-      rowEl.className = "timeline-row";
-
-      rowEl.innerHTML = `
-        <div class="row-name ${row.type==="Banner" ? "banner-label" : ""}">
-          ${escapeHtml(row.type)}
-        </div>
-        <div class="row-track"></div>
-      `;
-
-      const track = rowEl.querySelector(".row-track");
-      let rendered = 0;
-
+      const keep = [];
       row.items.forEach(item=>{
-        const node = createItem(item);
-        if(node){
-          track.appendChild(node);
-          rendered++;
-        }
+        if(isPastItem(item)) archived.push({item,type:row.type});
+        else keep.push(item);
       });
 
-      if(rendered===0){
-        const note = document.createElement("div");
-        note.className = "empty-note";
-        note.textContent =
-          row.type==="Maintenance"
-            ? "No confirmed maintenance currently inside this retained window."
-            : "No confirmed timed event currently loaded.";
-        track.appendChild(note);
+      if(keep.length>0 || row.items.length===0){
+        activeRows.push(keep.length===row.items.length ? row : {...row,items:keep});
       }
+    });
 
-      section.appendChild(rowEl);
+    /* Keep one empty Event / Maintenance lane so its "none loaded" note still shows. */
+    const typeOrder = [...new Set(game.rows.map(row=>row.type))];
+    ["Event","Maintenance"].forEach(type=>{
+      if(typeOrder.includes(type) && !activeRows.some(row=>row.type===type)){
+        activeRows.push({type,items:[]});
+      }
+    });
+    activeRows.sort((a,b)=>typeOrder.indexOf(a.type)-typeOrder.indexOf(b.type));
+
+    archived.sort((a,b)=>(b.item.end||"").localeCompare(a.item.end||""));
+
+    if(archived.length>0){
+      const archive = document.createElement("details");
+      archive.className = "past-banners";
+      archive.innerHTML = `
+        <summary>
+          <span class="past-banners-title">Past banners</span>
+          <span class="past-banners-count">${archived.length}</span>
+        </summary>
+      `;
+
+      const list = document.createElement("div");
+      list.className = "past-list";
+
+      archived.forEach(({item,type})=>{
+        const entry = document.createElement(item.details ? "button" : "div");
+        entry.className = "past-entry";
+        entry.title = item.title;
+        if(item.details){
+          entry.type = "button";
+          entry.addEventListener("click",()=>showDetails(item));
+        }
+        entry.innerHTML = `
+          <span class="past-entry-type ${escapeHtml(type.toLowerCase())}">${escapeHtml(PAST_TYPE_LABEL[type] || type)}</span>
+          <span class="past-entry-title">${escapeHtml(item.title)}</span>
+          <span class="past-entry-dates">${escapeHtml(formatPastRange(item.start,item.end))}</span>
+        `;
+        list.appendChild(entry);
+      });
+
+      archive.appendChild(list);
+      section.appendChild(archive);
+    }
+
+    activeRows.forEach(row=>{
+      section.appendChild(buildTimelineRow(row).rowEl);
     });
 
     container.appendChild(section);
@@ -2518,6 +2722,13 @@ function animateScrollTo(el,axis,targetValue,duration){
   });
 }
 
+function scrollDateToLeft(date,smooth=true){
+  /* Puts the given day in the first column, right beside the sticky row names. */
+  const scroll = document.getElementById("timelineScroll");
+  const index = clamp(daysBetween(START_DATE,date),0,TOTAL_DAYS-1);
+  return animateScrollTo(scroll,"x",Math.max(0,index*getDayWidth()),smooth ? 350 : 0);
+}
+
 function scrollDateToCenter(date,smooth=true){
   const scroll = document.getElementById("timelineScroll");
   const dayWidth = getDayWidth();
@@ -2537,7 +2748,7 @@ function scrollDateToCenter(date,smooth=true){
 
 function jumpToPresent({smooth=true,resetVertical=true}={}){
   const scroll = document.getElementById("timelineScroll");
-  const horizontalDone = scrollDateToCenter(TODAY_DATE,smooth);
+  const horizontalDone = scrollDateToLeft(TODAY_DATE,smooth);
 
   const verticalDone = resetVertical
     ? animateScrollTo(scroll,"y",0,smooth ? 350 : 0)
@@ -2584,14 +2795,14 @@ function restorePositionState(){
   const scroll = document.getElementById("timelineScroll");
 
   if(!state){
-    setView(7,{preserveDate:false,save:false});
+    setView(14,{preserveDate:false,save:false});
     requestAnimationFrame(()=>jumpToPresent({smooth:false,resetVertical:true}));
     return;
   }
 
   const days = [7,14,21,30,90].includes(Number(state.viewDays))
     ? Number(state.viewDays)
-    : 7;
+    : 14;
 
   setView(days,{preserveDate:false,save:false});
 
@@ -2782,7 +2993,7 @@ let startX = 0;
 let startScrollLeft = 0;
 
 scroll.addEventListener("pointerdown",e=>{
-  if(e.target.closest(".item")) return;
+  if(e.target.closest(".item, .past-banners > summary, .past-list")) return;
 
   dragging = true;
   startX = e.clientX;
