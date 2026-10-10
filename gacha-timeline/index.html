@@ -1033,8 +1033,8 @@ button.past-entry:hover{border-color:#ffe49b}
     </div>
 
     <div class="controls">
-      <button class="control-btn active" data-days="7">1 week</button>
-      <button class="control-btn" data-days="14">2 weeks</button>
+      <button class="control-btn" data-days="7">1 week</button>
+      <button class="control-btn active" data-days="14">2 weeks</button>
       <button class="control-btn" data-days="21">3 weeks</button>
       <button class="control-btn" data-days="30">1 month</button>
       <button class="control-btn" data-days="90">3 months</button>
@@ -1138,7 +1138,7 @@ const FUTURE_DAYS = 90;
 const TOTAL_DAYS = HISTORY_DAYS + FUTURE_DAYS + 1;
 const ROW_LABEL_PX = 118;
 
-const STATE_KEY = "gachaTimeline.v22.position";
+const STATE_KEY = "gachaTimeline.v23.position";
 const SUMMARY_ARCHIVE_KEY = "gachaTimeline.v22.summaryArchive";
 
 document.documentElement.style.setProperty("--total-days", TOTAL_DAYS);
@@ -2722,6 +2722,13 @@ function animateScrollTo(el,axis,targetValue,duration){
   });
 }
 
+function scrollDateToLeft(date,smooth=true){
+  /* Puts the given day in the first column, right beside the sticky row names. */
+  const scroll = document.getElementById("timelineScroll");
+  const index = clamp(daysBetween(START_DATE,date),0,TOTAL_DAYS-1);
+  return animateScrollTo(scroll,"x",Math.max(0,index*getDayWidth()),smooth ? 350 : 0);
+}
+
 function scrollDateToCenter(date,smooth=true){
   const scroll = document.getElementById("timelineScroll");
   const dayWidth = getDayWidth();
@@ -2741,7 +2748,7 @@ function scrollDateToCenter(date,smooth=true){
 
 function jumpToPresent({smooth=true,resetVertical=true}={}){
   const scroll = document.getElementById("timelineScroll");
-  const horizontalDone = scrollDateToCenter(TODAY_DATE,smooth);
+  const horizontalDone = scrollDateToLeft(TODAY_DATE,smooth);
 
   const verticalDone = resetVertical
     ? animateScrollTo(scroll,"y",0,smooth ? 350 : 0)
@@ -2788,14 +2795,14 @@ function restorePositionState(){
   const scroll = document.getElementById("timelineScroll");
 
   if(!state){
-    setView(7,{preserveDate:false,save:false});
+    setView(14,{preserveDate:false,save:false});
     requestAnimationFrame(()=>jumpToPresent({smooth:false,resetVertical:true}));
     return;
   }
 
   const days = [7,14,21,30,90].includes(Number(state.viewDays))
     ? Number(state.viewDays)
-    : 7;
+    : 14;
 
   setView(days,{preserveDate:false,save:false});
 
