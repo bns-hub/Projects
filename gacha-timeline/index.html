@@ -564,6 +564,81 @@ button,input{font:inherit}
 
 .row-name.banner-label{color:#ffe49b}
 
+.past-banners{
+  border-bottom:1px solid var(--border);
+  background:#0d1621
+}
+
+.past-banners > summary{
+  position:sticky;
+  left:0;
+  z-index:16;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  min-height:44px;
+  padding:0 13px;
+  cursor:pointer;
+  color:#aab7c8;
+  font-size:13px;
+  font-weight:800;
+  list-style:none;
+  user-select:none
+}
+
+.past-banners > summary::-webkit-details-marker{display:none}
+
+.past-banners > summary::before{
+  content:"▸";
+  display:inline-block;
+  transition:transform .15s;
+  color:#ffe49b
+}
+
+.past-banners[open] > summary::before{transform:rotate(90deg)}
+
+.past-banners-count{
+  min-width:22px;
+  padding:1px 7px;
+  border-radius:999px;
+  background:#22344d;
+  color:#d8e4f5;
+  font-size:11px;
+  text-align:center
+}
+
+.past-list{
+  position:sticky;
+  left:0;
+  width:min(calc(100vw - 48px),760px);
+  display:grid;
+  gap:6px;
+  padding:2px 13px 14px
+}
+
+.past-entry{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:4px 14px;
+  min-height:44px;
+  padding:9px 12px;
+  border:1px solid #2b394d;
+  border-radius:8px;
+  background:#111b29;
+  color:#d8e4f5;
+  font:inherit;
+  font-size:13px;
+  text-align:left
+}
+
+button.past-entry{cursor:pointer}
+button.past-entry:hover{border-color:#ffe49b}
+
+.past-entry-title{font-weight:700}
+.past-entry-dates{color:#94a4bb;font-size:12px}
+
 .row-track{
   position:relative;
   height:84px;
@@ -2209,6 +2284,63 @@ function updatePatchFollowerLabels(){
   });
 }
 
+function isPastBannerRow(row){
+  return row.type==="Banner" &&
+    row.items.length>0 &&
+    row.items.every(item=>item.end && item.end < TODAY_ISO);
+}
+
+function latestEnd(row){
+  return row.items.map(item=>item.end || "").sort().pop() || "";
+}
+
+function formatPastRange(startISO,endISO){
+  const fmt = new Intl.DateTimeFormat("en-SG",{
+    day:"numeric",
+    month:"short",
+    year:"numeric",
+    timeZone:"Asia/Singapore"
+  });
+  const toDate = iso=>new Date(iso + "T00:00:00+08:00");
+  if(!startISO || !endISO) return "";
+  return `${fmt.format(toDate(startISO))} – ${fmt.format(toDate(endISO))}`;
+}
+
+function buildTimelineRow(row){
+  const rowEl = document.createElement("div");
+  rowEl.className = "timeline-row";
+
+  rowEl.innerHTML = `
+    <div class="row-name ${row.type==="Banner" ? "banner-label" : ""}">
+      ${escapeHtml(row.type)}
+    </div>
+    <div class="row-track"></div>
+  `;
+
+  const track = rowEl.querySelector(".row-track");
+  let rendered = 0;
+
+  row.items.forEach(item=>{
+    const node = createItem(item);
+    if(node){
+      track.appendChild(node);
+      rendered++;
+    }
+  });
+
+  if(rendered===0){
+    const note = document.createElement("div");
+    note.className = "empty-note";
+    note.textContent =
+      row.type==="Maintenance"
+        ? "No confirmed maintenance currently inside this retained window."
+        : "No confirmed timed event currently loaded.";
+    track.appendChild(note);
+  }
+
+  return {rowEl,rendered};
+}
+
 function renderGames(){
   const container = document.getElementById("gamesContainer");
   container.innerHTML = "";
@@ -2241,39 +2373,51 @@ function renderGames(){
 
     renderPatchTracks(section,game);
 
-    game.rows.forEach(row=>{
-      const rowEl = document.createElement("div");
-      rowEl.className = "timeline-row";
+    /* Banner rows whose items have ALL ended before today are archived into a
+       closed "Past banners" dropdown. The data is untouched (history is kept in
+       the games array) and the archived rows use the same date axis. */
+    const pastRows = game.rows
+      .filter(isPastBannerRow)
+      .sort((a,b)=>latestEnd(b).localeCompare(latestEnd(a)));
+    const activeRows = game.rows.filter(row=>!isPastBannerRow(row));
 
-      rowEl.innerHTML = `
-        <div class="row-name ${row.type==="Banner" ? "banner-label" : ""}">
-          ${escapeHtml(row.type)}
-        </div>
-        <div class="row-track"></div>
+    const archivedItems = [];
+    pastRows.forEach(row=>row.items.forEach(item=>archivedItems.push(item)));
+    archivedItems.sort((a,b)=>(b.end||"").localeCompare(a.end||""));
+
+    if(archivedItems.length>0){
+      const archive = document.createElement("details");
+      archive.className = "past-banners";
+      archive.innerHTML = `
+        <summary>
+          <span class="past-banners-title">Past banners</span>
+          <span class="past-banners-count">${archivedItems.length}</span>
+        </summary>
       `;
 
-      const track = rowEl.querySelector(".row-track");
-      let rendered = 0;
+      const list = document.createElement("div");
+      list.className = "past-list";
 
-      row.items.forEach(item=>{
-        const node = createItem(item);
-        if(node){
-          track.appendChild(node);
-          rendered++;
+      archivedItems.forEach(item=>{
+        const entry = document.createElement(item.details ? "button" : "div");
+        entry.className = "past-entry";
+        if(item.details){
+          entry.type = "button";
+          entry.addEventListener("click",()=>showDetails(item));
         }
+        entry.innerHTML = `
+          <span class="past-entry-title">${escapeHtml(item.title)}</span>
+          <span class="past-entry-dates">${escapeHtml(formatPastRange(item.start,item.end))}</span>
+        `;
+        list.appendChild(entry);
       });
 
-      if(rendered===0){
-        const note = document.createElement("div");
-        note.className = "empty-note";
-        note.textContent =
-          row.type==="Maintenance"
-            ? "No confirmed maintenance currently inside this retained window."
-            : "No confirmed timed event currently loaded.";
-        track.appendChild(note);
-      }
+      archive.appendChild(list);
+      section.appendChild(archive);
+    }
 
-      section.appendChild(rowEl);
+    activeRows.forEach(row=>{
+      section.appendChild(buildTimelineRow(row).rowEl);
     });
 
     container.appendChild(section);
@@ -2782,7 +2926,7 @@ let startX = 0;
 let startScrollLeft = 0;
 
 scroll.addEventListener("pointerdown",e=>{
-  if(e.target.closest(".item")) return;
+  if(e.target.closest(".item, .past-banners > summary, .past-entry")) return;
 
   dragging = true;
   startX = e.clientX;
