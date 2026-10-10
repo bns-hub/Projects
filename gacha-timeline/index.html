@@ -617,7 +617,12 @@ button,input{font:inherit}
   display:grid;
   grid-template-columns:minmax(0,1fr);
   gap:6px;
-  padding:2px 13px 14px
+  padding:2px 13px 14px;
+  /* 4 entries (4 x 40px + 3 x 6px gaps) plus the list padding, then scroll */
+  max-height:194px;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:#3a4d68 transparent
 }
 
 .past-entry{
@@ -2981,7 +2986,7 @@ let startX = 0;
 let startScrollLeft = 0;
 
 scroll.addEventListener("pointerdown",e=>{
-  if(e.target.closest(".item, .past-banners > summary, .past-entry")) return;
+  if(e.target.closest(".item, .past-banners > summary, .past-list")) return;
 
   dragging = true;
   startX = e.clientX;
