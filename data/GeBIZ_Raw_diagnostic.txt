@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-09T15:54:33+08:00
+GeBIZ crawl OK — 2026-10-10T15:40:46+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=LTA000ETT26000114
+[1] ref=ITE000ETT26000037
     type=Tender  status=OPEN
-    title=Provision of Mobile Phones, Tablets and Subscription Plans
-    agency=Land Transport Authority
-    category=IT&Telecommunication ⇒ Telecommunication Devices
-    published=09 Oct 2026 03:35 PM
+    title=ITEa26-00735 CDE VMT_Supply & Installation of LED Video Screens at ITE College East & ITE College West
+    agency=Institute of Technical Education
+    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
+    published=10 Oct 2026 12:20 PM
     closing=03 Nov 2026 04:00PM
 
-[2] ref=SSC000ETT26000036
-    type=Tender  status=OPEN
-    title=Nominated Sub-Contract Works for Interior Fit-Out at the Library for an Integrated Development
-    agency=Singapore Sports Council (Sport Singapore)
-    category=Construction ⇒ Interior Decoration
-    published=09 Oct 2026 03:35 PM
-    closing=10 Nov 2026 04:00PM
-
-[3] ref=SSC000ERF26000008
-    type=  status=OPEN
-    title=EOI FOR THE PROVISION OF ARCHITECTUAL AND QUANTITY SURVEYING (AR-QS) CONSULTANCY SERVICES FOR PROPOSED D&B OF NEW COMMUNITY SPORT FACILITIES
-    agency=Singapore Sports Council (Sport Singapore)
-    category=Services ⇒ Professional Services
-    published=09 Oct 2026 03:35 PM
-    closing=22 Oct 2026 04:00PM
-
-[4] ref=MOESCHETQ26004777
+[2] ref=MOESCHETQ26004790
     type=Quotation  status=OPEN
-    title=SUPPLY OF INSTRUCTOR FOR INDIAN DANCE CCA PROGRAMME FOR THE BASE YEAR OF 2027 WITH AN OPTION TO EXTEND ONE YEAR IN 2028 IN HOUGANG PRIMARY SCHOOL
+    title=Supply of Sectional Instructors for Chinese Orchestra CCA Programme for Year 2027 in Manjusri Secondary School
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=09 Oct 2026 03:35 PM
+    category=Administration & Training ⇒ Courses
+    published=10 Oct 2026 10:20 AM
     closing=19 Oct 2026 01:00PM
 
-[5] ref=MOESCHETQ26004778
+[3] ref=MOESCHETQ26004767
     type=Quotation  status=OPEN
-    title=Supply of Coach and Bowling Lanes for CCA Ten Pin Bowling (Year 2027 + Option Year 2028)
+    title=Supply of Instructors for Wushu CCA Training Programme for Year 2027 with Option to Extend to Year 2028 in Manjusri Secondary School
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=09 Oct 2026 03:20 PM
+    category=Administration & Training ⇒ Courses
+    published=10 Oct 2026 10:20 AM
+    closing=19 Oct 2026 01:00PM
+
+[4] ref=MOESCHETQ26004740
+    type=Quotation  status=OPEN
+    title=Supply of Sectional Instructors for Concert Band CCA Training Programme for Year 2027 with Option to Extend for Year 2028 in Manjusri Secondary School
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=10 Oct 2026 10:20 AM
+    closing=19 Oct 2026 01:00PM
+
+[5] ref=MOESCHETQ26004782
+    type=Quotation  status=OPEN
+    title=Supply of Instructors for Science Olympiad Programme 2027 in Jurong West Primary School
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=10 Oct 2026 12:05 AM
     closing=19 Oct 2026 01:00PM
