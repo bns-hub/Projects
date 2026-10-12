@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-11T15:45:38+08:00
+GeBIZ crawl OK — 2026-10-12T15:53:34+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26004809
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Chinese Dance CCA Programme in Chung Cheng High School (Yishun) for 2027 (Base Period) with option to extend a year (2028)
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=10 Oct 2026 09:20 PM
-    closing=19 Oct 2026 01:00PM
-
-[2] ref=ITE000ETT26000037
+[1] ref=NST000ETT26000064
     type=Tender  status=OPEN
-    title=ITEa26-00735 CDE VMT_Supply & Installation of LED Video Screens at ITE College East & ITE College West
-    agency=Institute of Technical Education
-    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
-    published=10 Oct 2026 12:20 PM
-    closing=03 Nov 2026 04:00PM
+    title=SUPPLY, DELIVERY, INSTALLATION, TESTING AND COMMISSIONING OF ADVANCED MICROSCOPES, TISSUE CULTURE MICROSCOPES AND UPGRADE FOR GENEO
+    agency=Agency for Science, Technology and Research
+    category=Dental, Medical & Laboratory ⇒ Laboratory Equipment & Supplies
+    published=12 Oct 2026 03:35 PM
+    closing=05 Nov 2026 04:00PM
 
-[3] ref=MOESCHETQ26004790
+[2] ref=MOESCHETQ26004798
     type=Quotation  status=OPEN
-    title=Supply of Sectional Instructors for Chinese Orchestra CCA Programme for Year 2027 in Manjusri Secondary School
+    title=Provision of School Uniform Services in Fairfield Methodist School (Secondary)
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=10 Oct 2026 10:20 AM
-    closing=19 Oct 2026 01:00PM
+    category=Services ⇒ Tailoring
+    published=12 Oct 2026 03:35 PM
+    closing=21 Oct 2026 01:00PM
 
-[4] ref=MOESCHETQ26004767
+[3] ref=MOESCHETQ26004826
     type=Quotation  status=OPEN
-    title=Supply of Instructors for Wushu CCA Training Programme for Year 2027 with Option to Extend to Year 2028 in Manjusri Secondary School
+    title=Yuan Ching Secondary School - Provision of School Uniform Services for Base Period 2027 (Please refer to attachments)
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=10 Oct 2026 10:20 AM
-    closing=19 Oct 2026 01:00PM
+    category=Services ⇒ Tailoring
+    published=12 Oct 2026 03:20 PM
+    closing=21 Oct 2026 01:00PM
 
-[5] ref=MOESCHETQ26004740
+[4] ref=SDC000ETQ26000050
     type=Quotation  status=OPEN
-    title=Supply of Sectional Instructors for Concert Band CCA Training Programme for Year 2027 with Option to Extend for Year 2028 in Manjusri Secondary School
-    agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=10 Oct 2026 10:20 AM
-    closing=19 Oct 2026 01:00PM
+    title=SUPPLY & INSTALL POLYCARBONATE ROOF PANELS AT IMBIAH LOOKOUT LINKWAY IN SENTOSA
+    agency=Sentosa Development Corporation
+    category=Construction ⇒ General Building & Minor Construction Works
+    published=12 Oct 2026 03:05 PM
+    closing=23 Oct 2026 01:00PM
+
+[5] ref=TPO000ETQ26000120
+    type=Quotation  status=OPEN
+    title=TPO-REQ-2026-006075-AK - Invitation to Quote for Google Cloud Subscription for Teaching and Learning at School of Informatics & IT
+    agency=Temasek Polytechnic
+    category=IT&Telecommunication ⇒ Softwares & Licences
+    published=12 Oct 2026 02:50 PM
+    closing=21 Oct 2026 01:00PM
