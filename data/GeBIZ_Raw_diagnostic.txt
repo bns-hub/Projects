@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-12T15:53:34+08:00
+GeBIZ crawl OK — 2026-10-13T16:17:48+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=NST000ETT26000064
+[1] ref=MOESCHETQ26004924
+    type=Quotation  status=OPEN
+    title=Supply of Instructors for Secondary 1 Education For Life (EFL) Programme 2027 in CHIJ St. Theresa's Convent
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=13 Oct 2026 03:50 PM
+    closing=26 Oct 2026 01:00PM
+
+[2] ref=MOESCHETQ26004923
+    type=Quotation  status=OPEN
+    title=Provision of photography services for staff and students of Anglo-Chinese School (Primary) for 2027 with option to renew for 2028 and 2029
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Photographic & Imaging Services
+    published=13 Oct 2026 03:50 PM
+    closing=22 Oct 2026 01:00PM
+
+[3] ref=PUB000ETT26000134
     type=Tender  status=OPEN
-    title=SUPPLY, DELIVERY, INSTALLATION, TESTING AND COMMISSIONING OF ADVANCED MICROSCOPES, TISSUE CULTURE MICROSCOPES AND UPGRADE FOR GENEO
-    agency=Agency for Science, Technology and Research
-    category=Dental, Medical & Laboratory ⇒ Laboratory Equipment & Supplies
-    published=12 Oct 2026 03:35 PM
-    closing=05 Nov 2026 04:00PM
+    title=44260134/WSP/Real Time River Level and Conductivity Monitoring in Johor River
+    agency=Public Utilities Board
+    category=IT&Telecommunication ⇒ Others
+    published=13 Oct 2026 03:35 PM
+    closing=22 Oct 2026 01:00PM
 
-[2] ref=MOESCHETQ26004798
+[4] ref=MOESCHETQ26004911
     type=Quotation  status=OPEN
-    title=Provision of School Uniform Services in Fairfield Methodist School (Secondary)
+    title=Design, Supply and Installation of Customized Built-in Cabinets for Computer Lab C2-01 at Telok Kurau Primary School
     agency=Ministry of Education - Schools
-    category=Services ⇒ Tailoring
-    published=12 Oct 2026 03:35 PM
-    closing=21 Oct 2026 01:00PM
+    category=Furniture, Office Equipment & Audio-Visual ⇒ Furniture
+    published=13 Oct 2026 03:35 PM
+    closing=26 Oct 2026 01:00PM
 
-[3] ref=MOESCHETQ26004826
+[5] ref=NLB000ETQ26000044
     type=Quotation  status=OPEN
-    title=Yuan Ching Secondary School - Provision of School Uniform Services for Base Period 2027 (Please refer to attachments)
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Tailoring
-    published=12 Oct 2026 03:20 PM
-    closing=21 Oct 2026 01:00PM
-
-[4] ref=SDC000ETQ26000050
-    type=Quotation  status=OPEN
-    title=SUPPLY & INSTALL POLYCARBONATE ROOF PANELS AT IMBIAH LOOKOUT LINKWAY IN SENTOSA
-    agency=Sentosa Development Corporation
-    category=Construction ⇒ General Building & Minor Construction Works
-    published=12 Oct 2026 03:05 PM
-    closing=23 Oct 2026 01:00PM
-
-[5] ref=TPO000ETQ26000120
-    type=Quotation  status=OPEN
-    title=TPO-REQ-2026-006075-AK - Invitation to Quote for Google Cloud Subscription for Teaching and Learning at School of Informatics & IT
-    agency=Temasek Polytechnic
+    title=INVITATION TO QUOTE FOR THE PROVISION OF POWER PDF SOFTWARE LICENCES TO NATIONAL LIBRARY BOARD
+    agency=National Library Board
     category=IT&Telecommunication ⇒ Softwares & Licences
-    published=12 Oct 2026 02:50 PM
-    closing=21 Oct 2026 01:00PM
+    published=13 Oct 2026 03:35 PM
+    closing=22 Oct 2026 01:00PM
