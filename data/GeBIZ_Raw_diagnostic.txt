@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-13T16:17:48+08:00
+GeBIZ crawl OK — 2026-10-14T14:37:40+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26004924
+[1] ref=RGS000ETQ26000029
     type=Quotation  status=OPEN
-    title=Supply of Instructors for Secondary 1 Education For Life (EFL) Programme 2027 in CHIJ St. Theresa's Convent
+    title=Provision of Chinese Orchestra Conductor for Year 2027 - 2nd ITQ
+    agency=Raffles Girls' School (Secondary)
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=14 Oct 2026 02:20 PM
+    closing=23 Oct 2026 01:00PM
+
+[2] ref=MOESCHETQ26004970
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for P3-P4 Integrated Music Enrichment Programme in North Vista Primary School in 2027
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=13 Oct 2026 03:50 PM
-    closing=26 Oct 2026 01:00PM
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=14 Oct 2026 02:20 PM
+    closing=23 Oct 2026 01:00PM
 
-[2] ref=MOESCHETQ26004923
+[3] ref=MOESCHETQ26004947
     type=Quotation  status=OPEN
-    title=Provision of photography services for staff and students of Anglo-Chinese School (Primary) for 2027 with option to renew for 2028 and 2029
+    title=DESIGN, SUPPLY AND INSTALLATION OF THE STAGE LIGHTING SYSTEM AT SCHOOL HALL IN WHITE SANDS PRIMARY SCHOOL
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Photographic & Imaging Services
-    published=13 Oct 2026 03:50 PM
-    closing=22 Oct 2026 01:00PM
+    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
+    published=14 Oct 2026 02:20 PM
+    closing=23 Oct 2026 01:00PM
 
-[3] ref=PUB000ETT26000134
-    type=Tender  status=OPEN
-    title=44260134/WSP/Real Time River Level and Conductivity Monitoring in Johor River
-    agency=Public Utilities Board
-    category=IT&Telecommunication ⇒ Others
-    published=13 Oct 2026 03:35 PM
-    closing=22 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26004911
+[4] ref=MOE000ETQ26000255
     type=Quotation  status=OPEN
-    title=Design, Supply and Installation of Customized Built-in Cabinets for Computer Lab C2-01 at Telok Kurau Primary School
+    title=[NSGO] Appointment of Contractor for the Provision of Auxiliary Police Officers for 2027 to 2029 National School Games Events
+    agency=Ministry of Education
+    category=Services ⇒ Professional Services
+    published=14 Oct 2026 02:05 PM
+    closing=23 Oct 2026 01:00PM
+
+[5] ref=MOESCHETQ26004964
+    type=Quotation  status=OPEN
+    title=ITQ for Supply of Instructor for 2 years Hockey (Girls) CCA Training Programme in Anglo-Chinese Junior College with option to extend 2 years.
     agency=Ministry of Education - Schools
-    category=Furniture, Office Equipment & Audio-Visual ⇒ Furniture
-    published=13 Oct 2026 03:35 PM
-    closing=26 Oct 2026 01:00PM
-
-[5] ref=NLB000ETQ26000044
-    type=Quotation  status=OPEN
-    title=INVITATION TO QUOTE FOR THE PROVISION OF POWER PDF SOFTWARE LICENCES TO NATIONAL LIBRARY BOARD
-    agency=National Library Board
-    category=IT&Telecommunication ⇒ Softwares & Licences
-    published=13 Oct 2026 03:35 PM
-    closing=22 Oct 2026 01:00PM
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=14 Oct 2026 01:20 PM
+    closing=23 Oct 2026 01:00PM
