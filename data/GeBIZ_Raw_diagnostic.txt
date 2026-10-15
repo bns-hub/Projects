@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-14T14:37:40+08:00
+GeBIZ crawl OK — 2026-10-15T14:20:13+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 400 across 40 page(s)
+Rows: 370 across 37 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=RGS000ETQ26000029
+[1] ref=MOESCHETQ26005020
     type=Quotation  status=OPEN
-    title=Provision of Chinese Orchestra Conductor for Year 2027 - 2nd ITQ
-    agency=Raffles Girls' School (Secondary)
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=14 Oct 2026 02:20 PM
-    closing=23 Oct 2026 01:00PM
-
-[2] ref=MOESCHETQ26004970
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for P3-P4 Integrated Music Enrichment Programme in North Vista Primary School in 2027
+    title=Supply of Instructor for Track & Field CCA Training Programme in Jurong Primary School
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=14 Oct 2026 02:20 PM
-    closing=23 Oct 2026 01:00PM
+    published=15 Oct 2026 01:50 PM
+    closing=26 Oct 2026 01:00PM
 
-[3] ref=MOESCHETQ26004947
+[2] ref=SPO000ETQ26000133
     type=Quotation  status=OPEN
-    title=DESIGN, SUPPLY AND INSTALLATION OF THE STAGE LIGHTING SYSTEM AT SCHOOL HALL IN WHITE SANDS PRIMARY SCHOOL
+    title=SPO-REQ-2026-006706-CLS-Quotation for 1 unit refrigerated centrifuge analyzer with the necessary accessories
+    agency=Singapore Polytechnic
+    category=Dental, Medical & Laboratory ⇒ Laboratory Equipment & Supplies
+    published=15 Oct 2026 01:50 PM
+    closing=26 Oct 2026 01:00PM
+
+[3] ref=MOESCHETQ26004959
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Basketball (Boys & Girls) CCA Training Programme in Woodgrove Secondary School for Base Year 2027 with Option Year 2028
     agency=Ministry of Education - Schools
-    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
-    published=14 Oct 2026 02:20 PM
-    closing=23 Oct 2026 01:00PM
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=15 Oct 2026 01:35 PM
+    closing=26 Oct 2026 01:00PM
 
-[4] ref=MOE000ETQ26000255
+[4] ref=MOESCHETQ26005000
     type=Quotation  status=OPEN
-    title=[NSGO] Appointment of Contractor for the Provision of Auxiliary Police Officers for 2027 to 2029 National School Games Events
-    agency=Ministry of Education
+    title=Supply of Instructors for Tchoukball CCA Programme in River Valley High School for Year 2027 (with option to extend to 2028)
+    agency=Ministry of Education - Schools
     category=Services ⇒ Professional Services
-    published=14 Oct 2026 02:05 PM
-    closing=23 Oct 2026 01:00PM
+    published=15 Oct 2026 01:20 PM
+    closing=26 Oct 2026 01:00PM
 
-[5] ref=MOESCHETQ26004964
+[5] ref=MOESCHETQ26004993
     type=Quotation  status=OPEN
-    title=ITQ for Supply of Instructor for 2 years Hockey (Girls) CCA Training Programme in Anglo-Chinese Junior College with option to extend 2 years.
+    title=Provision of Ad-hoc Bus Transport Services for Nan Hua High School from 1 Jan 2027 to 31 Dec 2027
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=14 Oct 2026 01:20 PM
-    closing=23 Oct 2026 01:00PM
+    category=Transportation ⇒ Bus Hire
+    published=15 Oct 2026 12:35 PM
+    closing=26 Oct 2026 01:00PM
