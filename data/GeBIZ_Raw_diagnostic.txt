@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-15T14:20:13+08:00
+GeBIZ crawl OK — 2026-10-16T14:16:20+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 370 across 37 page(s)
+Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005020
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Track & Field CCA Training Programme in Jurong Primary School
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=15 Oct 2026 01:50 PM
-    closing=26 Oct 2026 01:00PM
-
-[2] ref=SPO000ETQ26000133
-    type=Quotation  status=OPEN
-    title=SPO-REQ-2026-006706-CLS-Quotation for 1 unit refrigerated centrifuge analyzer with the necessary accessories
-    agency=Singapore Polytechnic
-    category=Dental, Medical & Laboratory ⇒ Laboratory Equipment & Supplies
-    published=15 Oct 2026 01:50 PM
-    closing=26 Oct 2026 01:00PM
-
-[3] ref=MOESCHETQ26004959
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Basketball (Boys & Girls) CCA Training Programme in Woodgrove Secondary School for Base Year 2027 with Option Year 2028
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=15 Oct 2026 01:35 PM
-    closing=26 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26005000
-    type=Quotation  status=OPEN
-    title=Supply of Instructors for Tchoukball CCA Programme in River Valley High School for Year 2027 (with option to extend to 2028)
-    agency=Ministry of Education - Schools
+[1] ref=STB000ETT26000034
+    type=Tender  status=OPEN
+    title=INVITATION TO TENDER FOR THE DESIGN AND CONSTRUCTION OF THE SINGAPORE PAVILION AT SEATRADE CRUISE GLOBAL 2027
+    agency=Singapore Tourism Board
     category=Services ⇒ Professional Services
-    published=15 Oct 2026 01:20 PM
+    published=16 Oct 2026 01:50 PM
+    closing=13 Nov 2026 04:00PM
+
+[2] ref=MOESCHETQ26005081
+    type=Quotation  status=OPEN
+    title=Provision of In-House Printing Services from 1 Jan 2027 to 31 Dec 2027 at Serangoon Secondary School.
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Printing Services
+    published=16 Oct 2026 01:50 PM
+    closing=27 Oct 2026 01:00PM
+
+[3] ref=MOESCHETQ26005076
+    type=Quotation  status=OPEN
+    title=Supply and Delivery of Classroom Tables, and Removal and Disposal of Existing Classroom Tables and Chairs at Rosyth School
+    agency=Ministry of Education - Schools
+    category=Furniture, Office Equipment & Audio-Visual ⇒ Furniture
+    published=16 Oct 2026 01:35 PM
     closing=26 Oct 2026 01:00PM
 
-[5] ref=MOESCHETQ26004993
+[4] ref=MOESCHETQ26005080
     type=Quotation  status=OPEN
-    title=Provision of Ad-hoc Bus Transport Services for Nan Hua High School from 1 Jan 2027 to 31 Dec 2027
+    title=Supply of Instructor for Softball CCA Training Programme in Frontier Primary School
     agency=Ministry of Education - Schools
-    category=Transportation ⇒ Bus Hire
-    published=15 Oct 2026 12:35 PM
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=16 Oct 2026 01:35 PM
+    closing=26 Oct 2026 01:00PM
+
+[5] ref=MOESCHETQ26005055
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Modern Dance CCA Programme in Canossa Catholic Primary School for 2027 with option to renew
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=16 Oct 2026 01:20 PM
     closing=26 Oct 2026 01:00PM
