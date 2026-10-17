@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-16T14:16:20+08:00
+GeBIZ crawl OK — 2026-10-17T14:01:26+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=STB000ETT26000034
-    type=Tender  status=OPEN
-    title=INVITATION TO TENDER FOR THE DESIGN AND CONSTRUCTION OF THE SINGAPORE PAVILION AT SEATRADE CRUISE GLOBAL 2027
-    agency=Singapore Tourism Board
-    category=Services ⇒ Professional Services
-    published=16 Oct 2026 01:50 PM
+[1] ref=MHA00003000029557
+    type=  status=OPEN
+    title=PROVISION OF PROJECT MANAGEMENT CONSULTANCY SERVICES FOR CLUSTER C LIFE CYCLE REPLACEMENT & UPGRADE OF MECHANICAL & ELECTRICAL SYSTEMS AT TANAH MERAH 2
+    agency=Ministry of Home Affairs - Ministry Headquarter 1
+    category=Miscellaneous ⇒ Others
+    published=16 Oct 2026 08:20 PM
     closing=13 Nov 2026 04:00PM
 
-[2] ref=MOESCHETQ26005081
+[2] ref=MHA00003000029562
+    type=  status=OPEN
+    title=PROVISION OF MULTI-DISCIPLINARY CONSULTANCY SERVICES FOR THE CLUSTER C LIFE CYCLE REPLACEMENT & UPGRADE OF MECHANICAL & ELECTRICAL SYSTEMS AT TANAH MERAH 2
+    agency=Ministry of Home Affairs - Ministry Headquarter 1
+    category=Miscellaneous ⇒ Others
+    published=16 Oct 2026 05:50 PM
+    closing=13 Nov 2026 04:00PM
+
+[3] ref=MHA00003000029513
+    type=  status=OPEN
+    title=EXPRESSION OF INTEREST (EOI) FOR THE PROVISION OF PROJECT MANAGEMENT SERVICES FOR REPLACEMENT OF POLICE COAST GUARDS FLOATING SEA BARRIERS - 1-STAGE QFM
+    agency=Ministry of Home Affairs - Ministry Headquarter 1
+    category=Miscellaneous ⇒ Others
+    published=16 Oct 2026 05:50 PM
+    closing=30 Oct 2026 04:00PM
+
+[4] ref=MOESCHETQ26005009
     type=Quotation  status=OPEN
-    title=Provision of In-House Printing Services from 1 Jan 2027 to 31 Dec 2027 at Serangoon Secondary School.
+    title=Leasing of One (1) Unit of Heavy-Duty Monochrome Multifunction Copier/Printer with Finishing Functions in Meridian Primary School (2027-2029)
     agency=Ministry of Education - Schools
     category=Administration & Training ⇒ Printing Services
-    published=16 Oct 2026 01:50 PM
-    closing=27 Oct 2026 01:00PM
-
-[3] ref=MOESCHETQ26005076
-    type=Quotation  status=OPEN
-    title=Supply and Delivery of Classroom Tables, and Removal and Disposal of Existing Classroom Tables and Chairs at Rosyth School
-    agency=Ministry of Education - Schools
-    category=Furniture, Office Equipment & Audio-Visual ⇒ Furniture
-    published=16 Oct 2026 01:35 PM
+    published=16 Oct 2026 05:50 PM
     closing=26 Oct 2026 01:00PM
 
-[4] ref=MOESCHETQ26005080
+[5] ref=MOESCHETQ26005099
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Softball CCA Training Programme in Frontier Primary School
+    title=Supply of Instructors for Badminton CCA Training Programme in Kranji Secondary School
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=16 Oct 2026 01:35 PM
-    closing=26 Oct 2026 01:00PM
-
-[5] ref=MOESCHETQ26005055
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Modern Dance CCA Programme in Canossa Catholic Primary School for 2027 with option to renew
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=16 Oct 2026 01:20 PM
+    category=Administration & Training ⇒ Courses
+    published=16 Oct 2026 05:35 PM
     closing=26 Oct 2026 01:00PM
