@@ -1,36 +1,36 @@
 {
-  "lastCheckedAt": "2026-10-04T19:51:27.690Z",
+  "lastCheckedAt": "2026-10-11T20:41:37.896Z",
   "sources": {
     "hsr-official": {
       "hash": "b87af92e",
-      "checkedAt": "2026-10-04T19:50:55.873Z",
-      "changed": true,
+      "checkedAt": "2026-10-11T20:41:07.164Z",
+      "changed": false,
       "firstBaseline": false,
       "via": "headless",
       "snippet": "Limited 5-Star Character · Go to Version Highlights page to learn more · Go to Version Highlights page to learn more · Trailblazers can claim daily rewards in the Travel Log by logging in to the game. The rewards will be unlocked in sequential order according to the Trailblazer's accrued login days.",
       "auditedLines": 13
     },
     "hsr-hoyolab": {
-      "hash": "f0e42815",
-      "checkedAt": "2026-10-04T19:51:12.052Z",
+      "hash": "a607aa6d",
+      "checkedAt": "2026-10-11T20:41:20.807Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
       "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · We will recommend content based on your chosen interests",
-      "auditedLines": 6
+      "auditedLines": 10
     },
     "hsr-hoyolab-official": {
-      "hash": "b4c956f6",
-      "checkedAt": "2026-10-04T19:51:17.535Z",
+      "hash": "3b430e1c",
+      "checkedAt": "2026-10-11T20:41:27.429Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "\"The Laughter Outsmarts miHoYo\" Episode 1 | Chess · \"Astral Express Strategy Guide\" Website Update: Version 4.6 Strategy Guides Contest Event Is In Full Swing! · Rewarded Event] Pearl Spotlight - Reddit Event! · [Rewarded Event] Discord Trivia Event!",
-      "auditedLines": 10
+      "snippet": "\"The Laughter Outsmarts miHoYo\" Episode 2 | Interview · \"The Laughter Outsmarts miHoYo\" Episode 1 | Chess · \"Astral Express Strategy Guide\" Website Update: Version 4.6 Strategy Guides Contest Event Is In Full Swing! · Rewarded Event] Pearl Spotlight - Reddit Event!",
+      "auditedLines": 15
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-10-04T19:51:20.385Z",
+      "checkedAt": "2026-10-11T20:41:29.597Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -39,8 +39,8 @@
     },
     "re-steam": {
       "hash": "57df8d56",
-      "checkedAt": "2026-10-04T19:51:21.953Z",
-      "changed": true,
+      "checkedAt": "2026-10-11T20:41:31.428Z",
+      "changed": false,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · 3rd Anniversary Sincere Gratitude · 2026-10-01 00:00 - 2026-11-05 04:59 (UTC-5)",
@@ -48,16 +48,16 @@
     },
     "re-steam-forum": {
       "hash": "d1236e90",
-      "checkedAt": "2026-10-04T19:51:22.272Z",
-      "changed": true,
+      "checkedAt": "2026-10-11T20:41:31.544Z",
+      "changed": false,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 3 @ 7:01am",
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 10 @ 7:24am",
       "auditedLines": 4
     },
     "czn-community": {
       "hash": "76461c55",
-      "checkedAt": "2026-10-04T19:51:26.246Z",
+      "checkedAt": "2026-10-11T20:41:35.336Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -65,76 +65,76 @@
       "auditedLines": 2
     },
     "czn-brand": {
-      "hash": "83d6d77c",
-      "checkedAt": "2026-10-04T19:51:27.039Z",
-      "changed": false,
+      "hash": "9f2214d3",
+      "checkedAt": "2026-10-11T20:41:35.989Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Chaos Zero Nightmare: Official Website · An unpredictable journey where survival and ruin are but a decision apart, Chaos Zero Nightmare! Log in now! · Download PC Version · Chaos Zero Nightmare is available on Google Play , App Store , and PC .",
-      "auditedLines": 3
+      "snippet": "Chaos Zero Nightmare: Nightmare X Carnival · Nightmare X Carnival · 「Make Every Night a Festival」 1st Anniversary, Nightmare X Carnival · 1st Anniversary, Nightmare X Carnival Showcase",
+      "auditedLines": 7
     },
     "czn-arabella-rules": {
-      "hash": "dd76d5f3",
-      "checkedAt": "2026-10-04T19:51:27.329Z",
+      "hash": "f710ed5a",
+      "checkedAt": "2026-10-11T20:41:36.356Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026",
-      "auditedLines": 59
+      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026",
+      "auditedLines": 60
     },
     "czn-licinia-rules": {
-      "hash": "855a7bc4",
-      "checkedAt": "2026-10-04T19:51:27.454Z",
+      "hash": "b29bcb21",
+      "checkedAt": "2026-10-11T20:41:36.470Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026",
-      "auditedLines": 57
+      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026",
+      "auditedLines": 58
     },
     "czn-chizuru-rules": {
-      "hash": "1978f104",
-      "checkedAt": "2026-10-04T19:51:27.555Z",
+      "hash": "43d7dea1",
+      "checkedAt": "2026-10-11T20:41:37.587Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026",
-      "auditedLines": 59
+      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026",
+      "auditedLines": 60
     },
     "czn-itsuku-rules": {
-      "hash": "1a2a35d6",
-      "checkedAt": "2026-10-04T19:51:27.668Z",
+      "hash": "3b92c62b",
+      "checkedAt": "2026-10-11T20:41:37.874Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026",
-      "auditedLines": 57
+      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026",
+      "auditedLines": 58
     },
     "hsr-news": {
-      "hash": "258af8d4",
-      "checkedAt": "2026-10-04T19:51:00.214Z",
+      "hash": "d1d1639f",
+      "checkedAt": "2026-10-11T20:41:11.079Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Version 4.6 \"Dance With the Beast Before Moonrise\" Update Details · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
-      "auditedLines": 1
+      "snippet": "This season's brand-new Seasonal Dolls makes its adorable debut! · Version 4.6 \"Dance With the Beast Before Moonrise\" Update Details · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
+      "auditedLines": 3
     },
     "re-news": {
-      "hash": "f394ca60",
-      "checkedAt": "2026-10-04T19:51:21.524Z",
-      "changed": false,
+      "hash": "5cd2d9d7",
+      "checkedAt": "2026-10-11T20:41:31.193Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "api",
-      "snippet": "2026-09-26 - [Announcement of Results] Collaboration Special Creator Contest Winners · 2026-09-24 - Ver.3.8 \"The Temporal Scale\" Fanwork Event Open for Submission! · Share your Version 3.8-related creations for a chance to win cash prizes, Clear Drops, and exclusive merchandise! · Base your submission around Version 3.8, including but not limited to the new storyline, event characters, and garments.",
+      "snippet": "2026-10-07 - [Announcement of Results] 3rd Anniversary Fan Creations Event · [Announcement of Results] Reverse: 1999 3rd Anniversary Fan Creations Event Winners · Thank you so much for your participation in Reverse: 1999 3rd Anniversary Fan Creations Event. We have received lots of remarkable creations, which have truly made the anniversary extraordinary！ · @catrojanyaps",
       "auditedLines": 320
     },
     "czn-news": {
-      "hash": "0a387696",
-      "checkedAt": "2026-10-04T19:51:22.489Z",
+      "hash": "e5ce447c",
+      "checkedAt": "2026-10-11T20:41:31.664Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "News - Chaos Zero Nightmare (CZN) · Launch week: no ads on any DotGG site, plus the full meta on our TCG sites. Lifetime $39.99 once until Oct 7, then $49.99. 500 seats. DotGG Premium: no ads on any site. Lifetime $39.99 this week. · October 2, 2026 · [Notice] 10/01 (Thu) Patch Notice (Completed)",
-      "auditedLines": 25
+      "snippet": "News - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Current Events · [Event] 1st Anniversary, Nightmare Carnival Showcase Social Media Share Event",
+      "auditedLines": 23
     }
   }
 }
