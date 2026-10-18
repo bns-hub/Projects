@@ -1,4 +1,4 @@
-GeBIZ crawl OK — 2026-10-17T14:01:26+08:00
+GeBIZ crawl OK — 2026-10-18T14:29:45+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
