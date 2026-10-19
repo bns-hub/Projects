@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-18T14:29:45+08:00
+GeBIZ crawl OK — 2026-10-19T14:43:32+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MHA00003000029557
-    type=  status=OPEN
-    title=PROVISION OF PROJECT MANAGEMENT CONSULTANCY SERVICES FOR CLUSTER C LIFE CYCLE REPLACEMENT & UPGRADE OF MECHANICAL & ELECTRICAL SYSTEMS AT TANAH MERAH 2
-    agency=Ministry of Home Affairs - Ministry Headquarter 1
-    category=Miscellaneous ⇒ Others
-    published=16 Oct 2026 08:20 PM
-    closing=13 Nov 2026 04:00PM
-
-[2] ref=MHA00003000029562
-    type=  status=OPEN
-    title=PROVISION OF MULTI-DISCIPLINARY CONSULTANCY SERVICES FOR THE CLUSTER C LIFE CYCLE REPLACEMENT & UPGRADE OF MECHANICAL & ELECTRICAL SYSTEMS AT TANAH MERAH 2
-    agency=Ministry of Home Affairs - Ministry Headquarter 1
-    category=Miscellaneous ⇒ Others
-    published=16 Oct 2026 05:50 PM
-    closing=13 Nov 2026 04:00PM
-
-[3] ref=MHA00003000029513
-    type=  status=OPEN
-    title=EXPRESSION OF INTEREST (EOI) FOR THE PROVISION OF PROJECT MANAGEMENT SERVICES FOR REPLACEMENT OF POLICE COAST GUARDS FLOATING SEA BARRIERS - 1-STAGE QFM
-    agency=Ministry of Home Affairs - Ministry Headquarter 1
-    category=Miscellaneous ⇒ Others
-    published=16 Oct 2026 05:50 PM
-    closing=30 Oct 2026 04:00PM
-
-[4] ref=MOESCHETQ26005009
+[1] ref=MOESCHETQ26005149
     type=Quotation  status=OPEN
-    title=Leasing of One (1) Unit of Heavy-Duty Monochrome Multifunction Copier/Printer with Finishing Functions in Meridian Primary School (2027-2029)
+    title=ITQ for the Provision of Off-Site Printing Services for 2027 for Chung Cheng High School (Yishun)
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Printing Services
-    published=16 Oct 2026 05:50 PM
-    closing=26 Oct 2026 01:00PM
+    category=Administration & Training ⇒ Music & Video
+    published=19 Oct 2026 02:20 PM
+    closing=28 Oct 2026 01:00PM
 
-[5] ref=MOESCHETQ26005099
+[2] ref=MOESCHETQ26005146
     type=Quotation  status=OPEN
-    title=Supply of Instructors for Badminton CCA Training Programme in Kranji Secondary School
+    title=ITQ for School Bus Transport Services for 2027 for Chung Cheng High School (Yishun)
+    agency=Ministry of Education - Schools
+    category=Transportation ⇒ Bus Hire
+    published=19 Oct 2026 02:20 PM
+    closing=28 Oct 2026 01:00PM
+
+[3] ref=MOESCHETQ26005137
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Netball CCA Training Programme in Woodgrove Secondary School for Base Year 2027 with Option Year 2028
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=19 Oct 2026 02:20 PM
+    closing=28 Oct 2026 01:00PM
+
+[4] ref=MOESCHETQ26005145
+    type=Quotation  status=OPEN
+    title=Supply of instructors for 2027 Sec 1G1 Student Engagement Programme at Jurongville Secondary School
     agency=Ministry of Education - Schools
     category=Administration & Training ⇒ Courses
-    published=16 Oct 2026 05:35 PM
-    closing=26 Oct 2026 01:00PM
+    published=19 Oct 2026 02:05 PM
+    closing=29 Oct 2026 01:00PM
+
+[5] ref=MOESCHETQ26005130
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Secondary 2 Cohort Cycling Program in Naval Base Secondary School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=19 Oct 2026 01:50 PM
+    closing=28 Oct 2026 01:00PM
