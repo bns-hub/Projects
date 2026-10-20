@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-19T14:43:32+08:00
+GeBIZ crawl OK — 2026-10-20T14:27:09+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005149
+[1] ref=MOESCHETQ26005217
     type=Quotation  status=OPEN
-    title=ITQ for the Provision of Off-Site Printing Services for 2027 for Chung Cheng High School (Yishun)
-    agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Music & Video
-    published=19 Oct 2026 02:20 PM
-    closing=28 Oct 2026 01:00PM
-
-[2] ref=MOESCHETQ26005146
-    type=Quotation  status=OPEN
-    title=ITQ for School Bus Transport Services for 2027 for Chung Cheng High School (Yishun)
-    agency=Ministry of Education - Schools
-    category=Transportation ⇒ Bus Hire
-    published=19 Oct 2026 02:20 PM
-    closing=28 Oct 2026 01:00PM
-
-[3] ref=MOESCHETQ26005137
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Netball CCA Training Programme in Woodgrove Secondary School for Base Year 2027 with Option Year 2028
+    title=Supply of Instructors for Track n Field CCA Training Programme under TRACK Events for Sprint & Hurdles in Cedar Girls Secondary School for 2027
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=19 Oct 2026 02:20 PM
-    closing=28 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26005145
-    type=Quotation  status=OPEN
-    title=Supply of instructors for 2027 Sec 1G1 Student Engagement Programme at Jurongville Secondary School
-    agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=19 Oct 2026 02:05 PM
+    published=20 Oct 2026 02:20 PM
     closing=29 Oct 2026 01:00PM
 
-[5] ref=MOESCHETQ26005130
+[2] ref=MOE000ETQ26000260
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Secondary 2 Cohort Cycling Program in Naval Base Secondary School
+    title=Data Entry of Test Booklets and Questionnaires
+    agency=Ministry of Education
+    category=Services ⇒ Professional Services
+    published=20 Oct 2026 02:20 PM
+    closing=29 Oct 2026 01:00PM
+
+[3] ref=MOESCHETQ26005153
+    type=Quotation  status=OPEN
+    title=DRAMA CCA INSTRUCTOR 2027 WITH OPTION FOR 2028
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=19 Oct 2026 01:50 PM
-    closing=28 Oct 2026 01:00PM
+    published=20 Oct 2026 02:05 PM
+    closing=29 Oct 2026 01:00PM
+
+[4] ref=MOESCHETQ26005147
+    type=Quotation  status=OPEN
+    title=CHINESE ORCHESTRA CCA INSTRUCTOR FOR 2027
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=20 Oct 2026 02:05 PM
+    closing=29 Oct 2026 01:00PM
+
+[5] ref=MOESCHETQ26005210
+    type=Quotation  status=OPEN
+    title=Swiss Cottage Secondary School - English Language Programme for Sec 3 students from 24 Nov 2026 to 28 Aug 2027.
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=20 Oct 2026 01:50 PM
+    closing=29 Oct 2026 01:00PM
