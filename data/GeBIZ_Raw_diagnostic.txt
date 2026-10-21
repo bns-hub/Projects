@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-20T14:27:09+08:00
+GeBIZ crawl OK — 2026-10-21T14:28:04+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005217
+[1] ref=MOESCHETQ26005281
     type=Quotation  status=OPEN
-    title=Supply of Instructors for Track n Field CCA Training Programme under TRACK Events for Sprint & Hurdles in Cedar Girls Secondary School for 2027
+    title=Supply of Instructor for Badminton CCA Training Programme in Chung Cheng High School (Main)
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=20 Oct 2026 02:20 PM
-    closing=29 Oct 2026 01:00PM
+    published=21 Oct 2026 01:50 PM
+    closing=30 Oct 2026 01:00PM
 
-[2] ref=MOE000ETQ26000260
+[2] ref=MOE000ETQ26000263
     type=Quotation  status=OPEN
-    title=Data Entry of Test Booklets and Questionnaires
+    title=ITQ for Provision of Challenge Course Instructors to conduct Height-based training for NCC Camp STEEL 2027
     agency=Ministry of Education
-    category=Services ⇒ Professional Services
-    published=20 Oct 2026 02:20 PM
-    closing=29 Oct 2026 01:00PM
-
-[3] ref=MOESCHETQ26005153
-    type=Quotation  status=OPEN
-    title=DRAMA CCA INSTRUCTOR 2027 WITH OPTION FOR 2028
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=20 Oct 2026 02:05 PM
-    closing=29 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26005147
-    type=Quotation  status=OPEN
-    title=CHINESE ORCHESTRA CCA INSTRUCTOR FOR 2027
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=20 Oct 2026 02:05 PM
-    closing=29 Oct 2026 01:00PM
-
-[5] ref=MOESCHETQ26005210
-    type=Quotation  status=OPEN
-    title=Swiss Cottage Secondary School - English Language Programme for Sec 3 students from 24 Nov 2026 to 28 Aug 2027.
-    agency=Ministry of Education - Schools
     category=Administration & Training ⇒ Courses
-    published=20 Oct 2026 01:50 PM
-    closing=29 Oct 2026 01:00PM
+    published=21 Oct 2026 01:50 PM
+    closing=06 Nov 2026 01:00PM
+
+[3] ref=MOESCHETQ26005278
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Softball CCA Programme in National Junior College
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=21 Oct 2026 01:35 PM
+    closing=30 Oct 2026 01:00PM
+
+[4] ref=MOESCHETQ26005277
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Taekwondo CCA Training Programme in Mayflower Secondary School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=21 Oct 2026 01:20 PM
+    closing=30 Oct 2026 01:00PM
+
+[5] ref=MOESCHETQ26005275
+    type=Quotation  status=OPEN
+    title=Supply of Instructors (Main & Assistant) for Choir CCA in Victoria School for the year 2027 (2028 option to renew)
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Professional Services
+    published=21 Oct 2026 01:05 PM
+    closing=30 Oct 2026 01:00PM
