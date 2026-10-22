@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-21T14:28:04+08:00
+GeBIZ crawl OK — 2026-10-22T14:31:14+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005281
+[1] ref=MHA00003000029607
+    type=  status=OPEN
+    title=Provision of Public Relations Consultancy
+    agency=Ministry of Home Affairs - Ministry Headquarter 1
+    category=Miscellaneous ⇒ Others
+    published=22 Oct 2026 01:50 PM
+    closing=20 Nov 2026 04:00PM
+
+[2] ref=NPB000ETT26000110
+    type=Tender  status=OPEN
+    title=TERM CONTRACT FOR MAINTENANCE & UPGRADING OF M&E FACILITIES FOR PARKS & GARDENS IN WEST REGION OF SINGAPORE FOR A PERIOD of 3 + 3 YEARS
+    agency=National Parks Board
+    category=Facilities Management ⇒ Building, M&E Maintenance
+    published=22 Oct 2026 01:35 PM
+    closing=16 Nov 2026 04:00PM
+
+[3] ref=NPB000ETT26000113
+    type=Tender  status=OPEN
+    title=PROVISION FOR DIVE BOAT CHARTER TO SOUTHERN WATERS OF SINGAPORE FOR A PERIOD OF THREE (3) YEARS
+    agency=National Parks Board
+    category=Transportation ⇒ ShipBuilding, Marine Supplies & Services
+    published=22 Oct 2026 01:35 PM
+    closing=16 Nov 2026 04:00PM
+
+[4] ref=MOESCHETQ26005352
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Badminton CCA Training Programme in Chung Cheng High School (Main)
+    title=Supply of Manpower Services for Science Laboratory Support Officer
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=21 Oct 2026 01:50 PM
-    closing=30 Oct 2026 01:00PM
+    published=22 Oct 2026 01:35 PM
+    closing=02 Nov 2026 01:00PM
 
-[2] ref=MOE000ETQ26000263
+[5] ref=MOESCHETQ26005111
     type=Quotation  status=OPEN
-    title=ITQ for Provision of Challenge Course Instructors to conduct Height-based training for NCC Camp STEEL 2027
-    agency=Ministry of Education
-    category=Administration & Training ⇒ Courses
-    published=21 Oct 2026 01:50 PM
-    closing=06 Nov 2026 01:00PM
-
-[3] ref=MOESCHETQ26005278
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Softball CCA Programme in National Junior College
+    title=SUPPLY OF MANPOWER SERVICES FOR KITCHEN AIDE AT GUANGYANG SECONDARY SCHOOL
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=21 Oct 2026 01:35 PM
-    closing=30 Oct 2026 01:00PM
-
-[4] ref=MOESCHETQ26005277
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Taekwondo CCA Training Programme in Mayflower Secondary School
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=21 Oct 2026 01:20 PM
-    closing=30 Oct 2026 01:00PM
-
-[5] ref=MOESCHETQ26005275
-    type=Quotation  status=OPEN
-    title=Supply of Instructors (Main & Assistant) for Choir CCA in Victoria School for the year 2027 (2028 option to renew)
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Professional Services
-    published=21 Oct 2026 01:05 PM
-    closing=30 Oct 2026 01:00PM
+    published=22 Oct 2026 01:35 PM
+    closing=02 Nov 2026 01:00PM
