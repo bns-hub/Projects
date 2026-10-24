@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-23T14:32:29+08:00
+GeBIZ crawl OK — 2026-10-24T14:20:12+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 400 across 40 page(s)
+Rows: 220 across 22 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005424
+[1] ref=NPB000ETQ26000058
     type=Quotation  status=OPEN
-    title=Provision to Supply Instructor for Basketball CCA for the year 2027 and Option year 2028 and 2029
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=23 Oct 2026 02:05 PM
-    closing=02 Nov 2026 01:00PM
+    title=INVITATION TO QUOTE FOR THE SUPPLY AND DELIVERY OF SATELLITE TAGS FOR MARINE TURTLES
+    agency=National Parks Board
+    category=Miscellaneous ⇒ Others
+    published=24 Oct 2026 12:35 AM
+    closing=06 Nov 2026 01:00PM
 
-[2] ref=MOESCHETT26000009
+[2] ref=DEFNGPP7126101899
+    type=  status=OPEN
+    title=Demolition of Jalan Puyoh Pumping Station and Ancillary Works at Lim Chu Kang
+    agency=Ministry of Defence 6
+    category=Miscellaneous ⇒ Others
+    published=23 Oct 2026 08:50 PM
+    closing=17 Dec 2026 04:00PM
+
+[3] ref=CDVHQ0ETT26000033
     type=Tender  status=OPEN
-    title=PROVISION OF CONDUCTORS AND SECTIONAL INSTRUCTORS FOR BRASS BAND CCA TRAINING PROGRAMME IN CATHOLIC HIGH SCHOOL (PRIMARY)
+    title=Invitation to Tender for the Provision of Childminding Services
+    agency=Ministry of Social and Family Development - Ministry Headquarter
+    category=Services ⇒ Professional Services
+    published=23 Oct 2026 05:50 PM
+    closing=18 Nov 2026 04:00PM
+
+[4] ref=MOESCHETQ26005431
+    type=Quotation  status=OPEN
+    title=Supply of Labour and Materials for Design, Construction and Maintenance of the School Garden Learning Trail
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=23 Oct 2026 01:50 PM
-    closing=16 Nov 2026 04:00PM
+    category=Facilities Management ⇒ Horticulture Works
+    published=23 Oct 2026 05:35 PM
+    closing=05 Nov 2026 01:00PM
 
-[3] ref=MOESCHETQ26005419
+[5] ref=MOESCHETQ26005377
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Table Tennis Girls CCA Training Programme in Red Swastika School
+    title=TMJC Web-based School Admin Portal for 12 Months (1 Jan 2027 to 31 Dec 2027) with option to extend for one year from 1 Jan 2028 to 31 Dec 2028
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=23 Oct 2026 01:50 PM
-    closing=02 Nov 2026 01:00PM
-
-[4] ref=INDHCIETQ26000087
-    type=Quotation  status=OPEN
-    title=Supply of Assistant Instructor for the Canoeing CCA Training Programme for Hwa Chong Institution – Boys’ A, B and C Divisions and Girls’ A Division
-    agency=Hwa Chong Institution
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=23 Oct 2026 01:50 PM
-    closing=02 Nov 2026 01:00PM
-
-[5] ref=INDHCIETQ26000088
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for the Canoeing CCA Training Programme at Hwa Chong Institution for Boys’ A, B and C Divisions and Girls’ A Division)
-    agency=Hwa Chong Institution
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=23 Oct 2026 01:50 PM
+    category=IT&Telecommunication ⇒ IT Services & Software Development
+    published=23 Oct 2026 05:35 PM
     closing=02 Nov 2026 01:00PM
