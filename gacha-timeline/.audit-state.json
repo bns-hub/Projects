@@ -1,9 +1,9 @@
 {
-  "lastCheckedAt": "2026-10-18T19:04:23.274Z",
+  "lastCheckedAt": "2026-10-25T19:23:20.823Z",
   "sources": {
     "hsr-official": {
       "hash": "b87af92e",
-      "checkedAt": "2026-10-18T19:03:51.732Z",
+      "checkedAt": "2026-10-25T19:22:43.422Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -11,26 +11,26 @@
       "auditedLines": 13
     },
     "hsr-hoyolab": {
-      "hash": "4b2210b6",
-      "checkedAt": "2026-10-18T19:04:08.431Z",
+      "hash": "f0e42815",
+      "checkedAt": "2026-10-25T19:22:57.940Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
       "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · We will recommend content based on your chosen interests",
-      "auditedLines": 7
+      "auditedLines": 6
     },
     "hsr-hoyolab-official": {
-      "hash": "cf5cc511",
-      "checkedAt": "2026-10-18T19:04:13.944Z",
+      "hash": "a3cdcdaa",
+      "checkedAt": "2026-10-25T19:23:03.411Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "\"The Laughter Outsmarts miHoYo\" Episode 4 | Meeting · \"The Laughter Outsmarts miHoYo\" Episode 3 | Training · \"The Laughter Outsmarts miHoYo\" Episode 2 | Interview · \"The Laughter Outsmarts miHoYo\" Episode 1 | Chess",
-      "auditedLines": 10
+      "snippet": "Phantasmoon Games Season Recap | Express Crew Clearance Log · \"The Laughter Outsmarts miHoYo\" Episode 5 | Changing Fate · \"The Laughter Outsmarts miHoYo\" Episode 4 | Meeting · \"The Laughter Outsmarts miHoYo\" Episode 3 | Training",
+      "auditedLines": 9
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-10-18T19:04:16.087Z",
+      "checkedAt": "2026-10-25T19:23:05.687Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -38,35 +38,35 @@
       "auditedLines": 4
     },
     "re-steam": {
-      "hash": "57df8d56",
-      "checkedAt": "2026-10-18T19:04:17.351Z",
-      "changed": false,
+      "hash": "864b1991",
+      "checkedAt": "2026-10-25T19:23:08.559Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · 3rd Anniversary Sincere Gratitude · 2026-10-01 00:00 - 2026-11-05 04:59 (UTC-5)",
       "auditedLines": 320
     },
     "re-steam-forum": {
-      "hash": "d457cb9d",
-      "checkedAt": "2026-10-18T19:04:17.544Z",
+      "hash": "5b5236bd",
+      "checkedAt": "2026-10-25T19:23:08.713Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 17 @ 3:04am",
-      "auditedLines": 5
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 23 @ 8:31pm",
+      "auditedLines": 6
     },
     "czn-community": {
-      "hash": "76461c55",
-      "checkedAt": "2026-10-18T19:04:21.422Z",
-      "changed": false,
+      "hash": "696bb4c6",
+      "checkedAt": "2026-10-25T19:23:18.993Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "",
-      "auditedLines": 2
+      "snippet": "Chaos Zero Nightmare · Reward-Packed STOVE Events! · Riichi City: October Attendance Shop · STOVE Oct Check-in Exchange Shop",
+      "auditedLines": 3
     },
     "czn-brand": {
       "hash": "9f2214d3",
-      "checkedAt": "2026-10-18T19:04:22.907Z",
+      "checkedAt": "2026-10-25T19:23:19.976Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -74,44 +74,44 @@
       "auditedLines": 7
     },
     "czn-arabella-rules": {
-      "hash": "d44ce663",
-      "checkedAt": "2026-10-18T19:04:22.969Z",
+      "hash": "936c9ee8",
+      "checkedAt": "2026-10-25T19:23:20.282Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games! · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026",
-      "auditedLines": 63
+      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026 · Nightmare Team",
+      "auditedLines": 64
     },
     "czn-licinia-rules": {
-      "hash": "a9acb0f8",
-      "checkedAt": "2026-10-18T19:04:23.149Z",
+      "hash": "267defc5",
+      "checkedAt": "2026-10-25T19:23:20.404Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good. DotGG Premium: no ads on any site, for good. · New Strategy Guide & Walkthrough Platform for Games! Human-written guides for the newest releases. Our new platform for game walkthroughs! · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games!",
+      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026 · Nightmare Team",
       "auditedLines": 62
     },
     "czn-chizuru-rules": {
-      "hash": "b08633b2",
-      "checkedAt": "2026-10-18T19:04:23.195Z",
+      "hash": "0ebdb311",
+      "checkedAt": "2026-10-25T19:23:20.541Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games! · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026",
-      "auditedLines": 63
+      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026 · Nightmare Team",
+      "auditedLines": 64
     },
     "czn-itsuku-rules": {
-      "hash": "afc876fc",
-      "checkedAt": "2026-10-18T19:04:23.244Z",
+      "hash": "20743e95",
+      "checkedAt": "2026-10-25T19:23:20.801Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good. DotGG Premium: no ads on any site, for good. · New Strategy Guide & Walkthrough Platform for Games! Human-written guides for the newest releases. Our new platform for game walkthroughs! · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games!",
+      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026 · Nightmare Team",
       "auditedLines": 62
     },
     "hsr-news": {
       "hash": "d1d1639f",
-      "checkedAt": "2026-10-18T19:03:56.560Z",
+      "checkedAt": "2026-10-25T19:22:47.730Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -119,22 +119,22 @@
       "auditedLines": 3
     },
     "re-news": {
-      "hash": "5cd2d9d7",
-      "checkedAt": "2026-10-18T19:04:17.116Z",
-      "changed": false,
+      "hash": "d2e17055",
+      "checkedAt": "2026-10-25T19:23:08.252Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "api",
-      "snippet": "2026-10-07 - [Announcement of Results] 3rd Anniversary Fan Creations Event · [Announcement of Results] Reverse: 1999 3rd Anniversary Fan Creations Event Winners · Thank you so much for your participation in Reverse: 1999 3rd Anniversary Fan Creations Event. We have received lots of remarkable creations, which have truly made the anniversary extraordinary！ · @catrojanyaps",
+      "snippet": "2026-10-23 - Ver. 3.9 [Rekindled! Games of the Summer-Gold Sea] Preview · [Story Mode]: After the version update on 2026-11-05 - 2026-12-14 04:59 (UTC-5) · [Hard Mode]: 2026-11-12 05:00 - 2026-12-14 04:59 (UTC-5) · [Event Shop]: After the version update on 2026-11-05 - 2026-12-17 04:59 (UTC-5)",
       "auditedLines": 320
     },
     "czn-news": {
-      "hash": "795fffa3",
-      "checkedAt": "2026-10-18T19:04:17.614Z",
+      "hash": "a95d2fde",
+      "checkedAt": "2026-10-25T19:23:08.859Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "News - Chaos Zero Nightmare (CZN) · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games! · October 16, 2026 · ◤Counting Down to the 1st Anniversary! 1st Anni. Key Visual Wallpaper Release◢",
-      "auditedLines": 23
+      "snippet": "News - Chaos Zero Nightmare (CZN) · October 23, 2026 · October 23, 2026 · Current Events",
+      "auditedLines": 26
     }
   }
 }
