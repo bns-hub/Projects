@@ -1,9 +1,9 @@
 {
-  "lastCheckedAt": "2026-10-11T20:41:37.896Z",
+  "lastCheckedAt": "2026-10-18T19:04:23.274Z",
   "sources": {
     "hsr-official": {
       "hash": "b87af92e",
-      "checkedAt": "2026-10-11T20:41:07.164Z",
+      "checkedAt": "2026-10-18T19:03:51.732Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -11,26 +11,26 @@
       "auditedLines": 13
     },
     "hsr-hoyolab": {
-      "hash": "a607aa6d",
-      "checkedAt": "2026-10-11T20:41:20.807Z",
+      "hash": "4b2210b6",
+      "checkedAt": "2026-10-18T19:04:08.431Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
       "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · We will recommend content based on your chosen interests",
-      "auditedLines": 10
+      "auditedLines": 7
     },
     "hsr-hoyolab-official": {
-      "hash": "3b430e1c",
-      "checkedAt": "2026-10-11T20:41:27.429Z",
+      "hash": "cf5cc511",
+      "checkedAt": "2026-10-18T19:04:13.944Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "\"The Laughter Outsmarts miHoYo\" Episode 2 | Interview · \"The Laughter Outsmarts miHoYo\" Episode 1 | Chess · \"Astral Express Strategy Guide\" Website Update: Version 4.6 Strategy Guides Contest Event Is In Full Swing! · Rewarded Event] Pearl Spotlight - Reddit Event!",
-      "auditedLines": 15
+      "snippet": "\"The Laughter Outsmarts miHoYo\" Episode 4 | Meeting · \"The Laughter Outsmarts miHoYo\" Episode 3 | Training · \"The Laughter Outsmarts miHoYo\" Episode 2 | Interview · \"The Laughter Outsmarts miHoYo\" Episode 1 | Chess",
+      "auditedLines": 10
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-10-11T20:41:29.597Z",
+      "checkedAt": "2026-10-18T19:04:16.087Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -39,7 +39,7 @@
     },
     "re-steam": {
       "hash": "57df8d56",
-      "checkedAt": "2026-10-11T20:41:31.428Z",
+      "checkedAt": "2026-10-18T19:04:17.351Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -47,17 +47,17 @@
       "auditedLines": 320
     },
     "re-steam-forum": {
-      "hash": "d1236e90",
-      "checkedAt": "2026-10-11T20:41:31.544Z",
-      "changed": false,
+      "hash": "d457cb9d",
+      "checkedAt": "2026-10-18T19:04:17.544Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 10 @ 7:24am",
-      "auditedLines": 4
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 17 @ 3:04am",
+      "auditedLines": 5
     },
     "czn-community": {
       "hash": "76461c55",
-      "checkedAt": "2026-10-11T20:41:35.336Z",
+      "checkedAt": "2026-10-18T19:04:21.422Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -66,53 +66,53 @@
     },
     "czn-brand": {
       "hash": "9f2214d3",
-      "checkedAt": "2026-10-11T20:41:35.989Z",
-      "changed": true,
+      "checkedAt": "2026-10-18T19:04:22.907Z",
+      "changed": false,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Chaos Zero Nightmare: Nightmare X Carnival · Nightmare X Carnival · 「Make Every Night a Festival」 1st Anniversary, Nightmare X Carnival · 1st Anniversary, Nightmare X Carnival Showcase",
       "auditedLines": 7
     },
     "czn-arabella-rules": {
-      "hash": "f710ed5a",
-      "checkedAt": "2026-10-11T20:41:36.356Z",
+      "hash": "d44ce663",
+      "checkedAt": "2026-10-18T19:04:22.969Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026",
-      "auditedLines": 60
+      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games! · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026",
+      "auditedLines": 63
     },
     "czn-licinia-rules": {
-      "hash": "b29bcb21",
-      "checkedAt": "2026-10-11T20:41:36.470Z",
+      "hash": "a9acb0f8",
+      "checkedAt": "2026-10-18T19:04:23.149Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026",
-      "auditedLines": 58
+      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good. DotGG Premium: no ads on any site, for good. · New Strategy Guide & Walkthrough Platform for Games! Human-written guides for the newest releases. Our new platform for game walkthroughs! · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games!",
+      "auditedLines": 62
     },
     "czn-chizuru-rules": {
-      "hash": "43d7dea1",
-      "checkedAt": "2026-10-11T20:41:37.587Z",
+      "hash": "b08633b2",
+      "checkedAt": "2026-10-18T19:04:23.195Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026",
-      "auditedLines": 60
+      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games! · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026",
+      "auditedLines": 63
     },
     "czn-itsuku-rules": {
-      "hash": "3b92c62b",
-      "checkedAt": "2026-10-11T20:41:37.874Z",
+      "hash": "afc876fc",
+      "checkedAt": "2026-10-18T19:04:23.244Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026",
-      "auditedLines": 58
+      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good. DotGG Premium: no ads on any site, for good. · New Strategy Guide & Walkthrough Platform for Games! Human-written guides for the newest releases. Our new platform for game walkthroughs! · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games!",
+      "auditedLines": 62
     },
     "hsr-news": {
       "hash": "d1d1639f",
-      "checkedAt": "2026-10-11T20:41:11.079Z",
-      "changed": true,
+      "checkedAt": "2026-10-18T19:03:56.560Z",
+      "changed": false,
       "firstBaseline": false,
       "via": "headless",
       "snippet": "This season's brand-new Seasonal Dolls makes its adorable debut! · Version 4.6 \"Dance With the Beast Before Moonrise\" Update Details · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
@@ -120,20 +120,20 @@
     },
     "re-news": {
       "hash": "5cd2d9d7",
-      "checkedAt": "2026-10-11T20:41:31.193Z",
-      "changed": true,
+      "checkedAt": "2026-10-18T19:04:17.116Z",
+      "changed": false,
       "firstBaseline": false,
       "via": "api",
       "snippet": "2026-10-07 - [Announcement of Results] 3rd Anniversary Fan Creations Event · [Announcement of Results] Reverse: 1999 3rd Anniversary Fan Creations Event Winners · Thank you so much for your participation in Reverse: 1999 3rd Anniversary Fan Creations Event. We have received lots of remarkable creations, which have truly made the anniversary extraordinary！ · @catrojanyaps",
       "auditedLines": 320
     },
     "czn-news": {
-      "hash": "e5ce447c",
-      "checkedAt": "2026-10-11T20:41:31.664Z",
+      "hash": "795fffa3",
+      "checkedAt": "2026-10-18T19:04:17.614Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "News - Chaos Zero Nightmare (CZN) · No ads on any DotGG site, plus the full meta on our TCG sites. The Lifetime Pass is one payment, for good: 500 seats, ever. DotGG Premium: no ads on any site. One payment, for good. · Current Events · [Event] 1st Anniversary, Nightmare Carnival Showcase Social Media Share Event",
+      "snippet": "News - Chaos Zero Nightmare (CZN) · Our New Platform for Trading Card Games! Track your collection, build decks and price your binders. Our new platform for trading card games! · October 16, 2026 · ◤Counting Down to the 1st Anniversary! 1st Anni. Key Visual Wallpaper Release◢",
       "auditedLines": 23
     }
   }

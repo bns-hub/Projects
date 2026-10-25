@@ -1860,7 +1860,7 @@ const games = [
       image:images.generic,
       details:{
         title:"Rossweisse + Sig · Season 5 Phase 1 (community tracker)",
-        dates:"Prydwen (updated 14 Oct 2026) lists Rossweisse (Combatant) and Sig (Partner) as Season 5 Phase 1, 'Expected Oct 21, 2026' to 2 Dec 2026. A 13 Oct report of the official first-anniversary showcase (Holiday Travel) says they arrive with the 21 Oct update, but gives no end date. The 2 Dec end is a community estimate. Neither page was an official notice.",
+        dates:"Prydwen (updated 14 Oct 2026) lists Rossweisse (Combatant) and Sig (Partner) as Season 5 Phase 1, 'Expected Oct 21, 2026' to 2 Dec 2026. A 13 Oct report of the official first-anniversary showcase (Holiday Travel) says they arrive with the 21 Oct update, and Inven Global (21 Oct) reports that the Season 5 update launched with Rossweisse on that day. Prydwen (updated 24 Oct) still gives 2 Dec as the end. The 2 Dec end is a community estimate. None of these pages was an official notice.",
         pullRules:"No official probability notice has been published for this banner, so no rule text is asserted. Confirm against the official post before relying on this row.",
         lineup:["Combatant: Rossweisse","Partner: Sig"],
         status:"Unofficial / community-estimated · verify against official post"
@@ -1899,7 +1899,36 @@ const games = [
       }
     }]},
 
-    {type:"Event",items:[]},
+    {type:"Banner",items:[{
+      category:"tentative",
+      title:"Tiphera + Tiana · rerun (community tracker)",
+      subtitle:"Reported 3 Nov – 24 Nov · community tracker, not an official notice",
+      start:"2026-11-03",
+      end:"2026-11-24",
+      image:images.generic,
+      details:{
+        title:"Tiphera + Tiana · rerun (community tracker)",
+        dates:"Prydwen (updated 24 Oct 2026, read 25 Oct) lists a Tiphera (Combatant) and Tiana (Partner) rerun as 3 Nov 2026 to 24 Nov 2026. That card does not carry Prydwen's 'Expected' label, but the page does not say whether the dates are official. No STOVE notice was read first-hand here, so treat both dates as estimates. This overlaps the Phase 1 and Phase 2 rows exactly as the tracker shows it and has not been tidied.",
+        pullRules:"No official probability notice has been published for this rerun, so no rule text is asserted. Confirm against the official post before relying on this row.",
+        lineup:["Combatant: Tiphera","Partner: Tiana"],
+        status:"Unofficial / community-estimated · verify against official post"
+      }
+    }]},
+
+    {type:"Event",items:[{
+      category:"tentative",
+      title:"Nightmare Dream Park (anniversary event)",
+      subtitle:"Reported 21 Oct – 23 Dec · Inven Global report, not read from an official notice",
+      start:"2026-10-21",
+      end:"2026-12-23",
+      details:{
+        title:"Nightmare Dream Park (anniversary event)",
+        dates:"Inven Global (21 Oct 2026) reports that Nightmare Dream Park runs from 21 Oct to 23 Dec 2026, as part of the first-anniversary update, and that the anniversary Nightmare Festival runs through 2 Dec (its start date was not given). The official Smilegate or STOVE notice was not read first-hand here, so treat these dates as reported, not confirmed.",
+        pullRules:"This is an event, not a banner, so there are no pull rules. No reward or mechanics detail was read for it.",
+        lineup:["No character lineup recorded for this event"],
+        status:"Unofficial / community-estimated · verify against official post"
+      }
+    }]},
 
     {type:"Maintenance",items:[{
       category:"maintenance",
