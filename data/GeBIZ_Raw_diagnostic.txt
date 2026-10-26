@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-25T14:39:50+08:00
+GeBIZ crawl OK — 2026-10-26T14:50:10+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 400 across 40 page(s)
+Rows: 60 across 6 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=NPB000ETQ26000058
-    type=Quotation  status=OPEN
-    title=INVITATION TO QUOTE FOR THE SUPPLY AND DELIVERY OF SATELLITE TAGS FOR MARINE TURTLES
-    agency=National Parks Board
-    category=Miscellaneous ⇒ Others
-    published=24 Oct 2026 12:35 AM
-    closing=06 Nov 2026 01:00PM
-
-[2] ref=DEFNGPP7126101899
-    type=  status=OPEN
-    title=Demolition of Jalan Puyoh Pumping Station and Ancillary Works at Lim Chu Kang
-    agency=Ministry of Defence 6
-    category=Miscellaneous ⇒ Others
-    published=23 Oct 2026 08:50 PM
-    closing=17 Dec 2026 04:00PM
-
-[3] ref=CDVHQ0ETT26000033
+[1] ref=NEA000ETT26000096
     type=Tender  status=OPEN
-    title=Invitation to Tender for the Provision of Childminding Services
-    agency=Ministry of Social and Family Development - Ministry Headquarter
-    category=Services ⇒ Professional Services
-    published=23 Oct 2026 05:50 PM
-    closing=18 Nov 2026 04:00PM
+    title=Transportation and Disposal of Toxic Industrial Waste at Integrated Waste Management Facility (IWMF)
+    agency=National Environment Agency
+    category=Miscellaneous ⇒ Others
+    published=26 Oct 2026 02:20 PM
+    closing=30 Nov 2026 04:00PM
 
-[4] ref=MOESCHETQ26005431
+[2] ref=MOE000ETQ26000264
     type=Quotation  status=OPEN
-    title=Supply of Labour and Materials for Design, Construction and Maintenance of the School Garden Learning Trail
-    agency=Ministry of Education - Schools
-    category=Facilities Management ⇒ Horticulture Works
-    published=23 Oct 2026 05:35 PM
-    closing=05 Nov 2026 01:00PM
+    title=Provision of Training Services for Advanced Research Conceptualisation and Evidence-to-Policy Workshop
+    agency=Ministry of Education
+    category=Administration & Training ⇒ Courses
+    published=26 Oct 2026 02:20 PM
+    closing=04 Nov 2026 01:00PM
 
-[5] ref=MOESCHETQ26005377
+[3] ref=MOESCHETQ26005459
     type=Quotation  status=OPEN
-    title=TMJC Web-based School Admin Portal for 12 Months (1 Jan 2027 to 31 Dec 2027) with option to extend for one year from 1 Jan 2028 to 31 Dec 2028
+    title=REQUIREMENT SPECIFICATIONS FOR THE SUPPLY AND DELIVERY OF TABLET DEVICES FOR ART AND DIGITAL LITERACY PROGRAMME AT MERIDIAN SECONDARY SCHOOL
     agency=Ministry of Education - Schools
-    category=IT&Telecommunication ⇒ IT Services & Software Development
-    published=23 Oct 2026 05:35 PM
-    closing=02 Nov 2026 01:00PM
+    category=Administration & Training ⇒ Music & Video
+    published=26 Oct 2026 01:50 PM
+    closing=04 Nov 2026 01:00PM
+
+[4] ref=HSA000ETT26000056
+    type=Tender  status=OPEN
+    title=SUPPLY AND DELIVERY OF GENETIC ANALYSERS
+    agency=Health Sciences Authority
+    category=Dental, Medical & Laboratory ⇒ Laboratory Equipment & Supplies
+    published=26 Oct 2026 01:35 PM
+    closing=23 Nov 2026 04:00PM
+
+[5] ref=MOESCHETQ26005494
+    type=Quotation  status=OPEN
+    title=AISS : Harmony Across Generations-Celebrating Heritage, Nurturing Young Musicians, Connecting Communities for 2027 and 2028 at Greenwood Primary
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Music & Video
+    published=26 Oct 2026 01:35 PM
+    closing=04 Nov 2026 01:00PM
