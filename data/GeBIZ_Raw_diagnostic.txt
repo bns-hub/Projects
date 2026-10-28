@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-27T14:43:39+08:00
+GeBIZ crawl OK — 2026-10-28T15:16:30+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005457
+[1] ref=MOESCHETQ26005633
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Chinese Dance CCA Training Programme 2027 in Yuhua Primary School.
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=27 Oct 2026 02:20 PM
-    closing=05 Nov 2026 01:00PM
-
-[2] ref=MOE000ETQ26000269
-    type=Quotation  status=OPEN
-    title=AUDIT SERVICES FOR THE POST-SECONDARY EDUCATION ACCOUNT (PSEA)
-    agency=Ministry of Education
-    category=Services ⇒ Professional Services
-    published=27 Oct 2026 02:20 PM
-    closing=10 Nov 2026 01:00PM
-
-[3] ref=MOESCHETQ26005569
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Rockwall Climbing CCA Training Programme in Frontier Primary School
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=27 Oct 2026 02:05 PM
-    closing=05 Nov 2026 01:00PM
-
-[4] ref=TPO000ETQ26000126
-    type=Quotation  status=OPEN
-    title=TPO-REQ-2026-007688-SH-Invitation to Quote for Fashion Show Production with Lighting and Sound System
-    agency=Temasek Polytechnic
-    category=Event Organising, Food & Beverages ⇒ Event Organising
-    published=27 Oct 2026 02:05 PM
-    closing=12 Nov 2026 01:00PM
-
-[5] ref=MOESCHETQ26005565
-    type=Quotation  status=OPEN
-    title=Co-development of AISS Application Proposal and Conditional Supply of Instructors for Art Club P5 & P6 AISS Ceramic Programme at PLMGS (Primary)
+    title=Supply of Instructors for Brass Band CCA Training Programme in Maris Stella High School (Primary) in Year 2027
     agency=Ministry of Education - Schools
     category=Administration & Training ⇒ Courses
-    published=27 Oct 2026 02:05 PM
-    closing=05 Nov 2026 01:00PM
+    published=28 Oct 2026 02:50 PM
+    closing=06 Nov 2026 01:00PM
+
+[2] ref=MOESCHETQ26005629
+    type=Quotation  status=OPEN
+    title=Supply of Instructors for Concert Band CCA Training Programme in Ahmad Ibrahim Secondary School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=28 Oct 2026 02:50 PM
+    closing=06 Nov 2026 01:00PM
+
+[3] ref=MOESCHETQ26005625
+    type=Quotation  status=OPEN
+    title=Design, supply and installation of Sound System in the Indoor Sports Hall for Bukit View Secondary School
+    agency=Ministry of Education - Schools
+    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
+    published=28 Oct 2026 02:50 PM
+    closing=10 Nov 2026 01:00PM
+
+[4] ref=MOESCHETQ26005619
+    type=Quotation  status=OPEN
+    title=Provision of One Instructor for Volleyball CCA Training Programme for Riverside Secondary School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=28 Oct 2026 02:50 PM
+    closing=06 Nov 2026 01:00PM
+
+[5] ref=MOESCHETQ26005601
+    type=Quotation  status=OPEN
+    title=Supply of Instructors for Chinese Orchestra CCA in Holy Innocents' Primary School
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=28 Oct 2026 02:50 PM
+    closing=06 Nov 2026 01:00PM
