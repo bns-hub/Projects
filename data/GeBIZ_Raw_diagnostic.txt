@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-10-30T15:40:49+08:00
+GeBIZ crawl OK — 2026-10-31T15:27:12+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=HDB000ETT26000192
+[1] ref=MOESCHETQ26005795
+    type=Quotation  status=OPEN
+    title=2027 Supply of Instructor for Singapore Mathematical Olympiad Training & Mathematics Research Pr
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=31 Oct 2026 09:50 AM
+    closing=08 Jan 2027 01:00PM
+
+[2] ref=DEFNGPP7126101868
+    type=  status=OPEN
+    title=Supply of Rough Terrain Forklifts with Follow-on Support
+    agency=Ministry of Defence 6
+    category=Miscellaneous ⇒ Others
+    published=30 Oct 2026 10:05 PM
+    closing=20 Nov 2026 04:00PM
+
+[3] ref=MOESCHETQ26005180
+    type=Quotation  status=OPEN
+    title=Provision of Ad Hoc Bus Transport Services 2027 for Queensway Secondary School
+    agency=Ministry of Education - Schools
+    category=Transportation ⇒ Bus Hire
+    published=30 Oct 2026 07:35 PM
+    closing=10 Nov 2026 01:00PM
+
+[4] ref=TPO000ETT26000029
     type=Tender  status=OPEN
-    title=CONSTRUCTION AT CHANGI BAY (PART 1)
-    agency=Housing and Development Board
-    category=Construction ⇒ Civil Engineering
-    published=30 Oct 2026 03:20 PM
-    closing=28 Dec 2026 04:00PM
+    title=TPO-REQ-2026-007901-AK-Invitation to Tender for the Supply, Installation and Configuration of Audio Visual System for Lecture Theatre (LT) 21
+    agency=Temasek Polytechnic
+    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
+    published=30 Oct 2026 07:05 PM
+    closing=19 Nov 2026 04:00PM
 
-[2] ref=MOESCHETQ26005766
+[5] ref=NYP000ETQ26000178
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Percussion Ensemble CCA Programme in Alexandra Primary School from 2027 to May 2028
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=30 Oct 2026 03:05 PM
-    closing=10 Nov 2026 01:00PM
-
-[3] ref=MOESCHETQ26005750
-    type=Quotation  status=OPEN
-    title=Supply of Manpower Services for Student Management and Support Staff for Keming Primary School
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=30 Oct 2026 03:05 PM
-    closing=10 Nov 2026 01:00PM
-
-[4] ref=INDACIETQ26000059
-    type=Quotation  status=OPEN
-    title=Provision of Instructors for English Language Programme
-    agency=Anglo-Chinese School (Independent)
-    category=Administration & Training ⇒ Courses
-    published=30 Oct 2026 03:05 PM
-    closing=10 Nov 2026 01:00PM
-
-[5] ref=MOESCHETQ26005757
-    type=Quotation  status=OPEN
-    title=School Magazine for Anglo-Chinese School (Barker) 2027
-    agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Publications & Periodicals
-    published=30 Oct 2026 02:50 PM
-    closing=10 Nov 2026 01:00PM
+    title=Invitation to Quote (ITQ) for Cloud-based Contact Center Solution
+    agency=Nanyang Polytechnic
+    category=IT&Telecommunication ⇒ IT Services & Software Development
+    published=30 Oct 2026 06:50 PM
+    closing=11 Nov 2026 01:00PM
