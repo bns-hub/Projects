@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-11-01T16:00:24+08:00
+GeBIZ crawl OK — 2026-11-02T16:05:13+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 400 across 40 page(s)
+Rows: 230 across 23 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005795
+[1] ref=MOESCHETQ26005834
     type=Quotation  status=OPEN
-    title=2027 Supply of Instructor for Singapore Mathematical Olympiad Training & Mathematics Research Pr
+    title=CCA String Orchestra 2027 with Option Period July 2028
     agency=Ministry of Education - Schools
     category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=31 Oct 2026 09:50 AM
-    closing=08 Jan 2027 01:00PM
+    published=02 Nov 2026 03:35 PM
+    closing=11 Nov 2026 01:00PM
 
-[2] ref=DEFNGPP7126101868
-    type=  status=OPEN
-    title=Supply of Rough Terrain Forklifts with Follow-on Support
-    agency=Ministry of Defence 6
-    category=Miscellaneous ⇒ Others
-    published=30 Oct 2026 10:05 PM
-    closing=20 Nov 2026 04:00PM
-
-[3] ref=MOESCHETQ26005180
+[2] ref=MOESCHETQ26005824
     type=Quotation  status=OPEN
-    title=Provision of Ad Hoc Bus Transport Services 2027 for Queensway Secondary School
+    title=Supply of CCA Instructor for TKD Poomsae and Kyorugi in 2027/2028
     agency=Ministry of Education - Schools
-    category=Transportation ⇒ Bus Hire
-    published=30 Oct 2026 07:35 PM
-    closing=10 Nov 2026 01:00PM
+    category=Services ⇒ Professional Services
+    published=02 Nov 2026 03:35 PM
+    closing=11 Nov 2026 01:00PM
 
-[4] ref=TPO000ETT26000029
-    type=Tender  status=OPEN
-    title=TPO-REQ-2026-007901-AK-Invitation to Tender for the Supply, Installation and Configuration of Audio Visual System for Lecture Theatre (LT) 21
-    agency=Temasek Polytechnic
-    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
-    published=30 Oct 2026 07:05 PM
-    closing=19 Nov 2026 04:00PM
-
-[5] ref=NYP000ETQ26000178
+[3] ref=MOESCHETQ26005830
     type=Quotation  status=OPEN
-    title=Invitation to Quote (ITQ) for Cloud-based Contact Center Solution
-    agency=Nanyang Polytechnic
-    category=IT&Telecommunication ⇒ IT Services & Software Development
-    published=30 Oct 2026 06:50 PM
+    title=Supply of AMIS Instructor for Primary Visual Arts Programme for 2027
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=02 Nov 2026 03:35 PM
+    closing=11 Nov 2026 01:00PM
+
+[4] ref=MOESCHETQ26005823
+    type=Quotation  status=OPEN
+    title=Supply of Instructor for Gabrielite Choir CCA Training Programme in St. Gabriel's Primary School in 2027 (with option to extend in 2028 and 2029)
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=02 Nov 2026 03:35 PM
+    closing=11 Nov 2026 01:00PM
+
+[5] ref=MOESCHETQ26005816
+    type=Quotation  status=OPEN
+    title=Northoaks Pri School - Supply of Instructor for Football CCA Training Programme in 2027 & 2028 with option to extend in 2029 & 2030 (RECALL)
+    agency=Ministry of Education - Schools
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=02 Nov 2026 03:35 PM
     closing=11 Nov 2026 01:00PM
