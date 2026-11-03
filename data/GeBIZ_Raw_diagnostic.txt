@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-11-02T16:05:13+08:00
+GeBIZ crawl OK — 2026-11-03T16:28:16+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 230 across 23 page(s)
+Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005834
+[1] ref=MOESCHETQ26005853
     type=Quotation  status=OPEN
-    title=CCA String Orchestra 2027 with Option Period July 2028
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=02 Nov 2026 03:35 PM
-    closing=11 Nov 2026 01:00PM
-
-[2] ref=MOESCHETQ26005824
-    type=Quotation  status=OPEN
-    title=Supply of CCA Instructor for TKD Poomsae and Kyorugi in 2027/2028
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Professional Services
-    published=02 Nov 2026 03:35 PM
-    closing=11 Nov 2026 01:00PM
-
-[3] ref=MOESCHETQ26005830
-    type=Quotation  status=OPEN
-    title=Supply of AMIS Instructor for Primary Visual Arts Programme for 2027
+    title=Primary 4 Code for Fun Programme
     agency=Ministry of Education - Schools
     category=Administration & Training ⇒ Courses
-    published=02 Nov 2026 03:35 PM
-    closing=11 Nov 2026 01:00PM
+    published=03 Nov 2026 04:05 PM
+    closing=12 Nov 2026 01:00PM
 
-[4] ref=MOESCHETQ26005823
+[2] ref=TPO000ETQ26000128
     type=Quotation  status=OPEN
-    title=Supply of Instructor for Gabrielite Choir CCA Training Programme in St. Gabriel's Primary School in 2027 (with option to extend in 2028 and 2029)
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=02 Nov 2026 03:35 PM
-    closing=11 Nov 2026 01:00PM
+    title=TPO-REQ-2026-007687-SH-Invitation to Quote for the Supply, Delivery and Installation of Large Format Plotters and Print Management Solution
+    agency=Temasek Polytechnic
+    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
+    published=03 Nov 2026 03:50 PM
+    closing=12 Nov 2026 01:00PM
 
-[5] ref=MOESCHETQ26005816
+[3] ref=MOESCHETQ26005443
     type=Quotation  status=OPEN
-    title=Northoaks Pri School - Supply of Instructor for Football CCA Training Programme in 2027 & 2028 with option to extend in 2029 & 2030 (RECALL)
+    title=Supply of Instructor for Floorball CCA Training Programme in Methodist Girls' School (Primary)
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=02 Nov 2026 03:35 PM
-    closing=11 Nov 2026 01:00PM
+    category=Services ⇒ Professional Services
+    published=03 Nov 2026 03:35 PM
+    closing=12 Nov 2026 01:00PM
+
+[4] ref=MOESCHETQ26005881
+    type=Quotation  status=OPEN
+    title=Provision of Hostel-Wide Managed Wireless System in Victoria Hall of Victoria School for a Period of 2 Years
+    agency=Ministry of Education - Schools
+    category=IT&Telecommunication ⇒ IT Services & Software Development
+    published=03 Nov 2026 03:05 PM
+    closing=16 Nov 2026 01:00PM
+
+[5] ref=MOESCHETQ26005883
+    type=Quotation  status=OPEN
+    title=Collaboration in Design, Supply and Painting of Wall Mural
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Gifts & Souvenirs
+    published=03 Nov 2026 03:05 PM
+    closing=12 Nov 2026 01:00PM
