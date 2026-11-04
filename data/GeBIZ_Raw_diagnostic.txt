@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-11-03T16:28:16+08:00
+GeBIZ crawl OK — 2026-11-04T15:56:34+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
 Rows: 400 across 40 page(s)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005853
+[1] ref=MOESCHETQ26005826
     type=Quotation  status=OPEN
-    title=Primary 4 Code for Fun Programme
+    title=Yr 2027 Supply of Concert Band Instructors (1 Main Instructor, 2 Junior Band Instructors & 2 Section Instructors) FAIRFIELD METHODIST SCHOOL (PRIMARY)
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=03 Nov 2026 04:05 PM
-    closing=12 Nov 2026 01:00PM
-
-[2] ref=TPO000ETQ26000128
-    type=Quotation  status=OPEN
-    title=TPO-REQ-2026-007687-SH-Invitation to Quote for the Supply, Delivery and Installation of Large Format Plotters and Print Management Solution
-    agency=Temasek Polytechnic
-    category=Furniture, Office Equipment & Audio-Visual ⇒ AV Equipment, Photographic Equipment & Accessories
-    published=03 Nov 2026 03:50 PM
-    closing=12 Nov 2026 01:00PM
-
-[3] ref=MOESCHETQ26005443
-    type=Quotation  status=OPEN
-    title=Supply of Instructor for Floorball CCA Training Programme in Methodist Girls' School (Primary)
-    agency=Ministry of Education - Schools
-    category=Services ⇒ Professional Services
-    published=03 Nov 2026 03:35 PM
-    closing=12 Nov 2026 01:00PM
-
-[4] ref=MOESCHETQ26005881
-    type=Quotation  status=OPEN
-    title=Provision of Hostel-Wide Managed Wireless System in Victoria Hall of Victoria School for a Period of 2 Years
-    agency=Ministry of Education - Schools
-    category=IT&Telecommunication ⇒ IT Services & Software Development
-    published=03 Nov 2026 03:05 PM
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=04 Nov 2026 03:35 PM
     closing=16 Nov 2026 01:00PM
 
-[5] ref=MOESCHETQ26005883
+[2] ref=MOESCHETQ26005934
     type=Quotation  status=OPEN
-    title=Collaboration in Design, Supply and Painting of Wall Mural
+    title=SUPPLY OF INSTRUCTOR FOR CHOIR CCA TRAINING PROGRAMME IN WHITLEY SECONDARY SCHOOL
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Gifts & Souvenirs
-    published=03 Nov 2026 03:05 PM
-    closing=12 Nov 2026 01:00PM
+    category=Services ⇒ Professional Services
+    published=04 Nov 2026 03:35 PM
+    closing=13 Nov 2026 01:00PM
+
+[3] ref=MOESCHETQ26005906
+    type=Quotation  status=OPEN
+    title=Innova Primary School - Supply of Manpower Services for Student Management Associate 2027.
+    agency=Ministry of Education - Schools
+    category=Administration & Training ⇒ Courses
+    published=04 Nov 2026 03:20 PM
+    closing=13 Nov 2026 01:00PM
+
+[4] ref=MOESCHETQ26005913
+    type=Quotation  status=OPEN
+    title=Provision of Adhoc Bus Transport Services for Gongshang Primary School
+    agency=Ministry of Education - Schools
+    category=Transportation ⇒ Bus Hire
+    published=04 Nov 2026 03:20 PM
+    closing=13 Nov 2026 01:00PM
+
+[5] ref=NLB000ETQ26000053
+    type=Quotation  status=OPEN
+    title=ITQ - CONSULTANCY SERVICES FOR DESIGN OF COVERED LINKWAY AT NATIONAL ARCHIVES SINGAPORE, FOR NATIONAL LIBRARY BOARD, SINGAPORE
+    agency=National Library Board
+    category=Services ⇒ Professional Services
+    published=04 Nov 2026 02:50 PM
+    closing=04 Dec 2026 01:00PM
