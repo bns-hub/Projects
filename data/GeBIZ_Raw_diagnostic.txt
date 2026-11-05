@@ -1,45 +1,45 @@
-GeBIZ crawl OK — 2026-11-04T15:56:34+08:00
+GeBIZ crawl OK — 2026-11-05T16:22:51+08:00
 Entry URL: https://www.gebiz.gov.sg/ptn/opportunity/index.xhtml
-Rows: 400 across 40 page(s)
+Rows: 400 across 40 page(s) (stopped at the 7-day window)
 
 First 5 rows as parsed — check the fields landed in the right columns:
 
-[1] ref=MOESCHETQ26005826
+[1] ref=MOESCHETQ26005978
     type=Quotation  status=OPEN
-    title=Yr 2027 Supply of Concert Band Instructors (1 Main Instructor, 2 Junior Band Instructors & 2 Section Instructors) FAIRFIELD METHODIST SCHOOL (PRIMARY)
+    title=Design, Supply and Installation of Wall Murals and Floor Decal for the Recognition Wall
     agency=Ministry of Education - Schools
-    category=Services ⇒ Data Entry, Supply of Manpower Services
-    published=04 Nov 2026 03:35 PM
+    category=Construction ⇒ Renovation Supplies & Services
+    published=05 Nov 2026 04:05 PM
     closing=16 Nov 2026 01:00PM
 
-[2] ref=MOESCHETQ26005934
+[2] ref=MOESCHETQ26005953
     type=Quotation  status=OPEN
-    title=SUPPLY OF INSTRUCTOR FOR CHOIR CCA TRAINING PROGRAMME IN WHITLEY SECONDARY SCHOOL
+    title=SUPPLY, DELIVERY AND INSTALLATION OF INTERNATIONAL FLOORBALL FEDERATION (IFF) CERTIFIED FLOORBALL RINK WITH 2 RINK TROLLEYS FOR CONCORD PRIMARY SCHOOL
     agency=Ministry of Education - Schools
-    category=Services ⇒ Professional Services
-    published=04 Nov 2026 03:35 PM
-    closing=13 Nov 2026 01:00PM
+    category=Administration & Training ⇒ Gifts & Souvenirs
+    published=05 Nov 2026 04:05 PM
+    closing=16 Nov 2026 01:00PM
 
-[3] ref=MOESCHETQ26005906
+[3] ref=NYP000ETQ26000184
     type=Quotation  status=OPEN
-    title=Innova Primary School - Supply of Manpower Services for Student Management Associate 2027.
+    title=Invitation to Quote (ITQ) for the Design and Production of Nanyang Polytechnic Chinese Orchestra Performance Costumes
+    agency=Nanyang Polytechnic
+    category=Administration & Training ⇒ Music & Video
+    published=05 Nov 2026 03:50 PM
+    closing=16 Nov 2026 01:00PM
+
+[4] ref=MOESCHETQ26005989
+    type=Quotation  status=OPEN
+    title=Malay Dance CCA Instructor for 2027 (Firm year) & 2028 (Option year)
     agency=Ministry of Education - Schools
-    category=Administration & Training ⇒ Courses
-    published=04 Nov 2026 03:20 PM
-    closing=13 Nov 2026 01:00PM
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=05 Nov 2026 03:50 PM
+    closing=16 Nov 2026 01:00PM
 
-[4] ref=MOESCHETQ26005913
+[5] ref=MOESCHETQ26005988
     type=Quotation  status=OPEN
-    title=Provision of Adhoc Bus Transport Services for Gongshang Primary School
+    title=Indian Dance CCA Instructor for 2027 (Firm year) & 2028 (Option year)
     agency=Ministry of Education - Schools
-    category=Transportation ⇒ Bus Hire
-    published=04 Nov 2026 03:20 PM
-    closing=13 Nov 2026 01:00PM
-
-[5] ref=NLB000ETQ26000053
-    type=Quotation  status=OPEN
-    title=ITQ - CONSULTANCY SERVICES FOR DESIGN OF COVERED LINKWAY AT NATIONAL ARCHIVES SINGAPORE, FOR NATIONAL LIBRARY BOARD, SINGAPORE
-    agency=National Library Board
-    category=Services ⇒ Professional Services
-    published=04 Nov 2026 02:50 PM
-    closing=04 Dec 2026 01:00PM
+    category=Services ⇒ Data Entry, Supply of Manpower Services
+    published=05 Nov 2026 03:50 PM
+    closing=16 Nov 2026 01:00PM
