@@ -1,9 +1,9 @@
 {
-  "lastCheckedAt": "2026-10-25T19:23:20.823Z",
+  "lastCheckedAt": "2026-11-01T20:54:43.751Z",
   "sources": {
     "hsr-official": {
       "hash": "b87af92e",
-      "checkedAt": "2026-10-25T19:22:43.422Z",
+      "checkedAt": "2026-11-01T20:53:55.071Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -11,26 +11,26 @@
       "auditedLines": 13
     },
     "hsr-hoyolab": {
-      "hash": "f0e42815",
-      "checkedAt": "2026-10-25T19:22:57.940Z",
+      "hash": "4b2210b6",
+      "checkedAt": "2026-11-01T20:54:10.383Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
       "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · We will recommend content based on your chosen interests",
-      "auditedLines": 6
+      "auditedLines": 7
     },
     "hsr-hoyolab-official": {
-      "hash": "a3cdcdaa",
-      "checkedAt": "2026-10-25T19:23:03.411Z",
+      "hash": "05f47268",
+      "checkedAt": "2026-11-01T20:54:15.347Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Phantasmoon Games Season Recap | Express Crew Clearance Log · \"The Laughter Outsmarts miHoYo\" Episode 5 | Changing Fate · \"The Laughter Outsmarts miHoYo\" Episode 4 | Meeting · \"The Laughter Outsmarts miHoYo\" Episode 3 | Training",
-      "auditedLines": 9
+      "snippet": "A brand-new season of \"Currency Wars: Voyage Into the Canvas\" is here! · Version 4.7 \"Now, Lay Laughter to All Stars\" Highlights Page Is Now Online · A Brief on the Version 4.7 Special Program · Version 4.7 Bonuses Available!",
+      "auditedLines": 14
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-10-25T19:23:05.687Z",
+      "checkedAt": "2026-11-01T20:54:18.260Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -39,34 +39,34 @@
     },
     "re-steam": {
       "hash": "864b1991",
-      "checkedAt": "2026-10-25T19:23:08.559Z",
-      "changed": true,
+      "checkedAt": "2026-11-01T20:54:21.099Z",
+      "changed": false,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · 3rd Anniversary Sincere Gratitude · 2026-10-01 00:00 - 2026-11-05 04:59 (UTC-5)",
       "auditedLines": 320
     },
     "re-steam-forum": {
-      "hash": "5b5236bd",
-      "checkedAt": "2026-10-25T19:23:08.713Z",
+      "hash": "d457cb9d",
+      "checkedAt": "2026-11-01T20:54:21.251Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 23 @ 8:31pm",
-      "auditedLines": 6
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 26 @ 11:51am",
+      "auditedLines": 5
     },
     "czn-community": {
-      "hash": "696bb4c6",
-      "checkedAt": "2026-10-25T19:23:18.993Z",
+      "hash": "0860c190",
+      "checkedAt": "2026-11-01T20:54:41.858Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Chaos Zero Nightmare · Reward-Packed STOVE Events! · Riichi City: October Attendance Shop · STOVE Oct Check-in Exchange Shop",
-      "auditedLines": 3
+      "snippet": "Chaos Zero Nightmare · Reward-Packed STOVE Events! · October 29, 2026 · How much have you tried? October new snack collection",
+      "auditedLines": 4
     },
     "czn-brand": {
       "hash": "9f2214d3",
-      "checkedAt": "2026-10-25T19:23:19.976Z",
+      "checkedAt": "2026-11-01T20:54:43.068Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -74,67 +74,67 @@
       "auditedLines": 7
     },
     "czn-arabella-rules": {
-      "hash": "936c9ee8",
-      "checkedAt": "2026-10-25T19:23:20.282Z",
+      "hash": "c7157305",
+      "checkedAt": "2026-11-01T20:54:43.200Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026 · Nightmare Team",
-      "auditedLines": 64
+      "auditedLines": 66
     },
     "czn-licinia-rules": {
-      "hash": "267defc5",
-      "checkedAt": "2026-10-25T19:23:20.404Z",
+      "hash": "9a849750",
+      "checkedAt": "2026-11-01T20:54:43.455Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026 · Nightmare Team",
-      "auditedLines": 62
+      "auditedLines": 64
     },
     "czn-chizuru-rules": {
-      "hash": "0ebdb311",
-      "checkedAt": "2026-10-25T19:23:20.541Z",
+      "hash": "9f8332d4",
+      "checkedAt": "2026-11-01T20:54:43.501Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026 · Nightmare Team",
-      "auditedLines": 64
+      "auditedLines": 66
     },
     "czn-itsuku-rules": {
-      "hash": "20743e95",
-      "checkedAt": "2026-10-25T19:23:20.801Z",
+      "hash": "0680f460",
+      "checkedAt": "2026-11-01T20:54:43.730Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
       "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026 · Nightmare Team",
-      "auditedLines": 62
+      "auditedLines": 64
     },
     "hsr-news": {
-      "hash": "d1d1639f",
-      "checkedAt": "2026-10-25T19:22:47.730Z",
-      "changed": false,
+      "hash": "6992dd39",
+      "checkedAt": "2026-11-01T20:53:59.643Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "This season's brand-new Seasonal Dolls makes its adorable debut! · Version 4.6 \"Dance With the Beast Before Moonrise\" Update Details · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
-      "auditedLines": 3
+      "snippet": "\"Cosmic Aesthetics: Phantasia Showstage\" Outfit Draw Event Details · Starlight and moonlight adorn the Lotto Goddess's bespoke outfit. Aeon ★ Aha's new outfit \"Star Lotto\" will be available in Version 4.7! · Version 4.7 Trailer: \"Now, Lay Laughter to All Stars\" | Honkai: Star Rail · In the maddening silence, a voice said: \"Laugh, and let THEM hear your existence.\" And thus, the stars were silent no more, pouring all their radiance into a single burst of laughter.",
+      "auditedLines": 4
     },
     "re-news": {
       "hash": "d2e17055",
-      "checkedAt": "2026-10-25T19:23:08.252Z",
-      "changed": true,
+      "checkedAt": "2026-11-01T20:54:20.811Z",
+      "changed": false,
       "firstBaseline": false,
       "via": "api",
       "snippet": "2026-10-23 - Ver. 3.9 [Rekindled! Games of the Summer-Gold Sea] Preview · [Story Mode]: After the version update on 2026-11-05 - 2026-12-14 04:59 (UTC-5) · [Hard Mode]: 2026-11-12 05:00 - 2026-12-14 04:59 (UTC-5) · [Event Shop]: After the version update on 2026-11-05 - 2026-12-17 04:59 (UTC-5)",
       "auditedLines": 320
     },
     "czn-news": {
-      "hash": "a95d2fde",
-      "checkedAt": "2026-10-25T19:23:08.859Z",
+      "hash": "bf190fb4",
+      "checkedAt": "2026-11-01T20:54:21.409Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "News - Chaos Zero Nightmare (CZN) · October 23, 2026 · October 23, 2026 · Current Events",
-      "auditedLines": 26
+      "snippet": "News - Chaos Zero Nightmare (CZN) · [Notice] 10/30(Fri) Recommended Update (Android) · October 30, 2026 · ◤November Calendar Wallpaper◢",
+      "auditedLines": 29
     }
   }
 }
