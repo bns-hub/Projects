@@ -1,9 +1,9 @@
 {
-  "lastCheckedAt": "2026-11-01T20:54:43.751Z",
+  "lastCheckedAt": "2026-11-08T20:52:33.594Z",
   "sources": {
     "hsr-official": {
       "hash": "b87af92e",
-      "checkedAt": "2026-11-01T20:53:55.071Z",
+      "checkedAt": "2026-11-08T20:51:51.661Z",
       "changed": false,
       "firstBaseline": false,
       "via": "headless",
@@ -11,8 +11,8 @@
       "auditedLines": 13
     },
     "hsr-hoyolab": {
-      "hash": "4b2210b6",
-      "checkedAt": "2026-11-01T20:54:10.383Z",
+      "hash": "a2947f7c",
+      "checkedAt": "2026-11-08T20:52:10.271Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
@@ -20,17 +20,17 @@
       "auditedLines": 7
     },
     "hsr-hoyolab-official": {
-      "hash": "05f47268",
-      "checkedAt": "2026-11-01T20:54:15.347Z",
+      "hash": "d3f14583",
+      "checkedAt": "2026-11-08T20:52:14.923Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "A brand-new season of \"Currency Wars: Voyage Into the Canvas\" is here! · Version 4.7 \"Now, Lay Laughter to All Stars\" Highlights Page Is Now Online · A Brief on the Version 4.7 Special Program · Version 4.7 Bonuses Available!",
-      "auditedLines": 14
+      "snippet": "\"Now, Lay Laughter to All Stars\" Version 4.7 Preview · Light Cone Preview | Version 4.7 \"Now, Lay Laughter to All Stars\" · A brand-new season of \"Currency Wars: Voyage Into the Canvas\" is here! · Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once!",
+      "auditedLines": 11
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-11-01T20:54:18.260Z",
+      "checkedAt": "2026-11-08T20:52:18.553Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -38,35 +38,35 @@
       "auditedLines": 4
     },
     "re-steam": {
-      "hash": "864b1991",
-      "checkedAt": "2026-11-01T20:54:21.099Z",
-      "changed": false,
+      "hash": "0726519e",
+      "checkedAt": "2026-11-08T20:52:20.965Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · 3rd Anniversary Sincere Gratitude · 2026-10-01 00:00 - 2026-11-05 04:59 (UTC-5)",
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Sign-in Event · The Sign-in Event \\[Rekindled! Games of the Summer-Gold Sea] contains two parts. Players can get Unilog x14 in total.",
       "auditedLines": 320
     },
     "re-steam-forum": {
-      "hash": "d457cb9d",
-      "checkedAt": "2026-11-01T20:54:21.251Z",
+      "hash": "116361f2",
+      "checkedAt": "2026-11-08T20:52:21.132Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Oct 26 @ 11:51am",
-      "auditedLines": 5
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Nov 7 @ 11:10am",
+      "auditedLines": 6
     },
     "czn-community": {
-      "hash": "0860c190",
-      "checkedAt": "2026-11-01T20:54:41.858Z",
+      "hash": "34f32150",
+      "checkedAt": "2026-11-08T20:52:31.931Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Chaos Zero Nightmare · Reward-Packed STOVE Events! · October 29, 2026 · How much have you tried? October new snack collection",
+      "snippet": "Chaos Zero Nightmare · Reward-Packed STOVE Events! · November 5, 2026 · Debuted in the KBO in 2004 at the age of 19 Achieved his first KS victory in 2026 at the age of 43",
       "auditedLines": 4
     },
     "czn-brand": {
       "hash": "9f2214d3",
-      "checkedAt": "2026-11-01T20:54:43.068Z",
+      "checkedAt": "2026-11-08T20:52:33.398Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -74,8 +74,8 @@
       "auditedLines": 7
     },
     "czn-arabella-rules": {
-      "hash": "c7157305",
-      "checkedAt": "2026-11-01T20:54:43.200Z",
+      "hash": "434dee2d",
+      "checkedAt": "2026-11-08T20:52:33.443Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
@@ -83,8 +83,8 @@
       "auditedLines": 66
     },
     "czn-licinia-rules": {
-      "hash": "9a849750",
-      "checkedAt": "2026-11-01T20:54:43.455Z",
+      "hash": "d4b9cc02",
+      "checkedAt": "2026-11-08T20:52:33.487Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
@@ -92,8 +92,8 @@
       "auditedLines": 64
     },
     "czn-chizuru-rules": {
-      "hash": "9f8332d4",
-      "checkedAt": "2026-11-01T20:54:43.501Z",
+      "hash": "ddd7a7a6",
+      "checkedAt": "2026-11-08T20:52:33.521Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
@@ -101,8 +101,8 @@
       "auditedLines": 66
     },
     "czn-itsuku-rules": {
-      "hash": "0680f460",
-      "checkedAt": "2026-11-01T20:54:43.730Z",
+      "hash": "f1f91674",
+      "checkedAt": "2026-11-08T20:52:33.567Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
@@ -110,31 +110,31 @@
       "auditedLines": 64
     },
     "hsr-news": {
-      "hash": "6992dd39",
-      "checkedAt": "2026-11-01T20:53:59.643Z",
+      "hash": "de080757",
+      "checkedAt": "2026-11-08T20:51:56.764Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "\"Cosmic Aesthetics: Phantasia Showstage\" Outfit Draw Event Details · Starlight and moonlight adorn the Lotto Goddess's bespoke outfit. Aeon ★ Aha's new outfit \"Star Lotto\" will be available in Version 4.7! · Version 4.7 Trailer: \"Now, Lay Laughter to All Stars\" | Honkai: Star Rail · In the maddening silence, a voice said: \"Laugh, and let THEM hear your existence.\" And thus, the stars were silent no more, pouring all their radiance into a single burst of laughter.",
-      "auditedLines": 4
+      "snippet": "\"Cosmic Aesthetics: Phantasia Showstage\" Outfit Draw Event Details · Starlight and moonlight adorn the Lotto Goddess's bespoke outfit. Aeon ★ Aha's new outfit \"Star Lotto\" will be available in Version 4.7! · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
+      "auditedLines": 1
     },
     "re-news": {
-      "hash": "d2e17055",
-      "checkedAt": "2026-11-01T20:54:20.811Z",
-      "changed": false,
+      "hash": "4a3b253b",
+      "checkedAt": "2026-11-08T20:52:20.682Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "api",
-      "snippet": "2026-10-23 - Ver. 3.9 [Rekindled! Games of the Summer-Gold Sea] Preview · [Story Mode]: After the version update on 2026-11-05 - 2026-12-14 04:59 (UTC-5) · [Hard Mode]: 2026-11-12 05:00 - 2026-12-14 04:59 (UTC-5) · [Event Shop]: After the version update on 2026-11-05 - 2026-12-17 04:59 (UTC-5)",
-      "auditedLines": 320
+      "snippet": "2026-11-05 - Ver. 3.9 \"Rekindled! Games of the Summer-Gold Sea\" Fanwork Event Open for Submission! · * Details of the selection process will be kept confidential. Thank you for your understanding! · 2026-11-03 - 3.9 [Rekindled! Games of the Summer-Gold Sea] Version Update Maintenance Notice · [Update Maintenance Duration]",
+      "auditedLines": 238
     },
     "czn-news": {
-      "hash": "bf190fb4",
-      "checkedAt": "2026-11-01T20:54:21.409Z",
+      "hash": "e897dba9",
+      "checkedAt": "2026-11-08T20:52:21.208Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "News - Chaos Zero Nightmare (CZN) · [Notice] 10/30(Fri) Recommended Update (Android) · October 30, 2026 · ◤November Calendar Wallpaper◢",
-      "auditedLines": 29
+      "snippet": "News - Chaos Zero Nightmare (CZN) · November 4, 2026 · ◤November Thank-You Bonus Reward Coupon◢ · November 3, 2026",
+      "auditedLines": 30
     }
   }
 }
