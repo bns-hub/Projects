@@ -1,36 +1,36 @@
 {
-  "lastCheckedAt": "2026-11-08T20:52:33.594Z",
+  "lastCheckedAt": "2026-11-22T22:14:08.235Z",
   "sources": {
     "hsr-official": {
-      "hash": "b87af92e",
-      "checkedAt": "2026-11-08T20:51:51.661Z",
-      "changed": false,
+      "hash": "4869bb0d",
+      "checkedAt": "2026-11-22T22:13:18.230Z",
+      "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Limited 5-Star Character · Go to Version Highlights page to learn more · Go to Version Highlights page to learn more · Trailblazers can claim daily rewards in the Travel Log by logging in to the game. The rewards will be unlocked in sequential order according to the Trailblazer's accrued login days.",
+      "snippet": "Limited 5-Star Character · Go to Version Highlights page to learn more · Upon the first echo of \"Aha,\" so laughed the masses. · An occasional chuckle echoed from among the billions, as if THEY were merely passing by, or had perhaps never left at all.",
       "auditedLines": 13
     },
     "hsr-hoyolab": {
-      "hash": "a2947f7c",
-      "checkedAt": "2026-11-08T20:52:10.271Z",
+      "hash": "f0e42815",
+      "checkedAt": "2026-11-22T22:13:34.825Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
       "snippet": "Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once! · We will recommend content based on your chosen interests",
-      "auditedLines": 7
+      "auditedLines": 6
     },
     "hsr-hoyolab-official": {
-      "hash": "d3f14583",
-      "checkedAt": "2026-11-08T20:52:14.923Z",
+      "hash": "d614168f",
+      "checkedAt": "2026-11-22T22:13:40.847Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "\"Now, Lay Laughter to All Stars\" Version 4.7 Preview · Light Cone Preview | Version 4.7 \"Now, Lay Laughter to All Stars\" · A brand-new season of \"Currency Wars: Voyage Into the Canvas\" is here! · Logging in only takes a few seconds. This will unlock check-in rewards and game tools all at once!",
-      "auditedLines": 11
+      "snippet": "Log in to claim a limited 5-star character · \"Astral Express Strategy Guide\" Website Update: Version 4.7 Strategy Guides Contest Event Is In Full Swing! · \"Reward Event\" Aeon ★ Aha Strategy Discussion Event · [Event with Rewards] Aeon ★ Aha Spotlight — Reddit Event!",
+      "auditedLines": 14
     },
     "re-official": {
       "hash": "00e1577e",
-      "checkedAt": "2026-11-08T20:52:18.553Z",
+      "checkedAt": "2026-11-22T22:13:43.542Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -38,8 +38,8 @@
       "auditedLines": 4
     },
     "re-steam": {
-      "hash": "0726519e",
-      "checkedAt": "2026-11-08T20:52:20.965Z",
+      "hash": "17427d38",
+      "checkedAt": "2026-11-22T22:13:45.087Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
@@ -47,26 +47,26 @@
       "auditedLines": 320
     },
     "re-steam-forum": {
-      "hash": "116361f2",
-      "checkedAt": "2026-11-08T20:52:21.132Z",
+      "hash": "8fa31aba",
+      "checkedAt": "2026-11-22T22:13:45.267Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Nov 7 @ 11:10am",
-      "auditedLines": 6
+      "snippet": "Change language · © Valve Corporation. All rights reserved. All trademarks are property of their respective owners in the US and other countries. · Events & Announcements · Nov 21 @ 9:09am",
+      "auditedLines": 7
     },
     "czn-community": {
-      "hash": "34f32150",
-      "checkedAt": "2026-11-08T20:52:31.931Z",
+      "hash": "548370be",
+      "checkedAt": "2026-11-22T22:14:06.177Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "Chaos Zero Nightmare · Reward-Packed STOVE Events! · November 5, 2026 · Debuted in the KBO in 2004 at the age of 19 Achieved his first KS victory in 2026 at the age of 43",
-      "auditedLines": 4
+      "snippet": "Wishlist Event: Win a FREE Key! · 20 Winners Chosen! · Wishlist Event: Win a FREE Key! · 20 Winners Chosen!",
+      "auditedLines": 3
     },
     "czn-brand": {
       "hash": "9f2214d3",
-      "checkedAt": "2026-11-08T20:52:33.398Z",
+      "checkedAt": "2026-11-22T22:14:07.430Z",
       "changed": false,
       "firstBaseline": false,
       "via": "direct",
@@ -74,67 +74,67 @@
       "auditedLines": 7
     },
     "czn-arabella-rules": {
-      "hash": "434dee2d",
-      "checkedAt": "2026-11-08T20:52:33.443Z",
+      "hash": "c2446b6e",
+      "checkedAt": "2026-11-22T22:14:07.574Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Updated: Aug 19, 2026 · Nightmare Team",
-      "auditedLines": 66
+      "snippet": "Seasonal Combatant Rate-Up Rescue - Amplified Distress Signal: Arabella - Chaos Zero Nightmare (CZN) · Seasonal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Arabella · Nightmare Team · In Chaos Zero Nightmare, probabilities are displayed with rounded decimal values.",
+      "auditedLines": 63
     },
     "czn-licinia-rules": {
-      "hash": "d4b9cc02",
-      "checkedAt": "2026-11-08T20:52:33.487Z",
+      "hash": "fe802755",
+      "checkedAt": "2026-11-22T22:14:07.824Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Updated: Aug 19, 2026 · Nightmare Team",
-      "auditedLines": 64
+      "snippet": "Seasonal Partner Rate-Up Rescue - Amplified Distress Signal: Licinia - Chaos Zero Nightmare (CZN) · Seasonal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Licinia · Nightmare Team · In Chaos Zero Nightmare, probabilities are displayed with rounded decimal values.",
+      "auditedLines": 61
     },
     "czn-chizuru-rules": {
-      "hash": "ddd7a7a6",
-      "checkedAt": "2026-11-08T20:52:33.521Z",
+      "hash": "3e970d6c",
+      "checkedAt": "2026-11-22T22:14:08.081Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Updated: Aug 11, 2026 · Nightmare Team",
-      "auditedLines": 66
+      "snippet": "Normal Combatant Rate-Up Rescue - Amplified Distress Signal: Chizuru - Chaos Zero Nightmare (CZN) · Normal Combatant Rate-Up Rescue &#8211; Amplified Distress Signal: Chizuru · Nightmare Team · In Chaos Zero Nightmare, probabilities are displayed with rounded decimal values.",
+      "auditedLines": 63
     },
     "czn-itsuku-rules": {
-      "hash": "f1f91674",
-      "checkedAt": "2026-11-08T20:52:33.567Z",
+      "hash": "354d1b30",
+      "checkedAt": "2026-11-22T22:14:08.208Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Updated: Aug 11, 2026 · Nightmare Team",
-      "auditedLines": 64
+      "snippet": "Normal Partner Rate-Up Rescue - Amplified Distress Signal: Itsuku - Chaos Zero Nightmare (CZN) · Normal Partner Rate-Up Rescue &#8211; Amplified Distress Signal: Itsuku · Nightmare Team · In Chaos Zero Nightmare, probabilities are displayed with rounded decimal values.",
+      "auditedLines": 61
     },
     "hsr-news": {
-      "hash": "de080757",
-      "checkedAt": "2026-11-08T20:51:56.764Z",
+      "hash": "f502a3f7",
+      "checkedAt": "2026-11-22T22:13:22.636Z",
       "changed": true,
       "firstBaseline": false,
       "via": "headless",
-      "snippet": "\"Cosmic Aesthetics: Phantasia Showstage\" Outfit Draw Event Details · Starlight and moonlight adorn the Lotto Goddess's bespoke outfit. Aeon ★ Aha's new outfit \"Star Lotto\" will be available in Version 4.7! · “PlayStation Family Mark”, “PlayStation” and “PS5 logo” are registered trademarks or trademarks of Sony Interactive Entertainment Inc. · Epic, Epic Games, Epic Games Store, the Epic Games Store logo, and Epic Online Services are trademarks and/or registered trademarks of Epic Games. All other trademarks are the property of their respective owners.",
-      "auditedLines": 1
+      "snippet": "\"Cosmic Aesthetics: Phantasia Showstage\" Outfit Draw Event Details · Starlight and moonlight adorn the Lotto Goddess's bespoke outfit. Aeon ★ Aha's new outfit \"Star Lotto\" will be available in Version 4.7! · Version 4.7 \"Now, Lay Laughter to All Stars\" Update Details · In the maddening silence, a voice said: \"Laugh, and let THEM hear your existence.\" And thus, the stars were silent no more, pouring all their radiance into a single burst of laughter.",
+      "auditedLines": 5
     },
     "re-news": {
-      "hash": "4a3b253b",
-      "checkedAt": "2026-11-08T20:52:20.682Z",
+      "hash": "d9eed06d",
+      "checkedAt": "2026-11-22T22:13:44.603Z",
       "changed": true,
       "firstBaseline": false,
       "via": "api",
-      "snippet": "2026-11-05 - Ver. 3.9 \"Rekindled! Games of the Summer-Gold Sea\" Fanwork Event Open for Submission! · * Details of the selection process will be kept confidential. Thank you for your understanding! · 2026-11-03 - 3.9 [Rekindled! Games of the Summer-Gold Sea] Version Update Maintenance Notice · [Update Maintenance Duration]",
-      "auditedLines": 238
+      "snippet": "2026-11-21 - [Announcement of Results] Ver. 3.8 Fanwork Event Winners · [Announcement of Results] Reverse: 1999 Ver. 3.8 Fanwork Event Winners · Thank you so much for your participation in Reverse: 1999 Ver. 3.8 Fanwork Event. We've received a great deal of wonderful fan creations from you all. · 2026-11-05 - Ver. 3.9 \"Rekindled! Games of the Summer-Gold Sea\" Fanwork Event Open for Submission!",
+      "auditedLines": 210
     },
     "czn-news": {
-      "hash": "e897dba9",
-      "checkedAt": "2026-11-08T20:52:21.208Z",
+      "hash": "271414d9",
+      "checkedAt": "2026-11-22T22:13:45.409Z",
       "changed": true,
       "firstBaseline": false,
       "via": "direct",
-      "snippet": "News - Chaos Zero Nightmare (CZN) · November 4, 2026 · ◤November Thank-You Bonus Reward Coupon◢ · November 3, 2026",
-      "auditedLines": 30
+      "snippet": "News - Chaos Zero Nightmare (CZN) · November 20, 2026 · November 19, 2026 · November 16, 2026",
+      "auditedLines": 28
     }
   }
 }
