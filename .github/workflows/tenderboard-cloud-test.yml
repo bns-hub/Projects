@@ -1,6 +1,9 @@
 name: TenderBoard daily cloud crawl
 
 on:
+  push:
+    branches:
+      - verify/tenderboard-ubuntu-24-04
   schedule:
     - cron: "0 10 * * *"
       timezone: "Asia/Singapore"
